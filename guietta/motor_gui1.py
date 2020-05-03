@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QLineEdit, QHBoxLayout, QVBoxLayout
 from quickgui.framework import QuickQtGui, handler
 
 # g is a reference to guietta, but we avoid a second import.
-from guietta import B, E, _, g
+from guietta import B, E, _, Gui
 
 
     
@@ -25,18 +25,19 @@ class MotorGui(QuickQtGui):
     def __init__(self, qin, qout):
         super().__init__(qin, qout)
 
-        g.layout(
+        gui = Gui(
             
           [  _('Simulation'), B('On')    , B('Off'), _('sim_status') ],
           [  _('Position'),   _('curpos'), _       , _('moving')     ], 
           [  _('Move to:'),   E('usrpos'), _       , B('Move')       ] )
          
-        g.events(
+        gui.events(
 
           [  _            , self.sim_on  , self.sim_off  ,       ],
           [  _            ,   _          , _             ,       ], 
           [  _            , self.move    , _             , self.move  ] )
 
+        # layout() is mandatory, the rest is optional
         # Possible additional layers:
             # colors, fonts
             # names, overriding the default one
@@ -45,38 +46,37 @@ class MotorGui(QuickQtGui):
         # Widgets are automatically named from their label, unless 
         # overriden in the names layer, and added to module scope.
         # Whitespace and special characters are just removed.
-        g.Moveto.setText('foo')
+        gui.Moveto.setText('foo')
         
         # Name clashes with method functions are handled automatically
         # because if you call something, it's a module function, while
         # if you dereference it with "." it's a widget.
 
-        # B=Button(), _=Label, E=Lineedit, C=Checkbox, R=Radio
-        
+        # Widget shortcuts
+        # B=Button(), _=Label, E=Lineedit, C=Checkbox, R=Radio, S=slider,
+        # Any QT class can be used directly if wanted instead of the shortcuts
+
         # Radio are exclusive across the whole window by default. If you
         # want different groups, use the groups layer.
 
         # All widgets are normal QT widgets so they support all QT methods.
-        # guietta has __getattr__ on the module, so it is possible
-        # to refer to widgets before they are created:
-        # internally becomes q.setColor('Position', g.red)
-        # and is queued for execution when creating the window. Same goes
-        # for all the layers, which are just a compact form of expressing
-        # a series of calls like these...
-        g.Position.setColor(g.red)
+        gui.Position.setColor(g.red)
 
         # Additional signal/slot connection        
-        g.usrpos.returnPressed.connect(another_method)
+        gui.usrpos.returnPressed.connect(another_method)
 
         # It's possible to go by coordinates [row, col]
-        g[0,1].setFont('Courier')
+        gui[0,1].setFont('Courier')
 
         # Replicate a call to all widgets, or just to a group
-        g.all(group='').disable()
+        gui.all(group='').disable()
+
+        # Invalid references cause an exception
+        gui.pippo.setText('ciao')
 
         # All-in-one application and event loop, but intermediate steps
         # are available
-        g.run(sys.argv)
+        gui.run(sys.argv)
 
 
     def move(self):
