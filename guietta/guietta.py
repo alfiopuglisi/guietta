@@ -128,7 +128,7 @@ class Gui:
             for j, slot in enumerate(row):
 
                 if slot not in _specials:
-                    item = self._layout.itemAtPosition(i, j).widget()
+                    item = self[i,j]
                     signal = getattr(item, _default_signals[item.__class__])
                     if _bound_method(slot):
                         signal.connect(slot)
@@ -148,7 +148,7 @@ class Gui:
             for j, alias in enumerate(row):
 
                 if alias not in _specials:
-                    item = self._layout.itemAtPosition(i, j).widget()
+                    item = self[i,j]
                     name = names_by_widget[item]
                     self._aliases[alias] = name
 
@@ -161,7 +161,8 @@ class Gui:
         pass
 
     def __getattr__(self, name):
-        '''Returns one of the current widgets, or a future reference.'''
+        '''Returns a widget using its name or alias'''
+        
         if name in self._aliases:
             name = self._aliases[name]
             
@@ -173,7 +174,7 @@ class Gui:
 
     def __getitem__(self, name):
         '''widget by coordinates [row,col]'''
-        pass
+        return self._layout.itemAtPosition(name[0], name[1]).widget()
 
     def all(group=''):
         '''replicates command on all widgets'''
@@ -184,7 +185,16 @@ class Gui:
         window.setLayout(self._layout)
         return window
 
-    
+    def import_into(self, obj):
+
+        widgets = {**self._widgets, **self._aliases}
+
+        for name, widget in widgets:
+            if hasattr(obj, name):
+                raise Exception('Cannot import: duplicate name %s ' % name)
+            else:
+                setattr(obj, name, widget)
+        
     def run(self, argv=None):
         if argv is None:
             argv = []
@@ -192,6 +202,7 @@ class Gui:
         window = self.window()
         window.show()
         app.exec_()
+        
 
         
         
