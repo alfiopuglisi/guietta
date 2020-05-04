@@ -83,7 +83,17 @@ def _layer_check(*lists, element_func=lambda x: True, errstr=''):
 
 
 class Gui:
-    '''Main GUI object'''
+    '''Main GUI object.
+
+    The GUI is defined passing to the initializer a set of QT widgets
+    organized in rows of equal length. All other method that expect
+    lists (like events() or names()) will expect a series of list with
+    the same length.
+    
+    Every widget will be added as an attribute to this instance,
+    using the widget text as the attribute name (removing all special 
+    characters and only keeping letters, numbers and underscores.)
+    '''
 
     def __init__(self, *lists):
 
@@ -108,7 +118,8 @@ class Gui:
         for i, row in enumerate(lists):
             for j, element in enumerate(row):
 
-                # Special cases
+                # Special cases. ___ and 'I' will replicate
+                # the widgets from the previous column and row.
                 if element == _:
                     element = QLabel('')
                 elif element == ___:
@@ -146,8 +157,16 @@ class Gui:
                     done.add(element)
 
     def events(self, *lists):
-        '''Defines the GUI events'''
+        '''Defines the GUI events
 
+        The argument must be a layout with she same shape as the
+        initializer. Every element is the callback function to be
+        called when the default signal of the widget is fired.
+        
+        Bound methods are called without arguments. Functions and
+        unbound methods will get a single argument with a reference
+        to this Gui instance.
+        '''
         # Input argument checks
         def must_be_callable(x):
             return callable(x) or x in _specials
@@ -167,7 +186,12 @@ class Gui:
                         signal.connect(functools.partial(slot, self))
 
     def names(self, *lists):
-        '''Overrides the default names'''
+        '''Overrides the default widget names
+        
+        The argument must be a layout with she same shape as the
+        initializer. Every element is a string with a name alias
+        for the widget in that position.
+        '''
         _layer_check(*lists, element_func=lambda x: isinstance(x, str),
                      errstr='Elements are not strings')
 
@@ -183,19 +207,19 @@ class Gui:
                     self._aliases[alias] = name
 
     def colors(self, *args):
-        '''Defines the GUI events'''
+        '''Defines the GUI colors'''
         pass
 
     def groups(self, *args):
-        '''Defines the GUI events'''
+        '''Defines the GUI widget groups'''
         pass
 
     def __getattr__(self, name):
         '''Returns a widget using its name or alias'''
-        
+
         if name in self._aliases:
             name = self._aliases[name]
-            
+
         if name in self._widgets:
             return self._widgets[name]
         else:
@@ -203,20 +227,27 @@ class Gui:
             raise AttributeError
 
     def __getitem__(self, name):
-        '''widget by coordinates [row,col]'''
+        '''Widget by coordinates [row,col]'''
         return self._layout.itemAtPosition(name[0], name[1]).widget()
 
     def all(group=''):
-        '''replicates command on all widgets'''
+        '''Replicates command on all widgets'''
         pass
 
     def window(self):
+        '''Builds a QT window containin all the Gui widgets and returns it'''
+
         window = QWidget()
         window.setLayout(self._layout)
         return window
 
     def import_into(self, obj):
+        '''
+        Widget importer
 
+        Adds all this Gui's widget to `obj` as new attributes. Aliases
+        defind with names() are also added.
+        '''
         widgets = {**self._widgets, **self._aliases}
 
         for name, widget in widgets.items():
@@ -226,14 +257,13 @@ class Gui:
                 setattr(obj, name, widget)
         
     def run(self, argv=None):
+        '''Display the Gui and start the event loop'''
+
         if argv is None:
             argv = []
         app = QApplication.instance()
         window = self.window()
         window.show()
         app.exec_()
-        
 
-        
-        
-        
+# ___oOo___
