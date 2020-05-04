@@ -43,7 +43,7 @@ def _normalize(x):
 
 
 def _bound_method(method):
-    return hasattr(method, 'im_self') and (method.im_self is not None)
+    return hasattr(method, '__self__')
 
 
 def _layer_check(*lists, element_func=lambda x: True, errstr=''):
@@ -189,7 +189,7 @@ class Gui:
 
         widgets = {**self._widgets, **self._aliases}
 
-        for name, widget in widgets:
+        for name, widget in widgets.items():
             if hasattr(obj, name):
                 raise Exception('Cannot import: duplicate name %s ' % name)
             else:
