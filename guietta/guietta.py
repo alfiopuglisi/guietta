@@ -97,23 +97,53 @@ class Gui:
         self._widgets = {}    # widgets by name
         self._aliases = {}    # name aliases (1 alias per name)
 
+        # Intermediate step that will be filled by replicating
+        # widgets when ___ and I are encountered.
+        self._step1 = []
+        for row in lists:
+            self._step1.append([])
+            for j in row:
+                self._step1[-1].append(None)
+
         for i, row in enumerate(lists):
             for j, element in enumerate(row):
 
                 # Special cases
                 if element == _:
                     element = QLabel('')
-                elif element == '___':
-                    raise NotImplementedError
-                elif element == 'I':
-                    raise NotImplementedError
+                elif element == ___:
+                    self._step1[i][j] = self._step1[i][j-1]
+                    continue
+                elif element == I:
+                    self._step1[i][j] = self._step1[i-1][j]
+                    continue
 
-                self._layout.addWidget(element, i, j)
-                text = _normalize(element.text())
-                while text in self._widgets:
-                    text += '_'
-                self._widgets[text] = element
+                self._step1[i][j] = element
 
+        # Now a multi-cell widget has been replicated both in rows
+        # and in columns. Look for repetitions to calculate spans.
+     
+        done = set()  # To avoid repeated insertions
+        for i, row in enumerate(lists):
+            for j, element in enumerate(row):
+
+                element = self._step1[i][j]
+                if element not in done:
+                    rowspan = 0
+                    colspan = 0
+                    for ii in range(i, len(lists)):
+                        if self._step1[ii][j] == element:
+                            rowspan += 1
+                    for jj in range(j, len(row)):
+                        if self._step1[i][jj] == element:
+                            colspan += 1
+
+                    self._layout.addWidget(element, i, j, rowspan, colspan)
+                    text = _normalize(element.text())
+                    while text in self._widgets:
+                        text += '_'
+                    self._widgets[text] = element
+                    done.add(element)
 
     def events(self, *lists):
         '''Defines the GUI events'''
