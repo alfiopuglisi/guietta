@@ -12,10 +12,6 @@ if QApplication.instance() is None:
     app = QApplication([])
 
 
-# Make a reference to ourselves.
-
-g = __import__(__name__)
-
 # Widget shortcuts
 
 B = QPushButton
@@ -43,7 +39,7 @@ def _iterable(x):
 
 
 def _normalize(x):
-    return ''.join(c for c in x if c.isalnum())
+    return ''.join(c for c in x if c.isalnum() or c == '_')
 
 
 def _bound_method(method):
@@ -113,7 +109,6 @@ class Gui:
                     raise NotImplementedError
 
                 self._layout.addWidget(element, i, j)
-                print(element)
                 text = _normalize(element.text())
                 while text in self._widgets:
                     text += '_'
