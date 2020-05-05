@@ -137,6 +137,7 @@ class Gui:
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
         self._aliases = {}    # name aliases (1 alias per name)
+        self._window = None
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
@@ -259,9 +260,10 @@ class Gui:
     def window(self):
         '''Builds a QT window containin all the Gui widgets and returns it'''
 
-        window = QWidget()
-        window.setLayout(self._layout)
-        return window
+        if self._window is None:
+            self._window = QWidget()
+            self._window.setLayout(self._layout)
+        return self._window
 
     def import_into(self, obj):
         '''
@@ -284,8 +286,7 @@ class Gui:
         if argv is None:
             argv = []
         app = QApplication.instance()
-        window = self.window()
-        window.show()
+        self.window().show()
         app.exec_()
 
 # ___oOo___
