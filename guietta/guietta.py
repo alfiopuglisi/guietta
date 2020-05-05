@@ -20,8 +20,6 @@ E = QLineEdit
 C = QCheckBox
 R = QRadioButton
 
-Quit = QPushButton('Quit')
-
 class _:
     pass
 
@@ -36,6 +34,29 @@ _specials = (_, ___, I)
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed'}
 
+# Standard buttons. We need to make a new instance every time one
+# is requested, otherwise we risk cross-window connections.
+
+class AutoConnectButton:
+    def __init__(self, name):
+        self._name = name
+
+    def get(self, connect_to=None):
+        button = QPushButton(self._name)
+        if connect_to:
+            button.clicked.connect(connect_to)
+        return button
+
+
+Quit = AutoConnectButton('Quit')
+Ok = AutoConnectButton('Ok')
+Cancel = AutoConnectButton('Cancel')
+Yes = AutoConnectButton('Yes')
+No = AutoConnectButton('No')
+
+
+# Some helper functions
+
 
 def _enumerate_lol(lol, skip_specials=True):
     for i, row in enumerate(lol):
@@ -43,9 +64,6 @@ def _enumerate_lol(lol, skip_specials=True):
             if skip_specials and element in _specials:
                 continue
             yield i, j, element
-            
-# Some helper functions
-
 
 def _iterable(x):
     return isinstance(x, Iterable) and not isinstance(x, str)
@@ -60,6 +78,11 @@ def _filter_lol(lol, func):
     for row in lol:
         for i in range(len(row)):
             row[i] = func(row[i])
+
+def _auto_connect(slot, x):
+    if isinstance(x, AutoConnectButton):
+        x = x.get(connect_to=slot)
+    return x
 
 def _check_widget(x):
     if not isinstance(x, QWidget) and x not in _specials:
@@ -136,6 +159,7 @@ class Gui:
 
         # Input argument checks
         _layer_check(lists)
+        _filter_lol(lists, functools.partial(_auto_connect, self.close))
         _filter_lol(lists, _convert_compacts)
         _filter_lol(lists, _check_widget)
 
@@ -147,7 +171,7 @@ class Gui:
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
         self._closed = False
-        Quit.clicked.connect(self.close)
+
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
