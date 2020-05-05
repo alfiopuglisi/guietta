@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, X, _, Gui, Quit
-from PyQt5.QtWidgets import QSlider
-from PyQt5.QtCore import Qt
+from guietta import B, E, HS, _, Gui, Quit
 
 
-s = QSlider(Qt.Horizontal)
 
 gui = Gui(
     
   [  'Enter expression:', E('expr')  , B('Eval!') ],
   [  'Result:'          , 'result'    , _          ],
-  [  X(s, 'myslider')      , _        , Quit       ] )
+  [  HS('myslider')      , _        , Quit       ] )
 
 
 while True:

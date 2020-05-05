@@ -7,6 +7,7 @@ from collections import Iterable
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
+from PyQt5.QtCore import Qt
 
 
 if QApplication.instance() is None:
@@ -19,6 +20,13 @@ B = QPushButton
 E = QLineEdit
 C = QCheckBox
 R = QRadioButton
+
+def HS(name):  # Horizontal slider
+    return X(QSlider(Qt.Horizontal), name)
+
+
+def VS(name):  # Vertical slider
+    return X(QSlider(Qt.Vertical), name)
 
 class _:
     pass
@@ -182,7 +190,6 @@ class Gui:
         self._event_queue = queue.Queue()
         self._closed = False
 
-
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
         step1 = [[None] * len(lists[0]) for i in range(len(lists))]
@@ -264,18 +271,17 @@ class Gui:
             try:
                 signal = getattr(item, _default_signals[item.__class__])
             except KeyError as e:
-                raise ValueError('Unsupported widget for events(): '+str(item.__class__)) \
-                      from e
+                raise ValueError('Unsupported widget for events(): %s ' %
+                                 str(item.__class__)) from e
 
             if _bound_method(slot, to_whom=self):
                 signal.connect(slot)
             else:
-                f = functools.partial(slot, self)
                 signal.connect(functools.partial(slot, self))
 
     def names(self, *lists):
         '''Overrides the default widget names
-        
+
         The argument must be a layout with she same shape as the
         initializer. Every element is a string with a name alias
         for the widget in that position.
@@ -344,7 +350,7 @@ class Gui:
                 raise Exception('Cannot import: duplicate name %s ' % name)
             else:
                 setattr(obj, name, widget)
-        
+
     def run(self, argv=None):
         '''Display the Gui and start the event loop'''
 
@@ -353,14 +359,14 @@ class Gui:
         app = QApplication.instance()
         self.window().show()
         app.exec_()
-        
+
     def close(self):
         if self._window:
             self._window.close()
 
     def get(self, block=True, timeout=None):
         '''Runs the GUI in queue mode
-        
+
         In queue mode, no callbacks are used. Insted, the user should call
         gui.get() in a loop to get the events and process them.
         The QT event loop will stop in between calls to gui.get(), so
@@ -389,7 +395,7 @@ class Gui:
         self.window().show()
         self._closed = False
         self._app.exec_()  # Start event loop
- 
+
         while True:
             try:
                 signal, widget, *args = self._event_queue.get()
