@@ -48,8 +48,8 @@ def _iterable(x):
 def _normalize(x):
     return ''.join(c for c in x if c.isalnum() or c == '_')
 
-def _bound_method(method):
-    return hasattr(method, '__self__')
+def _bound_method(method, to_whom):
+    return hasattr(method, '__self__') and method.__self__ == to_whom
 
 def _filter_lol(lol, func):
     for row in lol:
@@ -202,7 +202,7 @@ class Gui:
         for i, j, slot in _enumerate_lol(lists):
             item = self[i,j]
             signal = getattr(item, _default_signals[item.__class__])
-            if _bound_method(slot):
+            if _bound_method(slot, to_whom=self):
                 signal.connect(slot)
             else:
                 f = functools.partial(slot, self)
