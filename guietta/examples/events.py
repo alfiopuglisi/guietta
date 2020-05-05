@@ -6,11 +6,11 @@ def sim_on(gui):
     print('you clicked sim_on')
 
 def sim_off(gui):
-    print('you clicked sim_on')
+    print('you clicked sim_off')
 
 def move(gui):
     print('you clicked move')
-    print(gui.curpos.text())
+    print(gui.usrpos.text())
 
 gui = Gui(
     
@@ -30,10 +30,12 @@ gui.names(
     
     [  _            , _           , _      , _       ],
     [  _            ,  _         , _      , _       ], 
-    [  _            , 'curpos'      , _      , _       ] )
+    [  _            , 'usrpos'      , _      , _       ] )
 
 
 gui.run()
 
+# GUI widgets are available after window closing,
+print(gui.usrpos.text())
 
     
