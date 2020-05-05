@@ -32,7 +32,8 @@ class I:     # Vertical continuation
 _specials = (_, ___, I)
 
 _default_signals = {QPushButton: 'clicked',
-                    QLineEdit: 'returnPressed'}
+                    QLineEdit: 'returnPressed',
+                    QCheckBox: 'stateChanged'}
 
 # Standard buttons. We need to make a new instance every time one
 # is requested, otherwise we risk cross-window connections.
