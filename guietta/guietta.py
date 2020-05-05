@@ -270,6 +270,10 @@ class Gui:
         '''Replicates command on all widgets'''
         pass
 
+    def layout(self):
+        '''Returns the Gui layout, containing all the widgets'''
+        return self._layout
+
     def window(self):
         '''Builds a QT window containin all the Gui widgets and returns it'''
 
