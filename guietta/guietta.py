@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import queue
 import functools
 from collections import Iterable
 
@@ -138,6 +139,10 @@ class Gui:
         self._widgets = {}    # widgets by name
         self._aliases = {}    # name aliases (1 alias per name)
         self._window = None
+
+        self._get_handler = False   # These three for the get() method
+        self._event_queue = queue.Queue()
+        self._closed = False
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
@@ -288,5 +293,54 @@ class Gui:
         app = QApplication.instance()
         self.window().show()
         app.exec_()
+
+    def get(self, block=True, timeout=None):
+        '''Runs the GUI in queue mode
+        
+        In queue mode, no callbacks are used. Insted, the user should call
+        gui.get() in a loop to get the events and process them.
+        The QT event loop will stop in between calls to gui.get(), so
+        event processing should be quick.
+
+        get() will return (None, None) when the gui was closed.
+        '''
+        if self._closed:
+            return (None, None)
+
+        names_by_widget = {v: k for k, v in self._widgets.items()}
+
+        if not self._get_handler:
+            for widget in self._widgets.values():
+                klass = widget.__class__
+                if klass in _default_signals:
+                    signal = getattr(widget, _default_signals[klass])
+                    handler = functools.partial(self.event_handler,
+                                                signal,
+                                                widget)
+                    signal.connect(handler)
+            self._get_handler = True
+
+        self._app = QApplication.instance()
+        self.window().closeEvent = self.stop_handler
+        self.window().show()
+        self._closed = False
+        self._app.exec_()  # Start event loop
+ 
+        while True:
+            try:
+                signal, widget = self._event_queue.get()
+                if (signal, widget) == (None, None):
+                    self._closed = True
+                    return (None, None)
+                return (names_by_widget[widget], str(signal))
+            except queue.Empty:
+                self._app.exec_()  # Restart event loop
+
+    def event_handler(self, signal, widget):
+        self._event_queue.put((signal, widget))
+        self._app.exit()  # Stop event loop
+
+    def stop_handler(self, event):
+        self._event_queue.put((None, None))
 
 # ___oOo___
