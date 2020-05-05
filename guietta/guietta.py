@@ -28,8 +28,37 @@ class I:     # Vertical continuation
 
 _specials = (_, ___, I)
 
-_default_signals = { QPushButton: 'clicked',
-                    QLineEdit: 'returnPressed' }
+_default_signals = {QPushButton: 'clicked',
+                    QLineEdit: 'returnPressed'}
+
+# Compact element processing
+
+def _compact_label(x):
+    if isinstance(x, str) and not x.startswith('__'):
+        return QLabel(x)
+    else:
+        return x
+
+def _compact_button(x):
+    if _iterable(x) and isinstance(x[0], str):
+        return QPushButton(x[0])
+    else:
+        return x
+
+def _compact_lineedit(x):
+    if isinstance(x, str) and x.startswith('__') and x.endswith('__'):
+        return QLineEdit(x)
+    else:
+        return x
+
+_compacts = [_compact_label, 
+             _compact_button,
+             _compact_lineedit]
+
+def _convert_compat_to_widget(x):
+    for func in _compacts:
+        x = func(x)
+    return x
 
 # Some helper functions
 
@@ -45,13 +74,33 @@ def _normalize(x):
 def _bound_method(method):
     return hasattr(method, '__self__')
 
+def _filter_lol(lol, func):
+    for row in lol:
+        for i in range(len(row)):
+            row[i] = func(row[i])
 
-def _layer_check(*lists, element_func=lambda x: True, errstr=''):
+def _check_widget(x):
+    if not isinstance(x, QWidget) and x not in _specials:
+        raise ValueError('Element %s is not a widget' % x)
+    return x
+
+def _check_callable(x):
+    if not callable(x) and x not in _specials:
+        raise ValueError('Element %s is not callable' % x)
+    return x
+
+def _check_string(x):
+    if not isinstance(x, str) and x not in _specials:
+        raise ValueError('Element %s is not a string' % x)
+    return x
+
+
+def _layer_check(lol):
     '''
     Argument checking for layers.
 
     Checks that the arguments to a layer (__init__, events(), colors(), etc)
-    are well-formed: a series of lists of equal lengths
+    are well-formed: a series of lists of equal lengths.
     and with valid elements. In case on any error, an exception
     will be raised.
 
@@ -59,27 +108,19 @@ def _layer_check(*lists, element_func=lambda x: True, errstr=''):
     ----------
     *lists : any
         the arguments to check
-    element_func : callable, optional
-        the function to call for all elements, returning True if the
-        element is valid. If not set, elements are always valid
 
     Raises
     ------
     ValueError
-        In case the arugments are not lists.
-    TypeError
-        In case the lists have differing lengths or the elements are not valid
+        In case the arugments are not lists or the lengths differ
     '''
-    ncols = len(lists[0])
-    for row in lists:
+    ncols = len(lol[0])
+    for row in lol:
         if not _iterable(row):
             raise ValueError('Arguments are not lists (or iterables)')
 
         if len(row) != ncols:
             raise ValueError('Row lengths differ')
-        for element in row:
-            if not element_func(element) and element not in _specials:
-                raise TypeError(errstr)
 
 
 class Gui:
@@ -89,9 +130,9 @@ class Gui:
     organized in rows of equal length. All other method that expect
     lists (like events() or names()) will expect a series of list with
     the same length.
-    
+
     Every widget will be added as an attribute to this instance,
-    using the widget text as the attribute name (removing all special 
+    using the widget text as the attribute name (removing all special
     characters and only keeping letters, numbers and underscores.)
     '''
 
@@ -100,8 +141,9 @@ class Gui:
         # Input argument checks
         def must_be_widget(x):
             return isinstance(x, QWidget) or x in _specials
-        _layer_check(*lists, element_func=must_be_widget,
-                     errstr='Elements are not widgets')
+        _layer_check(lists)
+        _filter_lol(lists, _convert_compat_to_widget)
+        _filter_lol(lists, _check_widget)
 
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
@@ -109,15 +151,10 @@ class Gui:
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
-        self._step1 = []
-        for row in lists:
-            self._step1.append([])
-            for j in row:
-                self._step1[-1].append(None)
+        self._step1 = [[None] * len(lists[0]) for i in range(len(lists))]
 
         for i, row in enumerate(lists):
             for j, element in enumerate(row):
-
                 # Special cases. ___ and 'I' will replicate
                 # the widgets from the previous column and row.
                 if element == _:
@@ -133,7 +170,7 @@ class Gui:
 
         # Now a multi-cell widget has been replicated both in rows
         # and in columns. Look for repetitions to calculate spans.
-     
+
         done = set()  # To avoid repeated insertions
         for i, row in enumerate(lists):
             for j, element in enumerate(row):
@@ -159,7 +196,7 @@ class Gui:
     def events(self, *lists):
         '''Defines the GUI events
 
-        The argument must be a layout with she same shape as the
+        The argument must be a layout with the same shape as the
         initializer. Every element is the callback function to be
         called when the default signal of the widget is fired.
         
@@ -170,8 +207,8 @@ class Gui:
         # Input argument checks
         def must_be_callable(x):
             return callable(x) or x in _specials
-        _layer_check(*lists, element_func=must_be_callable,
-                     errstr='Elements are not callables')
+        _layer_check(lists)
+        _filter_lol(lists, _check_callable)
 
         for i, row in enumerate(lists):
             for j, slot in enumerate(row):
@@ -192,11 +229,10 @@ class Gui:
         initializer. Every element is a string with a name alias
         for the widget in that position.
         '''
-        _layer_check(*lists, element_func=lambda x: isinstance(x, str),
-                     errstr='Elements are not strings')
+        _layer_check(lists)
+        _filter_lol(lists, _check_string)
 
         names_by_widget = {v: k for k, v in self._widgets.items()}
-        print(names_by_widget)
 
         for i, row in enumerate(lists):
             for j, alias in enumerate(row):
