@@ -263,11 +263,11 @@ class Gui:
 
     def colors(self, *args):
         '''Defines the GUI colors'''
-        pass
+        raise NotImplementedError
 
     def groups(self, *args):
         '''Defines the GUI widget groups'''
-        pass
+        raise NotImplementedError
 
     def __getattr__(self, name):
         '''Returns a widget using its name or alias'''
@@ -287,7 +287,7 @@ class Gui:
 
     def all(group=''):
         '''Replicates command on all widgets'''
-        pass
+        raise NotImplementedError
 
     def layout(self):
         '''Returns the Gui layout, containing all the widgets'''
