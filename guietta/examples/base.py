@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, _, Gui
+from guietta import B, E, _, Gui, Quit
+
 
 gui = Gui(
     
-  [  'Simulation', B('On')     , B('Off'),   'sim_status' ],
-  [  'Position'  ,   'curpos'  , _       ,   'moving'     ], 
-  [  'Move to:'  , E('usrpos') , _       , B('Move')      ] )
+  [  'Enter expression:', '__expr__'  , B('Eval!') ],
+  [  'Result:'          , 'result'    , _          ],
+  [  _                  , _           , Quit       ] )
 
 gui.run()
 

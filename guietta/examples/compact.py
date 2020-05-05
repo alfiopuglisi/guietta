@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, _, Gui, ___
+from guietta import B, _, Gui, Quit
 
 # Compact definitions:
 # Labels are just strings (now standard)
@@ -9,10 +9,10 @@ from guietta import B, E, _, Gui, ___
 
 gui = Gui(
     
-  [ 'Simulation:', ['On']      , ['Off'], 'sim_status' ],
-  [ 'Position:'  , 'curpos'    , _      , 'moving'   ], 
-  [ 'Move to:'   , '__newpos__', ___    , ['Move']   ] )
+  [  'Enter expression:', '__expr__'   , ['Eval!'] ],
+  [  'Result:'          , 'result'    , _          ],
+  [  _                  , _           , Quit       ] )
 
 gui.run()
 
-print('New position: ', gui.newpos.text())
+print('Result: ', gui.result.text())

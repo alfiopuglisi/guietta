@@ -1,34 +1,28 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, _, Gui
+from guietta import B, E, _, Gui, Quit
 
-def sim_on(gui):
-    print('you clicked sim_on')
-
-def sim_off(gui):
-    print('you clicked sim_off')
-
-def move(gui):
-    print('you clicked move')
-    print(gui.usrpos.text())
+def do_eval(gui):
+    result = eval(gui.expr.text())
+    gui.result.setText(str(result))
 
 gui = Gui(
     
-  [  'Simulation', B('On')     , B('Off'),   'sim_status' ],
-  [  'Position'  ,   'curpos'  , _       ,   'moving'     ], 
-  [  'Move to:'  , E('usrpos') , _       , B('Move')      ] )
+  [  'Enter expression:', E('expr')  , B('Eval!') ],
+  [  'Result:'          , 'result'    , _          ],
+  [  _                  , _           , Quit       ] )
 
 
 gui.events(
     
-    [  _            , sim_on      , sim_off, _       ],
-    [  _            ,   _         , _      , _       ], 
-    [  _            , move        , _      , move   ] )
+    [  _            ,   do_eval   , do_eval    ], 
+    [  _            ,   _         , _          ], 
+    [  _            ,   _         , _          ], )
 
 
 gui.run()
 
 # GUI widgets are available after window closing,
-print(gui.usrpos.text())
+print(gui.result.text())
 
     

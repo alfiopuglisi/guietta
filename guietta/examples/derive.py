@@ -1,30 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, _, Gui
+from guietta import B, E, _, Gui, Quit
 
 class Test(Gui):
     
     def __init__(self):
         super().__init__(        
     
-  [  'Simulation', B('On')     , B('Off'),   'sim_status' ],
-  [  'Position'  ,   'curpos'  , _       ,   'moving'     ], 
-  [  'Move to:'  , E('usrpos') , _       , B('Move')      ] )
+  [  'Enter expression:', E('expr')   , B('Eval!') ],
+  [  'Result:'          , 'result'    , _          ],
+  [  _                  , _           , Quit       ] )
 
         self.events(
 
-    [  _            , self.sim_on , self.sim_off, _       ],
-    [  _            ,   _         , _           , _       ], 
-    [  _            , self.move   , _           , self.move   ] )
+    [  _            , self.do_eval, self.do_eval ], 
+    [  _            ,   _         , _            ], 
+    [  _            ,   _         , _            ], )
 
-    def sim_on(self):
-        self.sim_status.setText('On')
-
-    def sim_off(self):
-        self.sim_status.setText('Off')
-
-    def move(self):
-        print('Moving to:'+ self.usrpos.text())
+    def do_eval(self):
+        result = eval(self.expr.text())
+        self.result.setText(str(result))
 
 
 gui = Test()
