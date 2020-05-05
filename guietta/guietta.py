@@ -20,6 +20,8 @@ E = QLineEdit
 C = QCheckBox
 R = QRadioButton
 
+Quit = QPushButton('Quit')
+
 class _:
     pass
 
@@ -145,6 +147,7 @@ class Gui:
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
         self._closed = False
+        Quit.clicked.connect(self.close)
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
@@ -295,6 +298,10 @@ class Gui:
         app = QApplication.instance()
         self.window().show()
         app.exec_()
+        
+    def close(self):
+        if self._window:
+            self._window.close()
 
     def get(self, block=True, timeout=None):
         '''Runs the GUI in queue mode
