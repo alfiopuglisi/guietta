@@ -109,8 +109,7 @@ def _convert_compacts(x):
         return QPushButton(x[0])
 
     elif isinstance(x, str) and x.startswith('__') and x.endswith('__'):
-
-        return QLineEdit(x)
+        return QLineEdit(x[2:-2])
     else:
         return x  # No change
 
@@ -177,6 +176,11 @@ class Gui:
                 while text in self._widgets:
                     text += '_'
                 self._widgets[text] = element
+
+                # Special case for QLineEdit, make it empty.
+                if isinstance(element, QLineEdit):
+                    element.setText('')
+
                 done.add(element)
 
     def events(self, *lists):
