@@ -175,7 +175,7 @@ class Gui:
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
-        self._step1 = [[None] * len(lists[0]) for i in range(len(lists))]
+        step1 = [[None] * len(lists[0]) for i in range(len(lists))]
 
         for i, j, element in _enumerate_lol(lists, skip_specials=False):
             # Special cases. ___ and 'I' will replicate
@@ -183,27 +183,27 @@ class Gui:
             if element == _:
                 element = QLabel('')
             elif element == ___:
-                self._step1[i][j] = self._step1[i][j-1]
+                step1[i][j] = step1[i][j-1]
                 continue
             elif element == I:
-                self._step1[i][j] = self._step1[i-1][j]
+                step1[i][j] = step1[i-1][j]
                 continue
 
-            self._step1[i][j] = element
+            step1[i][j] = element
 
         # Now a multi-cell widget has been replicated both in rows
         # and in columns. Look for repetitions to calculate spans.
 
         done = set()  # To avoid repeated insertions
-        for i, j, element in _enumerate_lol(self._step1):
+        for i, j, element in _enumerate_lol(step1):
             if element not in done:
                 rowspan = 0
                 colspan = 0
                 for ii in range(i, len(lists)):
-                    if self._step1[ii][j] == element:
+                    if step1[ii][j] == element:
                         rowspan += 1
                 for jj in range(j, len(lists[0])):
-                    if self._step1[i][jj] == element:
+                    if step1[i][jj] == element:
                         colspan += 1
 
                 self._layout.addWidget(element, i, j, rowspan, colspan)
