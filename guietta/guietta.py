@@ -130,14 +130,16 @@ def _layer_check(lol):
 # Compact element processing
 
 def _convert_compacts(x):
-    if isinstance(x, str) and not x.startswith('__'):
+
+    if isinstance(x, str) and x.startswith('__') and x.endswith('__'):
+        return QLineEdit(x[2:-2])
+
+    elif isinstance(x, str):
         return QLabel(x)
 
     elif _iterable(x) and isinstance(x[0], str):
         return QPushButton(x[0])
 
-    elif isinstance(x, str) and x.startswith('__') and x.endswith('__'):
-        return QLineEdit(x[2:-2])
     else:
         return x  # No change
 
