@@ -14,9 +14,9 @@ def move(gui):
 
 gui = Gui(
     
-  [  _('Simulation'), B('On')    , B('Off'), _('sim_status') ],
-  [  _('Position'),   _('curpos'), _       , _('moving')     ], 
-  [  _('Move to:'),   E(''),       _       , B('Move')       ] )
+  [  'Simulation', B('On')     , B('Off'),   'sim_status' ],
+  [  'Position'  ,   'curpos'  , _       ,   'moving'     ], 
+  [  'Move to:'  , E('usrpos') , _       , B('Move')      ] )
 
 
 gui.events(
@@ -24,13 +24,6 @@ gui.events(
     [  _            , sim_on      , sim_off, _       ],
     [  _            ,   _         , _      , _       ], 
     [  _            , move        , _      , move   ] )
-
-
-gui.names(
-    
-    [  _            , _           , _      , _       ],
-    [  _            ,  _         , _      , _       ], 
-    [  _            , 'usrpos'      , _      , _       ] )
 
 
 gui.run()

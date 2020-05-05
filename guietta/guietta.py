@@ -17,9 +17,11 @@ if QApplication.instance() is None:
 
 B = QPushButton
 E = QLineEdit
-_ = QLabel
 C = QCheckBox
 R = QRadioButton
+
+class _:
+    pass
 
 class ___:   # Horizontal continuation
     pass
