@@ -6,7 +6,7 @@ from collections import Iterable
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
-from PyQt5.QtWidgets import QLineEdit, QGridLayout
+from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
 
 
 if QApplication.instance() is None:
@@ -29,11 +29,18 @@ class ___:   # Horizontal continuation
 class I:     # Vertical continuation
     pass
 
+class X:     # Generic unsupported widget
+    def __init__(self, widget, name):
+        self.widget = widget
+        self.name = name
+
 _specials = (_, ___, I)
+_special_instances = (X,)
 
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
-                    QCheckBox: 'stateChanged'}
+                    QCheckBox: 'stateChanged',
+                    QSlider: 'valueChanged'}
 
 # Standard buttons. We need to make a new instance every time one
 # is requested, otherwise we risk cross-window connections.
@@ -86,7 +93,7 @@ def _auto_connect(slot, x):
     return x
 
 def _check_widget(x):
-    if not isinstance(x, QWidget) and x not in _specials:
+    if not isinstance(x, QWidget) and x not in _specials and not isinstance(x, X):
         raise ValueError('Element %s is not a widget' % x)
     return x
 
@@ -209,11 +216,9 @@ class Gui:
                     if step1[i][jj] == element:
                         colspan += 1
 
-                self._layout.addWidget(element, i, j, rowspan, colspan)
-                text = _normalize(element.text())
-                while text in self._widgets:
-                    text += '_'
-                self._widgets[text] = element
+                widget, name = self._get_widget_and_name(element)
+                self._layout.addWidget(widget, i, j, rowspan, colspan)
+                self._widgets[name] = widget
 
                 # Special case for QLineEdit, make it empty.
                 if isinstance(element, QLineEdit):
@@ -221,13 +226,31 @@ class Gui:
 
                 done.add(element)
 
+    def _get_widget_and_name(self, element):
+        if isinstance(element, X):
+            return element.widget, element.name
+
+        name = None
+        for methodname in ['text', 'currentText']:
+            if hasattr(element, methodname):
+                name = getattr(element, methodname).__call__()
+                break
+        else:
+            raise ValueError('Unsupported widget. Please use X() instead.'
+                             'Widget was: ' + str(element))
+
+        name = _normalize(name)
+        while name in self._widgets:
+            name += '_'
+        return element, name
+
     def events(self, *lists):
         '''Defines the GUI events
 
         The argument must be a layout with the same shape as the
         initializer. Every element is the callback function to be
         called when the default signal of the widget is fired.
-        
+
         Bound methods are called without arguments. Functions and
         unbound methods will get a single argument with a reference
         to this Gui instance.
@@ -238,7 +261,12 @@ class Gui:
 
         for i, j, slot in _enumerate_lol(lists):
             item = self[i,j]
-            signal = getattr(item, _default_signals[item.__class__])
+            try:
+                signal = getattr(item, _default_signals[item.__class__])
+            except KeyError as e:
+                raise ValueError('Unsupported widget for events(): '+str(item.__class__)) \
+                      from e
+
             if _bound_method(slot, to_whom=self):
                 signal.connect(slot)
             else:
@@ -364,16 +392,16 @@ class Gui:
  
         while True:
             try:
-                signal, widget = self._event_queue.get()
+                signal, widget, *args = self._event_queue.get()
                 if (signal, widget) == (None, None):
                     self._closed = True
                     return (None, None)
-                return (names_by_widget[widget], str(signal))
+                return (names_by_widget[widget], signal.signal, *args)
             except queue.Empty:
                 self._app.exec_()  # Restart event loop
 
-    def event_handler(self, signal, widget):
-        self._event_queue.put((signal, widget))
+    def event_handler(self, signal, widget, *args):
+        self._event_queue.put((signal, widget, *args))
         self._app.exit()  # Stop event loop
 
     def stop_handler(self, event):
