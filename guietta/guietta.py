@@ -31,45 +31,22 @@ _specials = (_, ___, I)
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed'}
 
-# Compact element processing
 
-def _compact_label(x):
-    if isinstance(x, str) and not x.startswith('__'):
-        return QLabel(x)
-    else:
-        return x
-
-def _compact_button(x):
-    if _iterable(x) and isinstance(x[0], str):
-        return QPushButton(x[0])
-    else:
-        return x
-
-def _compact_lineedit(x):
-    if isinstance(x, str) and x.startswith('__') and x.endswith('__'):
-        return QLineEdit(x)
-    else:
-        return x
-
-_compacts = [_compact_label, 
-             _compact_button,
-             _compact_lineedit]
-
-def _convert_compat_to_widget(x):
-    for func in _compacts:
-        x = func(x)
-    return x
-
+def _enumerate_lol(lol, skip_specials=True):
+    for i, row in enumerate(lol):
+        for j, element in enumerate(row):
+            if skip_specials and element in _specials:
+                continue
+            yield i, j, element
+            
 # Some helper functions
 
 
 def _iterable(x):
     return isinstance(x, Iterable) and not isinstance(x, str)
 
-
 def _normalize(x):
     return ''.join(c for c in x if c.isalnum() or c == '_')
-
 
 def _bound_method(method):
     return hasattr(method, '__self__')
@@ -122,6 +99,21 @@ def _layer_check(lol):
         if len(row) != ncols:
             raise ValueError('Row lengths differ')
 
+# Compact element processing
+
+def _convert_compacts(x):
+    if isinstance(x, str) and not x.startswith('__'):
+        return QLabel(x)
+
+    elif _iterable(x) and isinstance(x[0], str):
+        return QPushButton(x[0])
+
+    elif isinstance(x, str) and x.startswith('__') and x.endswith('__'):
+
+        return QLineEdit(x)
+    else:
+        return x  # No change
+
 
 class Gui:
     '''Main GUI object.
@@ -139,10 +131,8 @@ class Gui:
     def __init__(self, *lists):
 
         # Input argument checks
-        def must_be_widget(x):
-            return isinstance(x, QWidget) or x in _specials
         _layer_check(lists)
-        _filter_lol(lists, _convert_compat_to_widget)
+        _filter_lol(lists, _convert_compacts)
         _filter_lol(lists, _check_widget)
 
         self._layout = QGridLayout()
@@ -153,45 +143,41 @@ class Gui:
         # widgets when ___ and I are encountered.
         self._step1 = [[None] * len(lists[0]) for i in range(len(lists))]
 
-        for i, row in enumerate(lists):
-            for j, element in enumerate(row):
-                # Special cases. ___ and 'I' will replicate
-                # the widgets from the previous column and row.
-                if element == _:
-                    element = QLabel('')
-                elif element == ___:
-                    self._step1[i][j] = self._step1[i][j-1]
-                    continue
-                elif element == I:
-                    self._step1[i][j] = self._step1[i-1][j]
-                    continue
+        for i, j, element in _enumerate_lol(lists, skip_specials=False):
+            # Special cases. ___ and 'I' will replicate
+            # the widgets from the previous column and row.
+            if element == _:
+                element = QLabel('')
+            elif element == ___:
+                self._step1[i][j] = self._step1[i][j-1]
+                continue
+            elif element == I:
+                self._step1[i][j] = self._step1[i-1][j]
+                continue
 
-                self._step1[i][j] = element
+            self._step1[i][j] = element
 
         # Now a multi-cell widget has been replicated both in rows
         # and in columns. Look for repetitions to calculate spans.
 
         done = set()  # To avoid repeated insertions
-        for i, row in enumerate(lists):
-            for j, element in enumerate(row):
+        for i, j, element in _enumerate_lol(self._step1):
+            if element not in done:
+                rowspan = 0
+                colspan = 0
+                for ii in range(i, len(lists)):
+                    if self._step1[ii][j] == element:
+                        rowspan += 1
+                for jj in range(j, len(lists[0])):
+                    if self._step1[i][jj] == element:
+                        colspan += 1
 
-                element = self._step1[i][j]
-                if element not in done:
-                    rowspan = 0
-                    colspan = 0
-                    for ii in range(i, len(lists)):
-                        if self._step1[ii][j] == element:
-                            rowspan += 1
-                    for jj in range(j, len(row)):
-                        if self._step1[i][jj] == element:
-                            colspan += 1
-
-                    self._layout.addWidget(element, i, j, rowspan, colspan)
-                    text = _normalize(element.text())
-                    while text in self._widgets:
-                        text += '_'
-                    self._widgets[text] = element
-                    done.add(element)
+                self._layout.addWidget(element, i, j, rowspan, colspan)
+                text = _normalize(element.text())
+                while text in self._widgets:
+                    text += '_'
+                self._widgets[text] = element
+                done.add(element)
 
     def events(self, *lists):
         '''Defines the GUI events
@@ -205,22 +191,17 @@ class Gui:
         to this Gui instance.
         '''
         # Input argument checks
-        def must_be_callable(x):
-            return callable(x) or x in _specials
         _layer_check(lists)
         _filter_lol(lists, _check_callable)
 
-        for i, row in enumerate(lists):
-            for j, slot in enumerate(row):
-
-                if slot not in _specials:
-                    item = self[i,j]
-                    signal = getattr(item, _default_signals[item.__class__])
-                    if _bound_method(slot):
-                        signal.connect(slot)
-                    else:
-                        f = functools.partial(slot, self)
-                        signal.connect(functools.partial(slot, self))
+        for i, j, slot in _enumerate_lol(lists):
+            item = self[i,j]
+            signal = getattr(item, _default_signals[item.__class__])
+            if _bound_method(slot):
+                signal.connect(slot)
+            else:
+                f = functools.partial(slot, self)
+                signal.connect(functools.partial(slot, self))
 
     def names(self, *lists):
         '''Overrides the default widget names
@@ -234,13 +215,10 @@ class Gui:
 
         names_by_widget = {v: k for k, v in self._widgets.items()}
 
-        for i, row in enumerate(lists):
-            for j, alias in enumerate(row):
-
-                if alias not in _specials:
-                    item = self[i,j]
-                    name = names_by_widget[item]
-                    self._aliases[alias] = name
+        for i, j, alias in _enumerate_lol(lists):
+            item = self[i,j]
+            name = names_by_widget[item]
+            self._aliases[alias] = name
 
     def colors(self, *args):
         '''Defines the GUI colors'''
