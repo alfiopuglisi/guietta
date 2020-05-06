@@ -51,7 +51,7 @@ def L(text_or_filename):     # Vertical continuation or image
         label = QLabel()
         label.setPixmap(QPixmap(text_or_filename))
     else:
-        label = QLabel()
+        label = QLabel(text_or_filename)
     return label
 
 def B(text_or_filename, name=''):
