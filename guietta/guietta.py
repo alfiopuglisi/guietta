@@ -20,7 +20,7 @@ List of widget shortcuts:
     X(widget, name)->   any valid QT widget, name set to 'name'
     _              ->   QLabel('')
     ___            ->   (three underscores) Horizontal widget span
-    I              ->   (capital letter i) vertical widget span
+    III            ->   (three capital letters i) vertical widget span
 '''
 
 import queue
@@ -53,7 +53,7 @@ def HS(name):  # Horizontal slider
 def VS(name):  # Vertical slider
     return X(QSlider(Qt.Vertical), name)
 
-class I:
+class III:
     pass
 
 class _:
@@ -94,7 +94,7 @@ class X:     # Generic unsupported widget
         self.widget = widget
         self.name = name
 
-_specials = (_, ___, I)
+_specials = (_, ___, III)
 _special_instances = (X,)
 
 _default_signals = {QPushButton: 'clicked',
@@ -250,21 +250,27 @@ class Gui:
             # Special cases. ___ and 'I' will replicate
             # the widgets from the previous column and row.
             if element == _:
-                # TODO maybe we can just do without any widget.
-                element = QLabel('')
-            elif element == ___:
-                step1[i][j] = step1[i][j-1]
-                continue
-            elif element == I:
-                step1[i][j] = step1[i-1][j]
-                continue
+                element = None
+            else:
+                if element == ___:
+                    if j > 0:
+                        element = step1[i][j-1]
+                    else:
+                        raise IndexError('___ at the beginning of a row')
+                if element == III:
+                    if i > 0:
+                        element = step1[i-1][j]
+                    else:
+                        raise IndexError('III at the start of a column')
+                if element == None:
+                    raise ValueError('Continuation from empty slot')
 
             step1[i][j] = element
 
         # Now a multi-cell widget has been replicated both in rows
         # and in columns. Look for repetitions to calculate spans.
 
-        done = set()  # To avoid repeated insertions
+        done = set([None])  # Skip empty elements
         for i, j, element in _enumerate_lol(step1):
             if element not in done:
                 rowspan = 0
