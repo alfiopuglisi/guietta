@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import queue
+import os.path
 import functools
 import itertools
 from collections import Iterable
@@ -8,6 +9,7 @@ from collections import Iterable
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt
 
 
@@ -29,14 +31,41 @@ def HS(name):  # Horizontal slider
 def VS(name):  # Vertical slider
     return X(QSlider(Qt.Vertical), name)
 
+class I:
+    pass
+
 class _:
     pass
 
 class ___:   # Horizontal continuation
     pass
 
-class I:     # Vertical continuation
-    pass
+global_images_dir = os.curdir
+global_aliases = {}
+
+def L(text_or_filename):     # Vertical continuation or image
+    if not os.path.isabs(text_or_filename):
+        text_or_filename = os.path.join(global_images_dir, text_or_filename)
+
+    if os.path.exists(text_or_filename):
+        label = QLabel()
+        label.setPixmap(QPixmap(text_or_filename))
+    else:
+        label = QLabel()
+    return label
+
+def B(text_or_filename, name=''):
+    if not os.path.isabs(text_or_filename):
+        fullpath = os.path.join(global_images_dir, text_or_filename)
+
+    if os.path.exists(fullpath):
+        button = QPushButton(QIcon(fullpath), name)
+        if name == '':
+            name, _ = os.path.splitext(text_or_filename)
+            global_aliases[button] = name
+            return button
+    else:
+        return QPushButton(text_or_filename)
 
 class X:     # Generic unsupported widget
     def __init__(self, widget, name):
@@ -152,10 +181,10 @@ def _convert_compacts(x):
         return QLineEdit(x[2:-2])
 
     elif isinstance(x, str):
-        return QLabel(x)
+        return L(x)   # Use L instead of QLabel to get automatic images
 
     elif _iterable(x) and isinstance(x[0], str):
-        return QPushButton(x[0])
+        return B(x[0])  # Use B instead of QPushButton to get automatic images
 
     else:
         return x  # No change
@@ -234,15 +263,22 @@ class Gui:
 
                 done.add(element)
 
+    @staticmethod
+    def set_images_dir(images_dir):
+        global global_images_dir
+        global_images_dir = images_dir
+
     def _get_widget_and_name(self, element):
         if isinstance(element, X):
             return element.widget, element.name
-
-        name = None
-        if hasattr(element, 'text'):
-            name = element.text()
+        
+        if element in global_aliases:
+            name = global_aliases[element]
         else:
-            name = element.__class__.__name__
+            if hasattr(element, 'text'):
+                name = element.text()
+            else:
+                name = element.__class__.__name__
 
         name = _normalize(name)
 
