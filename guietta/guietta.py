@@ -377,12 +377,30 @@ class Gui:
         The QT event loop will stop in between calls to gui.get(), so
         event processing should be quick.
 
-        get() will return (None, None) when the gui was closed.
+        Every time an event happens, get() will return a variable length tuple:
+
+            name, signal, *args = gui.get()
+
+        where `name` is widget name that generated the event, signal is the
+        PyQT signal description (a string), and args is a list with the
+        signal arguments. At least one argument is guaranteed. For signals
+        that have no arguments, args will be [False]. 
+
+        get() will return (None, None, None) after the gui is closed.
         '''
         if self._closed:
-            return (None, None)
+            return (None, None, None)
 
         names_by_widget = {v: k for k, v in self._widgets.items()}
+        alias_by_name = {v: k for k, v in self._aliases.items()}
+
+        def _widget_name_or_alias(widget):
+            '''Returns the alias or, failing that, the name for the widget'''
+            name = names_by_widget[widget]
+            if name in alias_by_name:
+                return alias_by_name[name]
+            else:
+                return name
 
         if not self._get_handler:
             for widget in self._widgets.values():
@@ -407,7 +425,8 @@ class Gui:
                 if (signal, widget) == (None, None):
                     self._closed = True
                     return (None, None)
-                return (names_by_widget[widget], signal.signal, *args)
+                name = _widget_name_or_alias(widget)
+                return (name, signal.signal, *args)
             except queue.Empty:
                 self._app.exec_()  # Restart event loop
 
