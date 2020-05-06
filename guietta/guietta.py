@@ -1,4 +1,27 @@
 # -*- coding: utf-8 -*-
+'''
+List of widget shortcuts:
+    
+    'text'         ->   QLabel('text')
+    'image.jpg'    ->   QLabel with QPixmap('image.jpg'), name set to 'image'
+    L('text')      ->   same as 'text'
+    L('image.jpg') ->   same as 'image.jpg'
+    ['text']       ->   QPushButton('text')
+    ['image.jpg']  ->   QPushButton(QIcon('image.jpg')), name set to 'image'
+    B('text')      ->   same as ['text']
+    B('image.jpg') ->   same as ['image.jpg']
+    '__name__'     ->   QLineEdit(''), name set to 'name'
+    E('text')      ->   QLineEdit('text')
+    C('text')      ->   QCheckBox('text')
+    R('text')      ->   QRadioButton('text')
+    HS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
+    VS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
+    widget         ->   any valid QT widget is accepted
+    X(widget, name)->   any valid QT widget, name set to 'name'
+    _              ->   QLabel('')
+    ___            ->   (three underscores) Horizontal widget span
+    I              ->   (capital letter i) vertical widget span
+'''
 
 import queue
 import os.path
@@ -26,7 +49,6 @@ R = QRadioButton
 
 def HS(name):  # Horizontal slider
     return X(QSlider(Qt.Horizontal), name)
-
 
 def VS(name):  # Vertical slider
     return X(QSlider(Qt.Vertical), name)
@@ -228,6 +250,7 @@ class Gui:
             # Special cases. ___ and 'I' will replicate
             # the widgets from the previous column and row.
             if element == _:
+                # TODO maybe we can just do without any widget.
                 element = QLabel('')
             elif element == ___:
                 step1[i][j] = step1[i][j-1]
@@ -271,7 +294,7 @@ class Gui:
     def _get_widget_and_name(self, element):
         if isinstance(element, X):
             return element.widget, element.name
-        
+
         if element in global_aliases:
             name = global_aliases[element]
         else:
@@ -420,9 +443,12 @@ class Gui:
         where `name` is widget name that generated the event, signal is the
         PyQT signal description (a string), and args is a list with the
         signal arguments. At least one argument is guaranteed. For signals
-        that have no arguments, args will be [False]. 
+        that have no arguments, args will be [False].
 
         get() will return (None, None, None) after the gui is closed.
+
+        TODO block and timeout are not supported yet. Always blocks, should
+        setup a QTimer instead.
         '''
         if self._closed:
             return (None, None, None)
