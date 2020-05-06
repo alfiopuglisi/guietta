@@ -33,7 +33,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 
 
 if QApplication.instance() is None:
@@ -122,6 +122,8 @@ Cancel = AutoConnectButton('Cancel')
 Yes = AutoConnectButton('Yes')
 No = AutoConnectButton('No')
 
+class Empty(Exception):
+    pass
 
 # Some helper functions
 
@@ -485,18 +487,29 @@ class Gui:
         self.window().closeEvent = self.stop_handler
         self.window().show()
         self._closed = False
+
+        if (block is False) or (timeout is not None):
+            if (block is False) or (timeout < 0):
+                timeout = 0
+            timer = QTimer()
+            timer.timeout.connect(self.timeout_handler)
+            timer.start(timeout * 1000)
+
         self._app.exec_()  # Start event loop
 
         while True:
             try:
                 signal, widget, *args = self._event_queue.get()
-                if (signal, widget) == (None, None):
+                if signal == 'timeout':
+                    raise Empty
+                elif signal is None:
                     self._closed = True
-                    return (None, None)
-                name = _widget_name_or_alias(widget)
-                return (name, signal.signal, *args)
+                    return (None, None, None)
+                else:
+                    name = _widget_name_or_alias(widget)
+                    return (name, signal.signal, *args)
             except queue.Empty:
-                self._app.exec_()  # Restart event loop
+                self._app.exec_()   # Restart event loop
 
     def event_handler(self, signal, widget, *args):
         self._event_queue.put((signal, widget, *args))
@@ -504,5 +517,9 @@ class Gui:
 
     def stop_handler(self, event):
         self._event_queue.put((None, None))
+
+    def timeout_handler(self):
+        self._event_queue.put(('timeout', None, None))
+        self._app.exit()  # Stop event loop
 
 # ___oOo___
