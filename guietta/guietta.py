@@ -2,6 +2,7 @@
 
 import queue
 import functools
+import itertools
 from collections import Iterable
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
@@ -238,17 +239,21 @@ class Gui:
             return element.widget, element.name
 
         name = None
-        for methodname in ['text', 'currentText']:
-            if hasattr(element, methodname):
-                name = getattr(element, methodname).__call__()
-                break
+        if hasattr(element, 'text'):
+            name = element.text()
         else:
-            raise ValueError('Unsupported widget. Please use X() instead.'
-                             'Widget was: ' + str(element))
+            name = element.__class__.__name__
 
         name = _normalize(name)
-        while name in self._widgets:
-            name += '_'
+
+        # If the name is a duplicate, auto-number it starting with 2.
+        if name in self._widgets:
+            for n in itertools.count(start=2):
+                new_name = name + str(n)
+                if new_name not in self._widgets:
+                    name = new_name
+                    break
+
         return element, name
 
     def events(self, *lists):
