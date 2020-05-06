@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
-from guietta import B, L, _, Gui
+from guietta import Gui, _
 
 Gui.set_images_dir(os.path.dirname(__file__))
 
