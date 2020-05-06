@@ -5,8 +5,11 @@ from PyQt5.QtWidgets import QSlider
 from PyQt5.QtCore import Qt
 
 def do_eval(gui):
-    result = eval(gui.expr.text())
-    gui.result.setText(str(result))
+    try:
+        result = eval(gui.expr.text())
+        gui.result.setText(str(result))
+    except Exception as e:
+        gui.result.setText('Error: '+str(e))
 
 def do_slider(gui, state):
     gui.result.setText('%d' % state)

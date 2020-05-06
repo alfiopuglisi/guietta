@@ -3,8 +3,11 @@
 from guietta import B, C, E, _, Gui, Quit
 
 def do_eval(gui):
-    result = eval(gui.expr.text())
-    gui.result.setText(str(result))
+    try:
+        result = eval(gui.expr.text())
+        gui.result.setText(str(result))
+    except Exception as e:
+        gui.result.setText('Error: '+str(e))
 
 def checkbox(gui, state):
     print('Checkbox state is', state)

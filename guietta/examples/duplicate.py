@@ -12,8 +12,11 @@ while True:
     name, signal, *args = gui.get()
 
     if name == 'Eval':
-        result = eval(gui.expr.text())
-        gui.result.setText(str(result))
+        try:
+            result = eval(gui.expr.text())
+            gui.result.setText(str(result))
+        except Exception as e:
+            gui.result.setText('Error: '+str(e))
 
     if name == None:
         break
