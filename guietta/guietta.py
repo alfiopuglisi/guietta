@@ -67,11 +67,11 @@ global_aliases = {}
 
 def L(text_or_filename):     # Vertical continuation or image
     if not os.path.isabs(text_or_filename):
-        text_or_filename = os.path.join(global_images_dir, text_or_filename)
+        fullpath = os.path.join(global_images_dir, text_or_filename)
 
-    if os.path.exists(text_or_filename):
+    if os.path.exists(fullpath):
         label = QLabel()
-        label.setPixmap(QPixmap(text_or_filename))
+        label.setPixmap(QPixmap(fullpath))
     else:
         label = QLabel(text_or_filename)
     return label
