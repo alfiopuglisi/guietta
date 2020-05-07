@@ -13,14 +13,6 @@ gui = Gui(
 
   )
 
-gui.names(
-    
-  [  _    , _   , _     ],
-  [ 'left', _   ,'right'],
-  [ _     , _   , _     ],   
-    
-    )
-
 while True:
     name, signal, *args = gui.get()
 
