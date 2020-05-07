@@ -7,7 +7,7 @@ List of widget shortcuts:
     L('text')      ->   same as 'text'
     L('image.jpg') ->   same as 'image.jpg'
     ['text']       ->   QPushButton('text')
-    ['image.jpg']  ->   QPushButton(QIcon('image.jpg')), name set to 'image'
+    ['image.jpg']  ->   QPushButton(QIcon('image.jpg'), ''), name set to 'image'
     B('text')      ->   same as ['text']
     B('image.jpg') ->   same as ['image.jpg']
     '__name__'     ->   QLineEdit(''), name set to 'name'
@@ -21,6 +21,11 @@ List of widget shortcuts:
     _              ->   QLabel('')
     ___            ->   (three underscores) Horizontal widget span
     III            ->   (three capital letters i) vertical widget span
+
+    QPushButtons with both image and text:
+    ['image.jpg', 'text']  ->   QPushButton(QIcon('image.jpg'), 'text')
+    B('image.jpg', 'text')      (name set to 'text') 
+
 '''
 
 import queue
@@ -62,40 +67,67 @@ class _:
 class ___:   # Horizontal continuation
     pass
 
-global_images_dir = os.curdir
-global_aliases = {}
+class X:
+    '''Generic unsupported widget'''
 
-def L(text_or_filename):     # Vertical continuation or image
-    if not os.path.isabs(text_or_filename):
-        fullpath = os.path.join(global_images_dir, text_or_filename)
-
-    if os.path.exists(fullpath):
-        label = QLabel()
-        label.setPixmap(QPixmap(fullpath))
-    else:
-        label = QLabel(text_or_filename)
-    return label
-
-def B(text_or_filename, name=''):
-    if not os.path.isabs(text_or_filename):
-        fullpath = os.path.join(global_images_dir, text_or_filename)
-
-    if os.path.exists(fullpath):
-        button = QPushButton(QIcon(fullpath), name)
-        if name == '':
-            name, _ = os.path.splitext(text_or_filename)
-            global_aliases[button] = name
-            return button
-    else:
-        return QPushButton(text_or_filename)
-
-class X:     # Generic unsupported widget
     def __init__(self, widget, name):
         self.widget = widget
         self.name = name
 
+
+class _DeferredCreationWidget:
+    '''Widget that will be create during Gui.__init__
+
+    The actual widget is returned by the create() method
+    '''
+
+    def __init__(self, *args):
+        self.args = args
+
+    def create(self):
+        pass
+
+
+class _ImageWidget(_DeferredCreationWidget):
+
+    def create(self, gui):
+        text_or_filename, *name = self.args
+        name = name[0] if name else ''
+
+        if not os.path.isabs(text_or_filename):
+            fullpath = os.path.join(gui.images_dir, text_or_filename)
+
+        if os.path.exists(fullpath):
+            widget = self.image_widget(fullpath, name)
+            if name == '':
+                name, _ = os.path.splitext(text_or_filename)
+            return X(widget, name)
+        else:
+            return self.normal_widget(text_or_filename)
+
+class L(_ImageWidget):
+    '''Text label or image label'''
+
+    def image_widget(self, fullpath, name):
+        label = QLabel()
+        label.setPixmap(QPixmap(fullpath))
+        return label
+
+    def normal_widget(self, text):
+        return QLabel(text)
+
+
+class B(_ImageWidget):
+    '''Text button or image button'''
+
+    def image_widget(self, fullpath, name):
+        return QPushButton(QIcon(fullpath), name)
+
+    def normal_widget(self, text):
+        return QPushButton(text)
+
+
 _specials = (_, ___, III)
-_special_instances = (X,)
 
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
@@ -155,7 +187,8 @@ def _auto_connect(slot, x):
     return x
 
 def _check_widget(x):
-    if not isinstance(x, QWidget) and x not in _specials and not isinstance(x, X):
+    if (not isinstance(x, QWidget) and (x not in _specials)) and not (isinstance(x, X)) or \
+       (isinstance(x, X) and not isinstance(x.widget, QWidget)):
         raise ValueError('Element %s is not a widget' % x)
     return x
 
@@ -168,6 +201,12 @@ def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
         raise ValueError('Element %s is not a string' % x)
     return x
+
+def _create_deferred(gui, x):
+    if isinstance(x, _DeferredCreationWidget):
+        return x.create(gui)
+    else:
+        return x
 
 
 def _layer_check(lol):
@@ -227,13 +266,7 @@ class Gui:
     characters and only keeping letters, numbers and underscores.)
     '''
 
-    def __init__(self, *lists):
-
-        # Input argument checks
-        _layer_check(lists)
-        _filter_lol(lists, functools.partial(_auto_connect, self.close))
-        _filter_lol(lists, _convert_compacts)
-        _filter_lol(lists, _check_widget)
+    def __init__(self, *lists, images_dir='.'):
 
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
@@ -244,6 +277,15 @@ class Gui:
         self._event_queue = queue.Queue()
         self._closed = False
         self._inverted = False
+
+        self.images_dir = images_dir
+
+        # Input argument checks
+        _layer_check(lists)
+        _filter_lol(lists, functools.partial(_auto_connect, self.close))
+        _filter_lol(lists, _convert_compacts)
+        _filter_lol(lists, functools.partial(_create_deferred, self))
+        _filter_lol(lists, _check_widget)
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
@@ -265,7 +307,7 @@ class Gui:
                         element = step1[i-1][j]
                     else:
                         raise IndexError('III at the start of a column')
-                if element == None:
+                if element is None:
                     raise ValueError('Continuation from empty slot')
 
             step1[i][j] = element
@@ -295,17 +337,10 @@ class Gui:
 
                 done.add(element)
 
-    @staticmethod
-    def set_images_dir(images_dir):
-        global global_images_dir
-        global_images_dir = images_dir
-
     def _get_widget_and_name(self, element):
-        if isinstance(element, X):
-            return element.widget, element.name
 
-        if element in global_aliases:
-            name = global_aliases[element]
+        if isinstance(element, X):
+            name, element = element.name, element.widget
         else:
             if hasattr(element, 'text'):
                 name = element.text()
@@ -386,6 +421,7 @@ class Gui:
         if name in self._widgets:
             return self._widgets[name]
         else:
+            print(self._widgets)
             # Default behaviour
             raise AttributeError
 

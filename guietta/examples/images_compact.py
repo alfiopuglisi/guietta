@@ -3,8 +3,6 @@
 import os.path
 from guietta import Gui, _
 
-Gui.set_images_dir(os.path.dirname(__file__))
-
 # Labels and button automatically load images if the filename is valid,
 # otherwise it will appear as text.
 #
@@ -15,6 +13,8 @@ gui = Gui(
   [  _             , 'up.png'   , _             ],
   [  ['left.png'] ,     _       , ['right.png'] ],
   [  _             , 'down.png' , _             ],
+  
+    images_dir = os.path.dirname(__file__)
 
   )
 
