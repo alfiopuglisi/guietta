@@ -26,6 +26,13 @@ List of widget shortcuts:
     ['image.jpg', 'text']  ->   QPushButton(QIcon('image.jpg'), 'text')
     B('image.jpg', 'text')      (name set to 'text') 
 
+Signals can be connected with gui.events() where every widget has:
+    
+    _                    = no connection
+    slot                 = reference to Python callable, using the default
+                          widget signal (if pre-defined, otherwise ValueError)
+    ('textEdited', slot) = signal name, reference to Python callable. 
+
 '''
 
 import queue
@@ -154,6 +161,8 @@ Cancel = AutoConnectButton('Cancel')
 Yes = AutoConnectButton('Yes')
 No = AutoConnectButton('No')
 
+# Empty queue exception for get()
+
 class Empty(Exception):
     pass
 
@@ -192,9 +201,15 @@ def _check_widget(x):
         raise ValueError('Element %s is not a widget' % x)
     return x
 
-def _check_callable(x):
-    if not callable(x) and x not in _specials:
-        raise ValueError('Element %s is not callable' % x)
+def _process_slots(x):
+    if x in _specials:
+        return x
+    elif callable(x):
+        return ('default', x)
+    elif _iterable(x) and isinstance(x[0], str) and callable(x[1]):
+        return x
+    elif x not in _specials:
+        raise ValueError('Element %s is not a valid slot assignment' % x)
     return x
 
 def _check_string(x):
@@ -363,8 +378,15 @@ class Gui:
         '''Defines the GUI events
 
         The argument must be a layout with the same shape as the
-        initializer. Every element is the callback function to be
-        called when the default signal of the widget is fired.
+        initializer. Every element is a tuple with:
+
+            ('signal_name', slot)
+
+        where 'signal_name' is the name of the QT signal to be connected,
+        and slot is any Python callable.
+
+        If just the default signal is wanted, 'signal_name' can be omitted
+        and just the callable slot is required (without using a tuple).
 
         Bound methods are called without arguments. Functions and
         unbound methods will get a single argument with a reference
@@ -372,15 +394,24 @@ class Gui:
         '''
         # Input argument checks
         _layer_check(lists)
-        _filter_lol(lists, _check_callable)
+        _filter_lol(lists, _process_slots)
 
-        for i, j, slot in _enumerate_lol(lists):
+        for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
-            try:
-                signal = getattr(item, _default_signals[item.__class__])
-            except KeyError as e:
-                raise ValueError('Unsupported widget for events(): %s ' %
-                                 str(item.__class__)) from e
+            signal_name, slot = pair
+
+            if signal_name == 'default':
+                try:
+                    signal = getattr(item, _default_signals[item.__class__])
+                except KeyError as e:
+                    raise ValueError('No default event for widget %s ' %
+                                     str(item.__class__)) from e
+            else:
+                try:
+                    signal = getattr(item, signal_name)
+                except AttributeError as e:
+                    raise ValueError('No signal %s found for widget %s' %
+                                     (signal_name, str(item.__class__))) from e
 
             if _bound_method(slot, to_whom=self):
                 signal.connect(slot)
