@@ -496,7 +496,7 @@ class Gui:
             if (block is False) or (timeout < 0):
                 timeout = 0
             QTimer.singleShot(timeout * 1000,
-                              Qt.PreciseTimer.
+                              Qt.PreciseTimer,
                               self.timeout_handler)
 
         self._app.exec_()  # Start event loop. Handler will stop it
