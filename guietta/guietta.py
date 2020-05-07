@@ -243,6 +243,7 @@ class Gui:
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
         self._closed = False
+        self._inverted = False
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and I are encountered.
@@ -436,6 +437,20 @@ class Gui:
         if self._window:
             self._window.close()
 
+    def _invert_dicts(self):
+        if not self._inverted:
+            self._names_by_widget = {v: k for k, v in self._widgets.items()}
+            self._alias_by_name = {v: k for k, v in self._aliases.items()}
+            self._inverted = True
+
+    def _widget_name_or_alias(self, widget):
+        '''Returns the alias or, failing that, the name for the widget'''
+        name = self._names_by_widget[widget]
+        if name in self._alias_by_name:
+            return self._alias_by_name[name]
+        else:
+            return name
+
     def get(self, block=True, timeout=None):
         '''Runs the GUI in queue mode
 
@@ -454,24 +469,13 @@ class Gui:
         that have no arguments, args will be [False].
 
         get() will return (None, None, None) after the gui is closed.
-
-        TODO block and timeout are not supported yet. Always blocks, should
-        setup a QTimer instead.
         '''
         if self._closed:
             return (None, None, None)
 
-        names_by_widget = {v: k for k, v in self._widgets.items()}
-        alias_by_name = {v: k for k, v in self._aliases.items()}
+        self._invert_dicts()
 
-        def _widget_name_or_alias(widget):
-            '''Returns the alias or, failing that, the name for the widget'''
-            name = names_by_widget[widget]
-            if name in alias_by_name:
-                return alias_by_name[name]
-            else:
-                return name
-
+        # Connect handler for all events
         if not self._get_handler:
             for widget in self._widgets.values():
                 klass = widget.__class__
@@ -491,32 +495,29 @@ class Gui:
         if (block is False) or (timeout is not None):
             if (block is False) or (timeout < 0):
                 timeout = 0
-            timer = QTimer()
-            timer.timeout.connect(self.timeout_handler)
-            timer.start(timeout * 1000)
+            QTimer.singleShot(timeout * 1000,
+                              Qt.PreciseTimer.
+                              self.timeout_handler)
 
-        self._app.exec_()  # Start event loop
+        self._app.exec_()  # Start event loop. Handler will stop it
 
-        while True:
-            try:
-                signal, widget, *args = self._event_queue.get()
-                if signal == 'timeout':
-                    raise Empty
-                elif signal is None:
-                    self._closed = True
-                    return (None, None, None)
-                else:
-                    name = _widget_name_or_alias(widget)
-                    return (name, signal.signal, *args)
-            except queue.Empty:
-                self._app.exec_()   # Restart event loop
+        signal, widget, *args = self._event_queue.get()
+        if signal == 'timeout':
+            raise Empty
+        elif signal is None:
+            self._closed = True
+            return (None, None, None)
+        else:
+            name = self._widget_name_or_alias(widget)
+            return (name, signal.signal, *args)
 
     def event_handler(self, signal, widget, *args):
         self._event_queue.put((signal, widget, *args))
         self._app.exit()  # Stop event loop
 
     def stop_handler(self, event):
-        self._event_queue.put((None, None))
+        self._event_queue.put((None, None, None))
+        self._app.exit()  # Stop event loop
 
     def timeout_handler(self):
         self._event_queue.put(('timeout', None, None))
