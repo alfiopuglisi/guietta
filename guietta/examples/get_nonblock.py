@@ -16,7 +16,7 @@ gui = Gui(
 
 while True:
     try:
-        name, signal, *args = gui.get(block=False)
+        name, event = gui.get(block=False)
     except Empty:
         counter += 1
         gui.counter.setText(str(counter))
@@ -27,10 +27,7 @@ while True:
             result = eval(gui.expr.text())
             gui.result.setText(str(result))
         except Exception as e:
-            gui.result.setText('Error: '+str(e))
-           
+            gui.result.setText('Error: ' + str(e))
 
-    elif name == None:
+    elif name is None:
         break
-
-

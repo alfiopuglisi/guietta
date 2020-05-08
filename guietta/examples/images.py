@@ -12,9 +12,9 @@ gui = Gui(
   images_dir = os.path.dirname(__file__))
 
 while True:
-    name, signal, *args = gui.get()
+    name, event = gui.get()
 
-    print(name, signal, args)
+    print(name, event)
 
     if name == None:
         break

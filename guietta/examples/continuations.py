@@ -41,9 +41,9 @@ else:
     sys.exit(-1)
 
 while True:
-    name, signal, *args = gui.get()
+    name, event = gui.get()
 
-    if name == None:
+    if name is None:
         break
 
 

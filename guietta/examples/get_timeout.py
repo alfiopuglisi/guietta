@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B,  _, Gui, Quit, Empty
+from guietta import B, _, Gui, Quit, Empty
 
 counter = 0
 
@@ -12,7 +12,7 @@ gui = Gui(
 
 while True:
     try:
-        name, signal, *args = gui.get(timeout=0.1)
+        name, event = gui.get(timeout=0.1)
     except Empty:
         counter += 1
         gui.counter.setText(str(counter))
@@ -23,10 +23,7 @@ while True:
             result = eval(gui.expr.text())
             gui.result.setText(str(result))
         except Exception as e:
-            gui.result.setText('Error: '+str(e))
-           
+            gui.result.setText('Error: ' + str(e))
 
-    elif name == None:
+    elif name is None:
         break
-
-

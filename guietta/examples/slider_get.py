@@ -12,14 +12,14 @@ gui = Gui(
 
 
 while True:
-    name, signal, *args = gui.get()
+    name, event = gui.get()
 
     if name == 'Eval':
         result = eval(gui.expr.text())
         gui.result.setText(str(result))
     
     if name == 'myslider':
-        gui.result.setText(str(args[0]))
+        gui.result.setText(str(event.args[0]))
 
     elif name == None:
         break

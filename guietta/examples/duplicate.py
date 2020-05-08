@@ -9,7 +9,7 @@ gui = Gui(
   [  _                  , _           , Quit       ] )
 
 while True:
-    name, signal, *args = gui.get()
+    name, event = gui.get()
 
     if name == 'Eval':
         try:

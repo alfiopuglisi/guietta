@@ -14,8 +14,8 @@ gui = Gui(
   )
 
 while True:
-    name, signal, *args = gui.get()
-    print(name, signal, args)
+    name, event = gui.get()
+    print(name, event)
     if name == 'newname':
         try:
             result = eval(gui.expr.text())

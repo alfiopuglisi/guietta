@@ -19,7 +19,7 @@ gui = Gui(
   )
 
 while True:
-    name, signal, *args = gui.get()
+    name, event = gui.get()
 
     if name == 'left':
         print('Clicked left!')

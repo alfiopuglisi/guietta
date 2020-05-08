@@ -39,7 +39,7 @@ import queue
 import os.path
 import functools
 import itertools
-from collections import Iterable
+from collections import Iterable, namedtuple
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
@@ -155,6 +155,8 @@ No = AutoConnectButton('No')
 
 class Empty(Exception):
     pass
+
+Event = namedtuple('Event', 'signal args')
 
 # Some helper functions
 
@@ -521,14 +523,14 @@ class Gui:
 
         Every time an event happens, get() will return a variable length tuple:
 
-            name, signal, *args = gui.get()
+            name, event = gui.get()
 
-        where `name` is widget name that generated the event, signal is the
-        PyQT signal description (a string), and args is a list with the
-        signal arguments. At least one argument is guaranteed. For signals
-        that have no arguments, args will be [False].
+        where `name` is widget name that generated the event, and event
+        is a `namedtuple` with members `signal` (the PyQT signal)
+        and `args` which is a list of signal arguments, which may be empty
+        for signals without arguments.
 
-        get() will return (None, None, None) after the gui is closed.
+        get() will return (None, None) after the gui is closed.
         '''
         if self._closed:
             return (None, None, None)
@@ -566,10 +568,10 @@ class Gui:
             raise Empty
         elif signal is None:
             self._closed = True
-            return (None, None, None)
+            return (None, None)
         else:
             name = self._widget_name_or_alias(widget)
-            return (name, signal.signal, *args)
+            return (name, Event(signal, args))
 
     def event_handler(self, signal, widget, *args):
         self._event_queue.put((signal, widget, *args))
