@@ -16,6 +16,8 @@ List of widget shortcuts:
     R('text')      ->   QRadioButton('text')
     HS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
     VS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
+    Separator      ->   Horizontal separator
+    VSeparator     ->   Vertical separator
     widget         ->   any valid QT widget is accepted
     (widget, name) ->   any valid QT widget, name set to 'name'
     _              ->   QLabel('')
@@ -72,6 +74,18 @@ class _:
 
 class ___:   # Horizontal continuation
     pass
+
+class _Separator(QFrame):
+    '''horizontal seperator'''
+    def __init__(self, linetype):
+        super().__init__()
+        self.setFrameShadow(QFrame.Sunken)
+        self.setFrameShape(linetype)
+        self.setMinimumWidth(1)
+        self.setFixedHeight(10)
+
+Separator = _Separator(QFrame.HLine)
+VSeparator = _Separator(QFrame.VLine)
 
 class _DeferredCreationWidget:
     '''Widget that will be created during Gui.__init__
@@ -219,30 +233,27 @@ def _create_deferred(gui, x):
 
 def _layer_check(lol):
     '''
-    Argument checking for layers.
-
-    Checks that the arguments to a layer (__init__, events(), colors(), etc)
-    are well-formed: a series of lists of equal lengths.
-    and with valid elements. In case on any error, an exception
-    will be raised.
-
-    Parameters
-    ----------
-    *lists : any
-        the arguments to check
-
-    Raises
-    ------
-    ValueError
-        In case the arugments are not lists or the lengths differ
+    1. Check that all elements are iterables
+    2. Take the longest
+    3. Expand single-elements ones to the longest using ___
+    4. Check that all rows have the same length, raise ValueError if not.
     '''
-    ncols = len(lol[0])
     for row in lol:
         if not _iterable(row):
             raise ValueError('Arguments are not lists (or iterables)')
 
+    row_lengths = [len(row) for row in lol]
+    ncols = max(row_lengths)
+
+    for row in lol:
+        if len(row) == 1:
+            row += [___] * (ncols - len(row))
+
+    for row in lol:
         if len(row) != ncols:
-            raise ValueError('Row lengths differ')
+            raise ValueError('Row lengths differ:'
+                             ' row has %d elements instead of %d' %
+                             (len(row), ncols))
 
 # Compact element processing
 

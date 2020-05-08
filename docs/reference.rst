@@ -67,6 +67,10 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | VS('name')      |   QSlider(Qt::Horizontal)             | 'name'      |
 +-----------------+---------------------------------------+-------------+
+| Separator       |   Horizontal separator                |             |
++-----------------+---------------------------------------+-------------+
+| VSeparator      |   Vertical separator                  |             |
++-----------------+---------------------------------------+-------------+
 | widget          |   any valid QT widget is accepted     | none        |
 +-----------------+---------------------------------------+-------------+
 | (widget, 'name')|   any valid QT widget is accepted     | 'name'      |
