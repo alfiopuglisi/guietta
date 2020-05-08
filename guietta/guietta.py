@@ -75,7 +75,7 @@ class ___:   # Horizontal continuation
     pass
 
 class _Separator(QFrame):
-    '''horizontal seperator'''
+    '''horizontal or vertical seperator'''
     def __init__(self, linetype):
         super().__init__()
         self.setFrameShadow(QFrame.Sunken)
@@ -310,11 +310,11 @@ class Gui:
         _filter_lol(lists, _check_widget)
 
         # Intermediate step that will be filled by replicating
-        # widgets when ___ and I are encountered.
+        # widgets when ___ and III are encountered.
         step1 = [[None] * len(lists[0]) for i in range(len(lists))]
 
         for i, j, element in _enumerate_lol(lists, skip_specials=False):
-            # Special cases. ___ and 'I' will replicate
+            # Special cases. ___ and 'III' will replicate
             # the widgets from the previous column and row.
             if element == _:
                 element = None
@@ -533,7 +533,7 @@ class Gui:
         The QT event loop will stop in between calls to gui.get(), so
         event processing should be quick.
 
-        Every time an event happens, get() will return a variable length tuple:
+        Every time an event happens, get() will return a tuple:
 
             name, event = gui.get()
 
@@ -573,7 +573,7 @@ class Gui:
                               Qt.PreciseTimer,
                               self._timeout_handler)
 
-        self._app.exec_()  # Start event loop. Handler will stop it
+        self._app.exec_()  # Start event loop. Handlers will stop it
 
         signal, widget, *args = self._event_queue.get()
         if signal == 'timeout':
