@@ -549,14 +549,14 @@ class Gui:
                 klass = widget.__class__
                 if klass in _default_signals:
                     signal = getattr(widget, _default_signals[klass])
-                    handler = functools.partial(self.event_handler,
+                    handler = functools.partial(self._event_handler,
                                                 signal,
                                                 widget)
                     signal.connect(handler)
             self._get_handler = True
 
         self._app = QApplication.instance()
-        self.window().closeEvent = self.stop_handler
+        self.window().closeEvent = self._stop_handler
         self.window().show()
         self._closed = False
 
@@ -565,7 +565,7 @@ class Gui:
                 timeout = 0
             QTimer.singleShot(timeout * 1000,
                               Qt.PreciseTimer,
-                              self.timeout_handler)
+                              self._timeout_handler)
 
         self._app.exec_()  # Start event loop. Handler will stop it
 
@@ -579,15 +579,15 @@ class Gui:
             name = self._widget_name_or_alias(widget)
             return (name, Event(signal, args))
 
-    def event_handler(self, signal, widget, *args):
+    def _event_handler(self, signal, widget, *args):
         self._event_queue.put((signal, widget, *args))
         self._app.exit()  # Stop event loop
 
-    def stop_handler(self, event):
+    def _stop_handler(self, event):
         self._event_queue.put((None, None, None))
         self._app.exit()  # Stop event loop
 
-    def timeout_handler(self):
+    def _timeout_handler(self):
         self._event_queue.put(('timeout', None, None))
         self._app.exit()  # Stop event loop
 
