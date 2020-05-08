@@ -1,0 +1,151 @@
+
+Introduction
+============
+
+The problem with GUIs
+---------------------
+
+If you have worked with any GUI framework, like the excellent QT library,
+you will have noticed a very common problem: in order to make
+difficult things possible, simple things become difficult.
+
+Guietta makes simple GUIs *simple*. For example, suppose that you want to
+make a simple GUI where the user enters two numbers, and when a button is
+clicked some complicated operation is performed, say, the numbers
+are added up, and the result displayed back to ths user.
+With plain QT, you have two choices:
+
+1. Start Qt Designer up and build your GUI using drag and drop. Designer saves
+   an .ui file, which can be converted using pyuic to a python module,
+   which can be imported into your program....
+2. Skip Designer (after all, it's a simple GUI), and do things
+   programmatically: create a layout, then create your three or four widgets,
+   then add them to the layout. Ah wait, should we build a row with
+   HBoxLayout and join several of them into a VBoxLayout, or is it the
+   other way around? How things are going to line up?
+ 
+It's not over. In both cases, now define a function that does
+the calculation, connect the right signal to the right slot, etc etc....
+
+I've given up already.
+
+Using Guietta's compact syntax, here is how the layout is done::
+
+    from guietta import _, Gui, Quit
+    
+    gui = Gui(
+        
+      [  'Enter numbers:', '__num1__' , '+' , '__num2__',  ['Calculate'] ],
+      [  'Result:  -->'  , 'result'   ,  _  ,     _     ,       _        ],
+      [  _               ,    _       ,  _  ,     _     ,      Quit      ] )
+    
+can you *see* the GUI? Right in the code? We can add then the behaviour
+with a few more lines::
+
+    while True:
+        name, event = gui.get()
+    
+        if name == 'Calculate':
+            result = float(gui.num1.text()) + float(gui.num2.text())
+            gui.result.setText(str(result))
+    
+        elif name is None:
+            break
+
+That's enough to get it working! That was 16 lines in total, including
+a few blank ones for clarity.
+
+Of course users are devious, so as a minimum we should add some exception
+catching where the result is calculated, otherwise the code will break if
+something that is not a number is found in the input widgets. But that's
+true in any program.
+
+What Guietta is
+---------------
+
+Guietta is actually a thin wrapper over QT. It allows one to quickly
+create QT widgets, assemble them into a layout, and make it responsive
+to user input. All standard QT features are available, including
+signals/slots and the event loop (which was not used in the previous example),
+so if you know enough QT, you can do some pretty amazing things.
+
+And if you have a big graphical program with multiple windows and pop-ups,
+you can use a subset of Guietta to simplify the window creation where
+it makes sense.
+
+It also works in the other direction: if you have a big complicated custom
+QT widget, and you need to insert it into a dialog together with some
+more buttons, Guietta can do that too.
+
+What Guietta is not
+-------------------
+
+Guietta is a tool for making *simple* GUIs. You will not able to use it
+to make the next version of Photoshop, not even the next version of
+MS Paint. It does not do super-fancy layouts, or cinema-like animations.
+
+Aren't you just copying from PySimpleGUI?
+-----------------------------------------
+
+PySimpeGUI is a much bigger project with a bigger goal: produce a
+GUI framework that can work with multiple interfaces (QT, TKinter, even
+web-based) and is easy to use for the beginner. PySimpleGUI's simplified
+syntax was a great idea and it was the inspiration for Guietta,
+but it stopped to soon. Guietta goes much further in simplifying things,
+and as a result it has less features than PySimpleGUI.
+
+What was that gui.get() in the example??
+----------------------------------------
+Taking another idea from PySimpleGUI, Guietta has a non-callback mode
+where a GUI acts exactly as a queue of events: programs will instantiate
+the GUI and call get() in a loop to be notified when an event has happened.
+
+This greatly simplifies the creation of very simple GUIs. As soon as
+you have more than two or three buttons, the traditional callback approach
+becomes more manageable, and of course Guietta of course fully supports it::
+
+
+    from guietta import _, Gui, Quit
+    
+    def calculate(gui):
+        try:
+            result = float(gui.num1.text()) + float(gui.num2.text())
+        except Exception as e:
+            result = 'Error: ' + str(e)
+        gui.result.setText(str(result))
+            
+    gui = Gui(
+        
+      [  'Enter numbers:', '__num1__' , '+' , '__num2__',  ['Calculate'] ],
+      [  'Result:  -->'  , 'result'   ,  _  ,     _     ,       _        ],
+      [  _               ,    _       ,  _  ,     _     ,      Quit      ] )
+    
+    gui.events(
+    
+        [  _             ,    _       ,  _  ,   _       ,    calculate   ],
+        [  _             ,    _       ,  _  ,   _       ,    _           ],
+        [  _             ,    _       ,  _  ,   _       ,    _           ] )
+    
+    gui.run()
+
+As you can see, an additional events() layer was created, with exactly
+the same layout as the first one. In this layout the callback function
+for each widget is defined, and it's easy to see that the *calculate*
+function is called when the *Calculate* button is clicked.
+
+In QT-speak, we have just connected the *calculate* slot to the signal
+emitted by the Calculate button. We did not specifty the signal, so Guietta
+chose a default signal, which for buttons happens to be *clicked()* and it's
+what we want in almost all cases. The slot will be called with our gui
+as its first argument, plus any other argument that the signal might have,
+in this case none.
+
+
+
+The layout doesn't respect PEP8!
+--------------------------------
+
+Alas, no. Laying out GUIs with code was not foreseen when PEP8 was written.
+
+
+
