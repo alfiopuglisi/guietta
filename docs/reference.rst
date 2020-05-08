@@ -7,34 +7,41 @@ Layout
 
 Guietta uses a grid layout (*QGridLayout*). Number of rows and columns
 is automatically calculated from the input. There is typically one widget
-per grid cel (or *_* if the cell is empty), but widgets may span multiple
-rows and/or columns as described below.
+per grid cell ( **_** will result in an empty cell), but widgets may span
+multiple rows and/or columns as described below.
 
 Syntax
 ++++++
 
 To create a layout, instantiate a *guietta.Gui* object and pass it a series
-of list. Each list correspond to a row of widgets. All lists must have
+of lists. Each list corresponds to a row of widgets. All lists must have
 the same length.
+
+As a special case, if a list contains a single widget, the widget will
+be expanded to fill the whole row. This is useful for titles and
+horizontal separators.
 
 Widgets
 -------
 
 Here is the complete widget set::
 
-    from guietta import Gui, B, E, L, HS, VS
+    from guietta import Gui, B, E, L, HS, VS, Separator, VSeparator
     from guietta import Yes, No, Ok, Cancel, Quit, _, ___, III
     
     gui = Gui(
     
-       [ 'A big GUI with all of Guietta''s widgets', ___, ___, ___],
+       [ '<center>A big GUI with all of Guietta''s widgets</center>'],
+       [ Separator ],
     
       [ 'Label'    , 'imagelabel.jpeg' , L('another label')  , VS('slider1')],
-      [ 'button 1' ,    ['button 2']   , B('another Button') ,     III      ],
-      [ '__edit__' ,  E('an edit box') , _                   ,     III      ],
+      [  _         ,     ['button']    , B('another button') ,     III      ],
+      [ '__edit__' ,  E('an edit box') , _                   ,   VSeparator ],
       [   Quit     ,        Ok         , Cancel              ,     III      ],
       [    Yes     ,        No         , _                   ,     III      ],
-      [  HS('slider2'),    ___         , ___                 ,      _       ])
+      [  HS('slider2'),    ___         , ___                 ,      _       ] )
+        
+    dummy = gui.get()
   
 
 
@@ -71,9 +78,9 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | VSeparator      |   Vertical separator                  |             |
 +-----------------+---------------------------------------+-------------+
-| widget          |   any valid QT widget is accepted     | none        |
+| widget          |   any valid QT widget                 | none        |
 +-----------------+---------------------------------------+-------------+
-| (widget, 'name')|   any valid QT widget is accepted     | 'name'      |
+| (widget, 'name')|   any valid QT widget                 | 'name'      |
 +-----------------+---------------------------------------+-------------+
 
 Buttons support both images and texts at the same time:
@@ -123,7 +130,7 @@ Rules:
 Signals
 -------
 
-Signals can be connected with gui.events() where every widget has:
+Signals can be connected with gui.events() where each widget has:
     
 +----------------------+-----------------------------------------------------+
 | Syntax               | Meaning                                             |
@@ -136,7 +143,18 @@ Signals can be connected with gui.events() where every widget has:
 | ('textEdited', slot) | tuple(signal name, Python callable)                 |
 +----------------------+-----------------------------------------------------+
 
+Table of default signals:
 
++----------------------+----------------------------------+
+| Widget               | Signal                           |
++======================+==================================+    
+|  QPushButton         |  clicked()                       |
++----------------------+----------------------------------+
+|  QLineEdit           |  returnPressed()                 |
++----------------------+----------------------------------+
+|  QCheckBox           |  stateChanged()                  |
++----------------------+----------------------------------+
+|  QSlider             |  valueChanged(int)               |
++----------------------+----------------------------------+
 
-
-
+Widgets not listed in this table must be connected using the tuple syntax.

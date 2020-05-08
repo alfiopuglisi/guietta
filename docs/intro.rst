@@ -10,15 +10,15 @@ you will have noticed a very common problem: in order to make
 difficult things possible, simple things become difficult.
 
 Guietta makes simple GUIs *simple*. For example, suppose that you want to
-make a simple GUI where the user enters two numbers, and when a button is
+make a GUI where the user enters two numbers, and when a button is
 clicked some complicated operation is performed, say, the numbers
-are added up, and the result displayed back to ths user.
+are added up, and the result displayed back to the user.
 With plain QT, you have two choices:
 
 1. Start Qt Designer up and build your GUI using drag and drop. Designer saves
    an .ui file, which can be converted using pyuic to a python module,
    which can be imported into your program....
-2. Skip Designer (after all, it's a simple GUI), and do things
+2. Skip Designer and do things
    programmatically: create a layout, then create your three or four widgets,
    then add them to the layout. Ah wait, should we build a row with
    HBoxLayout and join several of them into a VBoxLayout, or is it the
@@ -29,15 +29,15 @@ the calculation, connect the right signal to the right slot, etc etc....
 
 I've given up already.
 
-Using Guietta's compact syntax, here is how the layout is done::
+Using Guietta's compact syntax, here is how the layout looks like::
 
     from guietta import _, Gui, Quit
     
     gui = Gui(
         
-      [  'Enter numbers:', '__num1__' , '+' , '__num2__',  ['Calculate'] ],
-      [  'Result:  -->'  , 'result'   ,  _  ,     _     ,       _        ],
-      [  _               ,    _       ,  _  ,     _     ,      Quit      ] )
+      [  'Enter numbers:', '__a__'  , '+' , '__b__',  ['Calculate'] ],
+      [  'Result:  -->'  , 'result' ,  _  ,    _   ,       _        ],
+      [  _               ,    _     ,  _  ,    _   ,      Quit      ] )
     
 can you *see* the GUI? Right in the code? We can add then the behaviour
 with a few more lines::
@@ -46,7 +46,7 @@ with a few more lines::
         name, event = gui.get()
     
         if name == 'Calculate':
-            result = float(gui.num1.text()) + float(gui.num2.text())
+            result = float(gui.a.text()) + float(gui.b.text())
             gui.result.setText(str(result))
     
         elif name is None:
@@ -103,38 +103,38 @@ the GUI and call get() in a loop to be notified when an event has happened.
 
 This greatly simplifies the creation of very simple GUIs. As soon as
 you have more than two or three buttons, the traditional callback approach
-becomes more manageable, and of course Guietta of course fully supports it::
+becomes more manageable, and Guietta of course fully supports it::
 
 
     from guietta import _, Gui, Quit
     
-    def calculate(gui):
+    def calc(gui):
         try:
-            result = float(gui.num1.text()) + float(gui.num2.text())
+            result = float(gui.a.text()) + float(gui.b.text())
         except Exception as e:
             result = 'Error: ' + str(e)
         gui.result.setText(str(result))
             
     gui = Gui(
         
-      [  'Enter numbers:', '__num1__' , '+' , '__num2__',  ['Calculate'] ],
-      [  'Result:  -->'  , 'result'   ,  _  ,     _     ,       _        ],
-      [  _               ,    _       ,  _  ,     _     ,      Quit      ] )
+      [  'Enter numbers:', '__a__'  , '+' , '__b__',  ['Calculate'] ],
+      [  'Result:  -->'  , 'result' ,  _  ,    _   ,       _        ],
+      [  _               ,    _     ,  _  ,    _   ,      Quit      ] )
     
     gui.events(
     
-        [  _             ,    _       ,  _  ,   _       ,    calculate   ],
-        [  _             ,    _       ,  _  ,   _       ,    _           ],
-        [  _             ,    _       ,  _  ,   _       ,    _           ] )
+        [  _             ,    _     ,  _  ,   _    ,    calc   ],
+        [  _             ,    _     ,  _  ,   _    ,    _      ],
+        [  _             ,    _     ,  _  ,   _    ,    _      ] )
     
     gui.run()
 
 As you can see, an additional events() layer was created, with exactly
 the same layout as the first one. In this layout the callback function
-for each widget is defined, and it's easy to see that the *calculate*
+for each widget is defined, and it's easy to see that the *calc*
 function is called when the *Calculate* button is clicked.
 
-In QT-speak, we have just connected the *calculate* slot to the signal
+In QT-speak, we have just connected the *calc* slot to the signal
 emitted by the Calculate button. We did not specifty the signal, so Guietta
 chose a default signal, which for buttons happens to be *clicked()* and it's
 what we want in almost all cases. The slot will be called with our gui
