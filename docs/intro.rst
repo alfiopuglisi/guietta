@@ -66,7 +66,8 @@ What Guietta is
 Guietta is actually a thin wrapper over QT. It allows one to quickly
 create QT widgets, assemble them into a layout, and make it responsive
 to user input. All standard QT features are available, including
-signals/slots and the event loop (which was not used in the previous example),
+signals/slots and the event loop (which was not used in the previous
+example, but see below),
 so if you know enough QT, you can do some pretty amazing things.
 
 And if you have a big graphical program with multiple windows and pop-ups,
