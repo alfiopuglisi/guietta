@@ -81,7 +81,7 @@ class ___:   # Horizontal continuation
     pass
 
 class _DeferredCreationWidget:
-    '''Widget that will be create during Gui.__init__
+    '''Widget that will be created during Gui.__init__
 
     The actual widget is returned by the create() method
     '''
@@ -142,7 +142,7 @@ _default_signals = {QPushButton: 'clicked',
 # Standard buttons. We need to make a new instance every time one
 # is requested, otherwise we risk cross-window connections.
 
-class AutoConnectButton(_DeferredCreationWidget):
+class _AutoConnectButton(_DeferredCreationWidget):
 
     def create(self, connect_to=None):
         button = QPushButton(self.args[0])
@@ -151,11 +151,11 @@ class AutoConnectButton(_DeferredCreationWidget):
         return button
 
 
-Quit = AutoConnectButton('Quit')
-Ok = AutoConnectButton('Ok')
-Cancel = AutoConnectButton('Cancel')
-Yes = AutoConnectButton('Yes')
-No = AutoConnectButton('No')
+Quit = _AutoConnectButton('Quit')
+Ok = _AutoConnectButton('Ok')
+Cancel = _AutoConnectButton('Cancel')
+Yes = _AutoConnectButton('Yes')
+No = _AutoConnectButton('No')
 
 # Empty queue exception for get()
 
@@ -189,7 +189,7 @@ def _filter_lol(lol, func):
             row[i] = func(row[i])
 
 def _auto_connect(slot, x):
-    if isinstance(x, AutoConnectButton):
+    if isinstance(x, _AutoConnectButton):
         x = x.create(connect_to=slot)
     return x
 
