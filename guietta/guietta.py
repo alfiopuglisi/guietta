@@ -136,12 +136,10 @@ _default_signals = {QPushButton: 'clicked',
 # Standard buttons. We need to make a new instance every time one
 # is requested, otherwise we risk cross-window connections.
 
-class AutoConnectButton:
-    def __init__(self, name):
-        self._name = name
+class AutoConnectButton(_DeferredCreationWidget):
 
-    def get(self, connect_to=None):
-        button = QPushButton(self._name)
+    def create(self, connect_to=None):
+        button = QPushButton(self.args[0])
         if connect_to:
             button.clicked.connect(connect_to)
         return button
@@ -184,7 +182,7 @@ def _filter_lol(lol, func):
 
 def _auto_connect(slot, x):
     if isinstance(x, AutoConnectButton):
-        x = x.get(connect_to=slot)
+        x = x.create(connect_to=slot)
     return x
 
 def _check_widget(x):
