@@ -453,7 +453,6 @@ class Gui:
         if name in self._widgets:
             return self._widgets[name]
         else:
-            print(self._widgets)
             # Default behaviour
             raise AttributeError
 
@@ -482,7 +481,7 @@ class Gui:
         Widget importer
 
         Adds all this Gui's widget to `obj` as new attributes. Aliases
-        defind with names() are also added.
+        defined with names() are also added.
         '''
         widgets = {**self._widgets, **self._aliases}
 
