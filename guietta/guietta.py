@@ -43,7 +43,6 @@ import functools
 import itertools
 from collections import Iterable, namedtuple
 
-# Workaround for readthedocs.io build without a DISPLAY
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QFrame
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
@@ -60,16 +59,16 @@ E = QLineEdit
 C = QCheckBox
 R = QRadioButton
 
-def HS(name):  # Horizontal slider
+def HS(name):
     return (QSlider(Qt.Horizontal), name)
 
-def VS(name):  # Vertical slider
+def VS(name):
     return (QSlider(Qt.Vertical), name)
 
-class III:
+class III:   # Vertical continuation
     pass
 
-class _:
+class _:     # Empty grid cell
     pass
 
 class ___:   # Horizontal continuation
