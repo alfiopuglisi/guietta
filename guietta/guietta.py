@@ -330,7 +330,7 @@ class Gui:
                     else:
                         raise IndexError('III at the start of a column')
                 if element is None:
-                    raise ValueError('Continuation from empty slot')
+                    raise ValueError('Continuation from empty grid cell')
 
             step1[i][j] = element
 
@@ -498,11 +498,9 @@ class Gui:
             else:
                 setattr(obj, name, widget)
 
-    def run(self, argv=None):
+    def run(self):
         '''Display the Gui and start the event loop'''
 
-        if argv is None:
-            argv = []
         app = QApplication.instance()
         self.window().show()
         app.exec_()
@@ -545,7 +543,7 @@ class Gui:
         get() will return (None, None) after the gui is closed.
         '''
         if self._closed:
-            return (None, None, None)
+            return (None, None)
 
         self._invert_dicts()
 
