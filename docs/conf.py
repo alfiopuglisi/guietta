@@ -15,13 +15,13 @@ import os
 import sys
 import re
 sys.path.insert(0, os.path.abspath('..'))
-from arte.__version__ import __version__
+from guietta.__version__ import __version__
 
 # -- Project information -----------------------------------------------------
 
-project = 'arte'
-copyright = '2020, Arcetri Adaptive Optics'
-author = 'Arcetri Adaptive Optics'
+project = 'guietta'
+copyright = '2020, Alfio Timothy Puglisi'
+author = 'Alfio Timothy Puglisi'
 
 # -- General configuration ---------------------------------------------------
 
