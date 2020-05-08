@@ -14,8 +14,7 @@
 import os
 import sys
 import re
-sys.path.insert(0, os.path.abspath('..'))
-from guietta.__version__ import __version__
+
 
 # -- Project information -----------------------------------------------------
 
@@ -25,10 +24,28 @@ author = 'Alfio Timothy Puglisi'
 
 # -- General configuration ---------------------------------------------------
 
-# NEEDED FOR PYQT5
+# Mock the PyQt5 module
 # Otherwise the build on readthedocs.io fails!
 
-autodoc_mock_imports = ['sip', 'PyQt5', 'PyQt5.QtGui', 'PyQt5.QtCore', 'PyQt5.QtWidgets']
+class QtWidgets:
+    QPushButton = QLabel = QLineEdit = QCheckBox = None
+    QRadioButton = QSlider = QWidget = QGridLayout = None
+    class QFrame:
+        HLine = VLine = Sunken = None
+        def setFrameShadow(self, a): pass
+        def setFrameShape(self, a): pass
+        def setMinimumWidth(self, a): pass
+        def setFixedHeight(self, a): pass
+    class QApplication:
+        @staticmethod
+        def instance():
+            return 1    # With this, the main file will not trty
+                        # to create a new one.
+
+sys.modules['PyQt5.QtWidgets'] = QtWidgets
+
+sys.path.insert(0, os.path.abspath('..'))
+from guietta.__version__ import __version__
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom

@@ -42,21 +42,14 @@ import itertools
 from collections import Iterable, namedtuple
 
 # Workaround for readthedocs.io build without a DISPLAY
-if os.getenv('DISPLAY'):
-    from PyQt5.QtWidgets import QApplication, QLabel, QWidget
-    from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
-    from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
-    from PyQt5.QtGui import QPixmap, QIcon
-    from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QFrame
+from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
+from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtCore import Qt, QTimer
 
-    if QApplication.instance() is None:
-        app = QApplication([])
-else:
-    QPushButton = object
-    QLineEdit = object
-    QCheckBox = object
-    QRadioButton = object
-    QSlider = object
+if QApplication.instance() is None:
+    app = QApplication([])
 
 # Widget shortcuts
 
