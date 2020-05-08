@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, _, Gui, Quit
+from guietta import B, _, Gui, Quit
 
 
 gui = Gui(

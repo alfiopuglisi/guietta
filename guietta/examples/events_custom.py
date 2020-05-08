@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, E, _, Gui, Quit
+from guietta import E, _, Gui, Quit
 
 def do_eval(gui):
     try:

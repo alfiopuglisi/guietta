@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from guietta import B, _, Gui, Quit
+from guietta import _, Gui, Quit
 
 # Compact definitions:
 # Labels are just strings (now standard)
