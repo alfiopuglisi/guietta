@@ -81,8 +81,12 @@ class _Separator(QFrame):
         super().__init__()
         self.setFrameShadow(QFrame.Sunken)
         self.setFrameShape(linetype)
-        self.setMinimumWidth(1)
-        self.setFixedHeight(10)
+        if linetype == QFrame.HLine:
+            self.setMinimumWidth(1)
+            self.setFixedHeight(10)
+        else:
+            self.setMinimumHeight(1)
+            self.setFixedWidth(10)
 
 Separator = _Separator(QFrame.HLine)
 VSeparator = _Separator(QFrame.VLine)
