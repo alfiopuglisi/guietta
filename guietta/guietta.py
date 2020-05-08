@@ -17,7 +17,7 @@ List of widget shortcuts:
     HS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
     VS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
     widget         ->   any valid QT widget is accepted
-    X(widget, name)->   any valid QT widget, name set to 'name'
+    (widget, name) ->   any valid QT widget, name set to 'name'
     _              ->   QLabel('')
     ___            ->   (three underscores) Horizontal widget span
     III            ->   (three capital letters i) vertical widget span
@@ -60,10 +60,10 @@ C = QCheckBox
 R = QRadioButton
 
 def HS(name):  # Horizontal slider
-    return X(QSlider(Qt.Horizontal), name)
+    return (QSlider(Qt.Horizontal), name)
 
 def VS(name):  # Vertical slider
-    return X(QSlider(Qt.Vertical), name)
+    return (QSlider(Qt.Vertical), name)
 
 class III:
     pass
@@ -73,14 +73,6 @@ class _:
 
 class ___:   # Horizontal continuation
     pass
-
-class X:
-    '''Generic unsupported widget'''
-
-    def __init__(self, widget, name):
-        self.widget = widget
-        self.name = name
-
 
 class _DeferredCreationWidget:
     '''Widget that will be create during Gui.__init__
@@ -108,7 +100,7 @@ class _ImageWidget(_DeferredCreationWidget):
             widget = self.image_widget(fullpath, name)
             if name == '':
                 name, _ = os.path.splitext(text_or_filename)
-            return X(widget, name)
+            return (widget, name)
         else:
             return self.normal_widget(text_or_filename)
 
@@ -196,10 +188,12 @@ def _auto_connect(slot, x):
     return x
 
 def _check_widget(x):
-    if (not isinstance(x, QWidget) and (x not in _specials)) and not (isinstance(x, X)) or \
-       (isinstance(x, X) and not isinstance(x.widget, QWidget)):
-        raise ValueError('Element %s is not a widget' % x)
-    return x
+    if (type(x) == tuple) and (len(x) == 2):
+        if ((isinstance(x[0], QWidget)) and (isinstance(x[1], str))):
+            return x
+    if isinstance(x, QWidget) or (x in _specials):
+        return x
+    raise ValueError('Element %s must be a widget or a (widget, name) tuple' % x)
 
 def _process_slots(x):
     if x in _specials:
@@ -354,13 +348,14 @@ class Gui:
 
     def _get_widget_and_name(self, element):
 
-        if isinstance(element, X):
-            name, element = element.name, element.widget
+        if isinstance(element, tuple):
+            widget, name = element
         else:
-            if hasattr(element, 'text'):
-                name = element.text()
+            widget = element
+            if hasattr(widget, 'text'):
+                name = widget.text()
             else:
-                name = element.__class__.__name__
+                name = widget.__class__.__name__
 
         name = _normalize(name)
 
@@ -372,7 +367,7 @@ class Gui:
                     name = new_name
                     break
 
-        return element, name
+        return widget, name
 
     def events(self, *lists):
         '''Defines the GUI events
