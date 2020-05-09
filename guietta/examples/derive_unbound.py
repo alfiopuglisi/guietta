@@ -3,10 +3,8 @@
 from guietta import B, E, _, Gui, Quit
 
 def do_eval(gui):
-    try:
-        gui.result = eval(gui.expr)
-    except Exception as e:
-        gui.result = 'Error: ' + str(e)
+    gui.result = eval(gui.expr)
+
 
 
 class Test(Gui):

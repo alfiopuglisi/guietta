@@ -18,10 +18,8 @@ class Test(Gui):
     [  _            ,   _         , _            ], )
 
     def do_eval(self):
-        try:
-            self.result = eval(self.expr)
-        except Exception as e:
-            self.result = 'Error: ' + str(e)
+        self.result = eval(self.expr)
+
 
 
 gui = Test()
