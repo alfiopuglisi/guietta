@@ -43,9 +43,9 @@ import functools
 import itertools
 from collections import Iterable, namedtuple
 
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QFrame
-from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox
-from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
@@ -74,6 +74,8 @@ class _:     # Empty grid cell
 class ___:   # Horizontal continuation
     pass
 
+_specials = (_, ___, III)
+
 class _Separator(QFrame):
     '''horizontal or vertical seperator'''
     def __init__(self, linetype):
@@ -89,6 +91,35 @@ class _Separator(QFrame):
 
 Separator = _Separator(QFrame.HLine)
 VSeparator = _Separator(QFrame.VLine)
+
+
+# Properties used for fast widget access: gui.a is a property to
+# get and set a's text or value
+
+def _text_property(name):
+    '''Property for text-based widgets (labels, buttons)'''
+
+    def get_text(self):
+        return self._widgets[name].text()
+
+    def set_text(self, value):
+        self._widgets[name].setText(str(value))
+
+    return property(get_text, set_text, doc='Text of widget ' + str(name))
+
+def _value_property(name, typ):
+    '''Property for value-based widgets (sliders)'''
+
+    def get_value(self):
+        return self._widgets[name].value()
+
+    def set_value(self, value):
+        self._widgets[name].setValue(typ(value))
+
+    return property(get_value, set_value, doc='Value of widget ' + str(name))
+
+###
+## Widgets that are created during GUI __init__ and not by the main script
 
 class _DeferredCreationWidget:
     '''Widget that will be created during Gui.__init__
@@ -141,14 +172,6 @@ class B(_ImageWidget):
     def normal_widget(self, text):
         return QPushButton(text)
 
-
-_specials = (_, ___, III)
-
-_default_signals = {QPushButton: 'clicked',
-                    QLineEdit: 'returnPressed',
-                    QCheckBox: 'stateChanged',
-                    QSlider: 'valueChanged'}
-
 # Standard buttons. We need to make a new instance every time one
 # is requested, otherwise we risk cross-window connections.
 
@@ -167,12 +190,20 @@ Cancel = _AutoConnectButton('Cancel')
 Yes = _AutoConnectButton('Yes')
 No = _AutoConnectButton('No')
 
+### Signals
+
+_default_signals = {QPushButton: 'clicked',
+                    QLineEdit: 'returnPressed',
+                    QCheckBox: 'stateChanged',
+                    QSlider: 'valueChanged'}
+
+Event = namedtuple('Event', 'signal args')
+
 # Empty queue exception for get()
 
 class Empty(Exception):
     pass
 
-Event = namedtuple('Event', 'signal args')
 
 # Some helper functions
 
@@ -288,7 +319,7 @@ class Gui:
     characters and only keeping letters, numbers and underscores.)
     '''
 
-    def __init__(self, *lists, images_dir='.'):
+    def __init__(self, *lists, images_dir='.', create_properties=True):
 
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
@@ -354,10 +385,21 @@ class Gui:
                 self._widgets[name] = widget
 
                 # Special case for QLineEdit, make it empty.
-                if isinstance(element, QLineEdit):
-                    element.setText('')
+                if isinstance(widget, QLineEdit):
+                    widget.setText('')
+
+                if create_properties:
+                    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
+                        setattr(self.__class__, name, _text_property(name))
+                    if isinstance(widget, QAbstractSlider):
+                        setattr(self.__class__, name, _value_property(name, int))
 
                 done.add(element)
+    
+    @property
+    def widgets(self):
+        '''Read-only property with the widgets dictionary'''
+        return self._widgets
 
     def _get_widget_and_name(self, element):
 
@@ -450,7 +492,7 @@ class Gui:
     def groups(self, *args):
         '''Defines the GUI widget groups'''
         raise NotImplementedError
-
+        
     def __getattr__(self, name):
         '''Returns a widget using its name or alias'''
 

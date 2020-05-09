@@ -30,6 +30,7 @@ author = 'Alfio Timothy Puglisi'
 class QtWidgets:
     QPushButton = QLabel = QLineEdit = QCheckBox = None
     QRadioButton = QSlider = QWidget = QGridLayout = None
+    QAbstractSlider = QAbstractButton = None
     class QFrame:
         HLine = VLine = Sunken = None
         def setFrameShadow(self, a): pass
