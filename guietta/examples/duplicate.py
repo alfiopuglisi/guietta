@@ -13,10 +13,9 @@ while True:
 
     if name == 'Eval':
         try:
-            result = eval(gui.expr.text())
-            gui.result.setText(str(result))
+            gui.result = eval(gui.expr)
         except Exception as e:
-            gui.result.setText('Error: '+str(e))
+            gui.result = 'Error: ' + str(e)
 
     if name == None:
         break

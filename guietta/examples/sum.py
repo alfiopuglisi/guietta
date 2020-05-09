@@ -12,12 +12,7 @@ while True:
     name, event = gui.get()
 
     if name == 'Calculate':
-        try:
-            result = float(gui.num1.text()) + float(gui.num2.text())
-        except Exception as e:
-            result = 'Error: ' + str(e)
-
-        gui.result.setText(str(result))
+        gui.result = float(gui.num1) + float(gui.num2)
 
     elif name is None:
         break

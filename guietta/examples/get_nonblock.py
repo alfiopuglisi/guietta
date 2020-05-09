@@ -19,15 +19,14 @@ while True:
         name, event = gui.get(block=False)
     except Empty:
         counter += 1
-        gui.counter.setText(str(counter))
+        gui.counter = counter
         continue
 
     if name == 'Eval':
         try:
-            result = eval(gui.expr.text())
-            gui.result.setText(str(result))
+            gui.result = eval(gui.expr)
         except Exception as e:
-            gui.result.setText('Error: ' + str(e))
+            gui.result = 'Error: ' + str(e)
 
     elif name is None:
         break

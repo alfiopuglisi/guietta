@@ -4,10 +4,9 @@ from guietta import B, C, E, _, Gui, Quit
 
 def do_eval(gui):
     try:
-        result = eval(gui.expr.text())
-        gui.result.setText(str(result))
+        gui.result = eval(gui.expr)
     except Exception as e:
-        gui.result.setText('Error: '+str(e))
+        gui.result = 'Error: ' + str(e)
 
 def checkbox(gui, state):
     print('Checkbox state is', state)
@@ -29,6 +28,6 @@ gui.events(
 gui.run()
 
 # GUI widgets are available after window closing,
-print(gui.result.text())
+print(gui.result)
 
     

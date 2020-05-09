@@ -15,4 +15,4 @@ gui = Gui(
 
 gui.run()
 
-print('Result: ', gui.result.text())
+print('Result: ', gui.result)

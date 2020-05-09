@@ -46,13 +46,12 @@ with a few more lines::
         name, event = gui.get()
     
         if name == 'Calculate':
-            result = float(gui.a.text()) + float(gui.b.text())
-            gui.result.setText(str(result))
-    
+            gui.result = float(gui.a) + float(gui.b)
+
         elif name is None:
             break
 
-That's enough to get it working! That was 16 lines in total, including
+That's enough to get it working! That was 15 lines in total, including
 a few blank ones for clarity.
 
 Of course users are devious, so as a minimum we should add some exception
@@ -108,12 +107,8 @@ becomes more manageable, and Guietta of course fully supports it::
 
     from guietta import _, Gui, Quit
     
-    def calc(gui):
-        try:
-            result = float(gui.a.text()) + float(gui.b.text())
-        except Exception as e:
-            result = 'Error: ' + str(e)
-        gui.result.setText(str(result))
+    def calc(gui, dummy):
+        gui.result = float(gui.a) + float(gui.b)
             
     gui = Gui(
         
@@ -138,9 +133,13 @@ In QT-speak, we have just connected the *calc* slot to the signal
 emitted by the Calculate button. We did not specifty the signal, so Guietta
 chose a default signal, which for buttons happens to be *clicked()* and it's
 what we want in almost all cases. The slot will be called with our gui
-as its first argument, plus any other argument that the signal might have,
-in this case none.
+as its first argument, plus any other argument that the signal might have.
+Since QT adds a "checked" argument even to buttons that are not checkboxes,
+we have added a dummy argument.
 
+This method also has the advantage that Guietta handles the exception
+catching in callbacks. In this example, if the float() conversion fails,
+a error popup will be shown. This behaviour is configurable.
 
 
 The layout doesn't respect PEP8!

@@ -5,14 +5,10 @@ from PyQt5.QtWidgets import QSlider
 from PyQt5.QtCore import Qt
 
 def do_eval(gui):
-    try:
-        result = eval(gui.expr.text())
-        gui.result.setText(str(result))
-    except Exception as e:
-        gui.result.setText('Error: '+str(e))
-
+    gui.result = eval(gui.expr)
+ 
 def do_slider(gui, state):
-    gui.result.setText('%d' % state)
+    gui.result = '%d' % state
 
 s = QSlider(Qt.Horizontal)
 
@@ -33,6 +29,6 @@ gui.events(
 gui.run()
 
 # GUI widgets are available after window closing,
-print(gui.result.text())
+print(gui.result)
 
     

@@ -15,11 +15,10 @@ while True:
     name, event = gui.get()
 
     if name == 'Eval':
-        result = eval(gui.expr.text())
-        gui.result.setText(str(result))
+        gui.result = eval(gui.expr)
     
     if name == 'myslider':
-        gui.result.setText(str(event.args[0]))
+        gui.result = event.args[0]
 
     elif name == None:
         break

@@ -18,10 +18,9 @@ while True:
     print(name, event)
     if name == 'newname':
         try:
-            result = eval(gui.expr.text())
-            gui.result.setText(str(result))
+            gui.result = eval(gui.expr)
         except Exception as e:
-            gui.result.setText('Error: '+str(e))
+            gui.result = 'Error: ' + str(e)
 
     elif name == None:
         break

@@ -19,10 +19,9 @@ class Test(Gui):
 
     def do_eval(self):
         try:
-            result = eval(self.expr.text())
-            self.result.setText(str(result))
+            self.result = eval(self.expr)
         except Exception as e:
-            self.result.setText('Error: '+str(e))
+            self.result = 'Error: ' + str(e)
 
 
 gui = Test()
