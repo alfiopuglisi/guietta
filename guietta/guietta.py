@@ -121,7 +121,8 @@ def _value_property(name, typ):
     return property(get_value, set_value, doc='Value of widget ' + str(name))
 
 ###
-## Widgets that are created during GUI __init__ and not by the main script
+# Widgets create with the special syntax. We need to make a new instance
+# every time one is requested, otherwise we risk cross-window connections.
 
 class _DeferredCreationWidget:
     '''Widget that will be created during Gui.__init__
@@ -174,8 +175,6 @@ class B(_ImageWidget):
     def normal_widget(self, text):
         return QPushButton(text)
 
-# Standard buttons. We need to make a new instance every time one
-# is requested, otherwise we risk cross-window connections.
 
 class _AutoConnectButton(_DeferredCreationWidget):
 
@@ -246,6 +245,29 @@ def _exception_wrapper(func, mode):
             handler(e)
 
     return wrapper
+
+##
+# Matplotlib
+
+# Dummy definition to avoid importing matplotlib when it is not used.
+class MatplotlibWidget:
+    pass
+
+
+def M(name, width=5, height=3, dpi=100):
+    '''Returns a Matplotlib Canvas widget'''
+
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_qt5agg import FigureCanvas
+
+    class MatplotlibWidget(FigureCanvas):
+        def __init__(self, width, height, dpi):
+            figure = Figure(figsize=(width, height), dpi=dpi)
+            self.ax = figure.add_subplot(111)
+            super().__init__(figure)
+
+    widget = MatplotlibWidget(width, height, dpi)
+    return (widget, name)
 
 
 # Some helper functions
