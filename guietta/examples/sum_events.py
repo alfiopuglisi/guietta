@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from guietta import _, ___, Gui, Quit
+from guietta import _, ___, Gui, Quit, Exceptions
 
-def calculate(gui):
-    try:
-        result = float(gui.num1.text()) + float(gui.num2.text())
-    except Exception as e:
-        result = 'Error: ' + str(e)
-    gui.result.setText(str(result))
+def calculate(gui, dummy):
+    result = float(gui.num1) + float(gui.num2)
+    gui.result = result
         
 gui = Gui(
     
   [  'Enter numbers:', '__num1__' , '+' , '__num2__',  ['Calculate'] ],
   [  'Result:  -->'  , 'result'   , ___ ,  ___      ,       _        ],
-  [  _               ,    _       ,  _  ,   _       ,      Quit      ] )
+  [  _               ,    _       ,  _  ,   _       ,      Quit      ],
+  exceptions = Exceptions.POPUP)
 
 gui.events(
 

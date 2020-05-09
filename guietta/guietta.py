@@ -41,11 +41,13 @@ import queue
 import os.path
 import functools
 import itertools
+from enum import Enum, auto
 from collections import Iterable, namedtuple
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
@@ -177,10 +179,11 @@ class B(_ImageWidget):
 
 class _AutoConnectButton(_DeferredCreationWidget):
 
-    def create(self, connect_to=None):
+    def create(self, gui_obj, connect_to=None):
         button = QPushButton(self.args[0])
         if connect_to:
-            button.clicked.connect(connect_to)
+            handler = _exception_wrapper(connect_to, gui_obj._exception_mode)
+            button.clicked.connect(handler)
         return button
 
 
@@ -203,6 +206,46 @@ Event = namedtuple('Event', 'signal args')
 
 class Empty(Exception):
     pass
+
+
+# Exception handling
+
+class Exceptions(Enum):
+    OFF = auto()            # Do not catch exceptions
+    SILENT = auto()         # Discard all exceptions silently
+    POPUP = auto()          # Popup error string
+    PRINT = auto()          # Print error string to stdout
+                            # callable = custom exception handler
+
+
+def _exception_wrapper(func, mode):
+    if mode == Exceptions.OFF:
+        return func
+
+    elif mode == Exceptions.SILENT:
+        handler = lambda e: None
+
+    elif mode == Exceptions.PRINT:
+        handler = lambda e: print('Exception: ' + str(e))
+
+    elif mode == Exceptions.POPUP:
+        handler = lambda e: QMessageBox.warning(None, "Error", str(e))
+
+    elif callable(mode):
+        handler = mode
+
+    else:
+        raise TypeError('Exception mode must be either an instance of '
+                        'the Exceptions enum or a callable handler.')
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            handler(e)
+
+    return wrapper
 
 
 # Some helper functions
@@ -229,9 +272,9 @@ def _filter_lol(lol, func):
         for i in range(len(row)):
             row[i] = func(row[i])
 
-def _auto_connect(slot, x):
+def _auto_connect(gui_obj, slot, x):
     if isinstance(x, _AutoConnectButton):
-        x = x.create(connect_to=slot)
+        x = x.create(gui_obj, connect_to=slot)
     return x
 
 def _check_widget(x):
@@ -319,7 +362,9 @@ class Gui:
     characters and only keeping letters, numbers and underscores.)
     '''
 
-    def __init__(self, *lists, images_dir='.', create_properties=True):
+    def __init__(self, *lists, images_dir='.',
+                               create_properties=True,
+                               exceptions=Exceptions.POPUP):
 
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
@@ -330,12 +375,13 @@ class Gui:
         self._event_queue = queue.Queue()
         self._closed = False
         self._inverted = False
+        self._exception_mode = exceptions
 
         self.images_dir = images_dir
 
         # Input argument checks
         _layer_check(lists)
-        _filter_lol(lists, functools.partial(_auto_connect, self.close))
+        _filter_lol(lists, functools.partial(_auto_connect, self, self.close))
         _filter_lol(lists, _convert_compacts)
         _filter_lol(lists, functools.partial(_create_deferred, self))
         _filter_lol(lists, _check_widget)
@@ -464,9 +510,11 @@ class Gui:
                                      (signal_name, str(item.__class__))) from e
 
             if _bound_method(slot, to_whom=self):
-                signal.connect(slot)
+                use_slot = slot
             else:
-                signal.connect(functools.partial(slot, self))
+                use_slot = functools.partial(slot, self)
+
+            signal.connect(_exception_wrapper(use_slot, self._exception_mode))
 
     def names(self, *lists):
         '''Overrides the default widget names
@@ -547,7 +595,7 @@ class Gui:
         self.window().show()
         app.exec_()
 
-    def close(self):
+    def close(self, dummy=None):    # Default arugment for clicked(bool)
         if self._window:
             self._window.close()
 
@@ -595,9 +643,10 @@ class Gui:
                 klass = widget.__class__
                 if klass in _default_signals:
                     signal = getattr(widget, _default_signals[klass])
-                    handler = functools.partial(self._event_handler,
+                    slot = functools.partial(self._event_handler,
                                                 signal,
                                                 widget)
+                    handler = _exception_wrapper(slot, self._exception_mode)
                     signal.connect(handler)
             self._get_handler = True
 
