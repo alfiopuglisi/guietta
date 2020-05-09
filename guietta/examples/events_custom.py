@@ -2,8 +2,8 @@
 
 from guietta import E, _, Gui, Quit
 
-def do_eval(gui):
-    gui.result = eval(gui.expr)
+def do_eval(gui, text):
+    gui.result = eval(text)
 
 
 gui = Gui(
@@ -23,6 +23,6 @@ gui.events(
 gui.run()
 
 # GUI widgets are available after window closing,
-print(gui.result.text())
+print(gui.result)
 
     

@@ -2,7 +2,9 @@
 
 from guietta import B, E, _, Gui, Quit
 
-def do_eval(gui):
+# Use *args to accept multiple signals
+# with different arugments.
+def do_eval(gui, *args):
     gui.result = eval(gui.expr)
 
 

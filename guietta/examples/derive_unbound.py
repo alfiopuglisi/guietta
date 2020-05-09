@@ -2,7 +2,7 @@
 
 from guietta import B, E, _, Gui, Quit
 
-def do_eval(gui):
+def do_eval(gui, *args):
     gui.result = eval(gui.expr)
 
 

@@ -4,7 +4,7 @@ from guietta import B, E, _, Gui, Quit
 from PyQt5.QtWidgets import QSlider
 from PyQt5.QtCore import Qt
 
-def do_eval(gui):
+def do_eval(gui, *args):
     gui.result = eval(gui.expr)
  
 def do_slider(gui, state):
