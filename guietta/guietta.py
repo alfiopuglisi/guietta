@@ -299,6 +299,11 @@ def M(name, width=5, height=3, dpi=100):
 
 
 def _enumerate_lol(lol, skip_specials=True):
+    '''
+    Enumerate a list of lists in 2d. Usage::
+
+        for row, column, element in _enumerate_lol(lists)
+    '''
     for i, row in enumerate(lol):
         for j, element in enumerate(row):
             if skip_specials and element in _specials:
@@ -311,14 +316,17 @@ def _iterable(x):
 
 
 def _normalize(x):
+    '''Return x without all special characters. Keep only a-zA-Z0-9 and _'''
     return ''.join(c for c in x if c.isalnum() or c == '_')
 
 
 def _bound_method(method, to_whom):
+    '''Return True is `method` is bound to `to_whom`'''
     return hasattr(method, '__self__') and method.__self__ == to_whom
 
 
 def _filter_lol(lol, func):
+    '''Apply func to all elements in a list of lists'''
     for row in lol:
         for i in range(len(row)):
             row[i] = func(row[i])
@@ -331,6 +339,7 @@ def _auto_connect(gui_obj, slot, x):
 
 
 def _check_widget(x):
+    '''Check that x is a valid widget specification'''
     if (type(x) == tuple) and (len(x) == 2):
         if ((isinstance(x[0], QWidget)) and (isinstance(x[1], str))):
             return x
@@ -341,6 +350,12 @@ def _check_widget(x):
 
 
 def _process_slots(x):
+    '''Normalize slots assignments.
+    
+    A callable is transformed into ('default', callable). Tuples already
+    in that format are type-checked. Specials (_, ___, III) are untouched.
+    Other things raise a ValueError.
+    '''
     if x in _specials:
         return x
     elif callable(x):
@@ -395,15 +410,26 @@ def _layer_check(lol):
 # Compact element processing
 
 def _convert_compacts(x):
+    '''
+    Compact elemeents processing.
+    
+    Converts:
+        '__xxx___' to QLineEdit('xxx')
+        'xxx'     to L('xxx')
+        ['xxx']   to B('xxx')  (any iterable will to)
+        
+    L and B are used instead of QLabel and QPushButton in order to support
+    images if xxx is a valid filename.
+    '''
 
     if isinstance(x, str) and x.startswith('__') and x.endswith('__'):
         return QLineEdit(x[2:-2])
 
     elif isinstance(x, str):
-        return L(x)   # Use L instead of QLabel to get automatic images
+        return L(x)
 
     elif _iterable(x) and isinstance(x[0], str):
-        return B(x[0])  # Use B instead of QPushButton to get automatic images
+        return B(x[0])
 
     else:
         return x  # No change
@@ -510,7 +536,17 @@ class Gui:
         return self._widgets
 
     def _get_widget_and_name(self, element):
+        '''Fish out the widget and its name from a declaration.
 
+        Several possibilities:
+            - (widget, 'name')  - type checks should have already been
+                                  performed before, hopefully
+            - widget            - if widget defines text(), use that as
+                                  its name, otherwise use the class name
+
+        - remove special characeters, only leave a-zA-Z0-9
+        - auto-number duplicate names.
+        '''
         if isinstance(element, tuple):
             widget, name = element
         else:
@@ -541,7 +577,8 @@ class Gui:
             ('signal_name', slot)
 
         where 'signal_name' is the name of the QT signal to be connected,
-        and slot is any Python callable.
+        and slot is any Python callable. Use _ for widgets that do not
+        need to be connected to a slot.
 
         If just the default signal is wanted, 'signal_name' can be omitted
         and just the callable slot is required (without using a tuple).
@@ -637,16 +674,18 @@ class Gui:
 
     def import_into(self, obj):
         '''
-        Widget importer
+        Add all widgets to `obj`.
 
         Adds all this Gui's widget to `obj` as new attributes. Aliases
-        defined with names() are also added.
+        defined with names() are also added. Typically used in classes
+        as an alternative from deriving from Gui.
+        Duplicate attributes will raise an AttributeError.
         '''
         widgets = {**self._widgets, **self._aliases}
 
         for name, widget in widgets.items():
             if hasattr(obj, name):
-                raise Exception('Cannot import: duplicate name %s ' % name)
+                raise AttributeError('Cannot import: duplicate name ' + name)
             else:
                 setattr(obj, name, widget)
 
@@ -658,6 +697,7 @@ class Gui:
         app.exec_()
 
     def close(self, dummy=None):    # Default arugment for clicked(bool)
+        '''Close the window'''
         if self._window:
             self._window.close()
 
