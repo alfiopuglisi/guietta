@@ -690,11 +690,18 @@ class Gui:
                 setattr(obj, name, widget)
 
     def run(self):
-        '''Display the Gui and start the event loop'''
-
+        '''Display the Gui and start the event loop.
+        
+        This call is blocking and will return when the window is closed.
+        Any user interaction must be done with callbacks.
+        '''
         app = QApplication.instance()
-        self.window().show()
+        self.show()
         app.exec_()
+
+    def show(self):
+        '''Shows the GUI. This call is non-blocking'''
+        self.window().show()
 
     def close(self, dummy=None):    # Default arugment for clicked(bool)
         '''Close the window'''
@@ -753,7 +760,7 @@ class Gui:
 
         self._app = QApplication.instance()
         self.window().closeEvent = self._stop_handler
-        self.window().show()
+        self.show()
         self._closed = False
 
         if (block is False) or (timeout is not None):
