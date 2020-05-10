@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from guietta import Gui, ___, III, _, M, VS
+from guietta import Gui, ___, III, _, M, Ax, VS
 
 def replot(gui, value):
 
-    ax = gui.plot.ax
-    ax.clear()
-    ax.set_title('y=tan(x)')
-    t = np.linspace(0, 1+value/10, 500)
-    ax.plot(t, np.tan(t), ".-")
-    ax.figure.canvas.draw()
+    with Ax(gui.plot) as ax:
+        ax.set_title('y=tan(x)')
+        t = np.linspace(0, 1+value/10, 500)
+        ax.plot(t, np.tan(t), ".-")
  
 
 gui = Gui(

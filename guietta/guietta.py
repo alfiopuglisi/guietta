@@ -279,17 +279,47 @@ class MatplotlibWidget:
     pass
 
 
+class Ax:
+    '''
+    Context manager to help drawing on Matplotlib widgets
+
+    usage:
+        with MatplotlibAx(gui.plot) as ax:
+            ax.plot(...)
+    '''
+
+    def __init__(self, widget):
+        if not isinstance(widget, MatplotlibWidget):
+            print(widget)
+            raise TypeError('An instance of MatplotlibWidget is required')
+        self.widget = widget
+
+    def __enter__(self):
+        self.ax = self.widget.ax
+        self.ax.clear()
+        return self.ax
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Propagate exceptions
+        if exc_type is not None:
+            return False
+
+        self.ax.figure.canvas.draw()
+
+
 def M(name, width=5, height=3, dpi=100):
     '''Returns a Matplotlib Canvas widget'''
 
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_qt5agg import FigureCanvas
 
-    class MatplotlibWidget(FigureCanvas):
+    class RealMatplotlibWidget(FigureCanvas):
         def __init__(self, width, height, dpi):
             figure = Figure(figsize=(width, height), dpi=dpi)
             self.ax = figure.add_subplot(111)
             super().__init__(figure)
+
+    globals()['MatplotlibWidget'] = RealMatplotlibWidget
 
     widget = MatplotlibWidget(width, height, dpi)
     return (widget, name)
