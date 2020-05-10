@@ -78,10 +78,14 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | VSeparator      |   Vertical separator                  |             |
 +-----------------+---------------------------------------+-------------+
+| M('name')       |   Matplotlib FigureCanvas*            |             |
++-----------------+---------------------------------------+-------------+
 | widget          |   any valid QT widget                 | none        |
 +-----------------+---------------------------------------+-------------+
 | (widget, 'name')|   any valid QT widget                 | 'name'      |
 +-----------------+---------------------------------------+-------------+
+
+* Matplotlib will only be imported if the M() widget is used.
 
 Buttons support both images and texts at the same time:
 
@@ -91,6 +95,8 @@ Buttons support both images and texts at the same time:
 | | ['image.jpg', 'text']    | QPushButton()               |  'text'     |
 | | B('image.jpg', 'text')   | with image and text         |             |
 +----------------------------+-----------------------------+-------------+
+
+
 
 Continuations
 -------------
@@ -121,7 +127,10 @@ How to extend widgets over multiple rows and/or columns::
 
 Rules:
 
- - **_**  can appear anywhere
+ - all grid cells must contain either a widget, one of **___** or **III**,
+   or **_**  if the cell is empty. Other values will cause a ValueError
+   exception. Empty elements are not allowed by the Python list syntax
+   and will cause a SyntaxError.
  - **___** can only be used to the right of a widget to extend it
  - **III** can only be used below a widget to extend it
  - **___** and **III** can be combined to form big rectangular widgets,
@@ -148,13 +157,34 @@ Table of default signals:
 +----------------------+----------------------------------+
 | Widget               | Signal                           |
 +======================+==================================+    
-|  QPushButton         |  clicked()                       |
+|  QPushButton         |  clicked(bool)                   |
 +----------------------+----------------------------------+
 |  QLineEdit           |  returnPressed()                 |
 +----------------------+----------------------------------+
-|  QCheckBox           |  stateChanged()                  |
+|  QCheckBox           |  stateChanged(int)               |
 +----------------------+----------------------------------+
 |  QSlider             |  valueChanged(int)               |
 +----------------------+----------------------------------+
 
 Widgets not listed in this table must be connected using the tuple syntax.
+
+Exception catching in slots
++++++++++++++++++++++++++++
+
+When a slot is called, they will be enclosed in a "try - except Exception"
+block. What happens in the except clause depends on the "exceptions"
+keyword parameter of the GUI constructor, which accepts the following enums:
+
++---------------------------------+------------------------------------+
+| Enum                            | Exception handling                 |
++=================================+====================================+    
+|  Exceptions.OFF                 | nothing, exception is re-raised    |
++---------------------------------+------------------------------------+
+|  Exceptions.POPUP (*default*)   | popup a QMessageBox.warning        |
+|                                 | with the exception string          |
++---------------------------------+------------------------------------+
+|  Exceptions.PRINT               | exception string printed on stdout |
++---------------------------------+------------------------------------+
+|  Exceptions.SILENT              | nothing, exception is "swallowed"  |
++---------------------------------+------------------------------------+
+

@@ -147,5 +147,6 @@ The layout doesn't respect PEP8!
 
 Alas, no. Laying out GUIs with code was not foreseen when PEP8 was written.
 
+Next topic: the `tutorial <tutorial.html>`_.
 
 
