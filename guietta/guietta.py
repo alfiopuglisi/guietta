@@ -665,10 +665,9 @@ class Gui:
                 klass = widget.__class__
                 if klass in _default_signals:
                     signal = getattr(widget, _default_signals[klass])
-                    slot = functools.partial(self._event_handler,
+                    handler = functools.partial(self._event_handler,
                                                 signal,
                                                 widget)
-                    handler = _exception_wrapper(slot, self._exception_mode)
                     signal.connect(handler)
             self._get_handler = True
 
