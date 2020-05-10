@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 '''
 List of widget shortcuts:
-    
+
     'text'         ->   QLabel('text')
-    'image.jpg'    ->   QLabel with QPixmap('image.jpg'), name set to 'image'
+    'image.jpg'    ->   QLabel with QPixmap('image.jpg'), name is 'image'
     L('text')      ->   same as 'text'
     L('image.jpg') ->   same as 'image.jpg'
     ['text']       ->   QPushButton('text')
-    ['image.jpg']  ->   QPushButton(QIcon('image.jpg'), ''), name set to 'image'
+    ['image.jpg']  ->   QPushButton(QIcon('image.jpg'), ''), name is 'image'
     B('text')      ->   same as ['text']
     B('image.jpg') ->   same as ['image.jpg']
     '__name__'     ->   QLineEdit(''), name set to 'name'
@@ -26,14 +26,14 @@ List of widget shortcuts:
 
     QPushButtons with both image and text:
     ['image.jpg', 'text']  ->   QPushButton(QIcon('image.jpg'), 'text')
-    B('image.jpg', 'text')      (name set to 'text') 
+    B('image.jpg', 'text')      (name set to 'text')
 
 Signals can be connected with gui.events() where every widget has:
-    
+
     _                    = no connection
     slot                 = reference to Python callable, using the default
                           widget signal (if pre-defined, otherwise ValueError)
-    ('textEdited', slot) = signal name, reference to Python callable. 
+    ('textEdited', slot) = signal name, reference to Python callable.
 
 '''
 
@@ -61,25 +61,38 @@ E = QLineEdit
 C = QCheckBox
 R = QRadioButton
 
+
 def HS(name):
+    '''Horizontal slider'''
     return (QSlider(Qt.Horizontal), name)
 
+
 def VS(name):
+    '''Vertical slider'''
     return (QSlider(Qt.Vertical), name)
 
-class III:   # Vertical continuation
+
+class III:
+    '''Vertical continuation'''
     pass
 
-class _:     # Empty grid cell
+
+class _:
+    '''Empty grid cell'''
     pass
 
-class ___:   # Horizontal continuation
+
+class ___:
+    '''Horizontal continuation'''
     pass
+
 
 _specials = (_, ___, III)
 
+
 class _Separator(QFrame):
     '''horizontal or vertical seperator'''
+
     def __init__(self, linetype):
         super().__init__()
         self.setFrameShadow(QFrame.Sunken)
@@ -91,10 +104,12 @@ class _Separator(QFrame):
             self.setMinimumHeight(1)
             self.setFixedWidth(10)
 
+
 Separator = _Separator(QFrame.HLine)
 VSeparator = _Separator(QFrame.VLine)
 
 
+############
 # Properties used for fast widget access: gui.a is a property to
 # get and set a's text or value
 
@@ -109,6 +124,7 @@ def _text_property(name):
 
     return property(get_text, set_text, doc='Text of widget ' + str(name))
 
+
 def _value_property(name, typ):
     '''Property for value-based widgets (sliders)'''
 
@@ -120,7 +136,8 @@ def _value_property(name, typ):
 
     return property(get_value, set_value, doc='Value of widget ' + str(name))
 
-###
+
+########
 # Widgets create with the special syntax. We need to make a new instance
 # every time one is requested, otherwise we risk cross-window connections.
 
@@ -138,6 +155,7 @@ class _DeferredCreationWidget:
 
 
 class _ImageWidget(_DeferredCreationWidget):
+    '''A widget that can display either a text or an image'''
 
     def create(self, gui):
         text_or_filename, *name = self.args
@@ -153,6 +171,7 @@ class _ImageWidget(_DeferredCreationWidget):
             return (widget, name)
         else:
             return self.normal_widget(text_or_filename)
+
 
 class L(_ImageWidget):
     '''Text label or image label'''
@@ -192,7 +211,8 @@ Cancel = _AutoConnectButton('Cancel')
 Yes = _AutoConnectButton('Yes')
 No = _AutoConnectButton('No')
 
-### Signals
+#########
+# Signals
 
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
@@ -201,20 +221,24 @@ _default_signals = {QPushButton: 'clicked',
 
 Event = namedtuple('Event', 'signal args')
 
+
 # Empty queue exception for get()
 
 class Empty(Exception):
+    '''Empty queue exception'''
     pass
 
 
 # Exception handling
 
 class Exceptions(Enum):
+    '''Enum type for exceptions handling'''
+
     OFF = auto()            # Do not catch exceptions
     SILENT = auto()         # Discard all exceptions silently
     POPUP = auto()          # Popup error string
     PRINT = auto()          # Print error string to stdout
-                            # callable = custom exception handler
+    pass                    # callable = custom exception handler
 
 
 def _exception_wrapper(func, mode):
@@ -246,11 +270,12 @@ def _exception_wrapper(func, mode):
 
     return wrapper
 
-##
+
+############
 # Matplotlib
 
-# Dummy definition to avoid importing matplotlib when it is not used.
 class MatplotlibWidget:
+    '''Dummy definition to avoid importing matplotlib when it is not used.'''
     pass
 
 
@@ -280,24 +305,30 @@ def _enumerate_lol(lol, skip_specials=True):
                 continue
             yield i, j, element
 
+
 def _iterable(x):
     return isinstance(x, Iterable) and not isinstance(x, str)
+
 
 def _normalize(x):
     return ''.join(c for c in x if c.isalnum() or c == '_')
 
+
 def _bound_method(method, to_whom):
     return hasattr(method, '__self__') and method.__self__ == to_whom
+
 
 def _filter_lol(lol, func):
     for row in lol:
         for i in range(len(row)):
             row[i] = func(row[i])
 
+
 def _auto_connect(gui_obj, slot, x):
     if isinstance(x, _AutoConnectButton):
         x = x.create(gui_obj, connect_to=slot)
     return x
+
 
 def _check_widget(x):
     if (type(x) == tuple) and (len(x) == 2):
@@ -305,7 +336,9 @@ def _check_widget(x):
             return x
     if isinstance(x, QWidget) or (x in _specials):
         return x
-    raise ValueError('Element %s must be a widget or a (widget, name) tuple' % x)
+    raise ValueError('Element %s must be a widget '
+                     'or a (widget, name) tuple' % x)
+
 
 def _process_slots(x):
     if x in _specials:
@@ -318,10 +351,12 @@ def _process_slots(x):
         raise ValueError('Element %s is not a valid slot assignment' % x)
     return x
 
+
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
         raise ValueError('Element %s is not a string' % x)
     return x
+
 
 def _create_deferred(gui, x):
     if isinstance(x, _DeferredCreationWidget):
@@ -332,6 +367,8 @@ def _create_deferred(gui, x):
 
 def _layer_check(lol):
     '''
+    Check that arguments to __init__ and others is OK.
+
     1. Check that all elements are iterables
     2. Take the longest
     3. Expand single-elements ones to the longest using ___
@@ -353,6 +390,7 @@ def _layer_check(lol):
             raise ValueError('Row lengths differ:'
                              ' row has %d elements instead of %d' %
                              (len(row), ncols))
+
 
 # Compact element processing
 
@@ -456,14 +494,16 @@ class Gui:
                 if isinstance(widget, QLineEdit):
                     widget.setText('')
 
-                if create_properties:
-                    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
-                        setattr(self.__class__, name, _text_property(name))
-                    if isinstance(widget, QAbstractSlider):
-                        setattr(self.__class__, name, _value_property(name, int))
-
                 done.add(element)
-    
+
+        if create_properties:
+            for name, widget in self._widgets.items():
+                if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
+                    setattr(self.__class__, name, _text_property(name))
+
+                if isinstance(widget, QAbstractSlider):
+                    setattr(self.__class__, name, _value_property(name, int))
+
     @property
     def widgets(self):
         '''Read-only property with the widgets dictionary'''
@@ -562,7 +602,7 @@ class Gui:
     def groups(self, *args):
         '''Defines the GUI widget groups'''
         raise NotImplementedError
-        
+
     def __getattr__(self, name):
         '''Returns a widget using its name or alias'''
 
