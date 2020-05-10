@@ -281,7 +281,10 @@ class MatplotlibWidget:
 
 class Ax:
     '''
-    Context manager to help drawing on Matplotlib widgets
+    Context manager to help drawing on Matplotlib widgets.
+
+    Takes care of clearing and redrawing the canvas before and after
+    the inner code block is executed.
 
     usage:
         with MatplotlibAx(gui.plot) as ax:
@@ -290,7 +293,6 @@ class Ax:
 
     def __init__(self, widget):
         if not isinstance(widget, MatplotlibWidget):
-            print(widget)
             raise TypeError('An instance of MatplotlibWidget is required')
         self.widget = widget
 
