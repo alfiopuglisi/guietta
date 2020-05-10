@@ -88,8 +88,9 @@ of *events*. An event
 is generated every time the user clicks on a button or presses *Return*
 on an input box (later on we'll see a more comprehensive list of events.)
 
-*get()* returns the event name, which is the same as the name of the
-widget that generates it, plus an *Event* object with additional information
+*get()* blocks until an event happens. It returns the event name,
+which is the same as the name of the
+widget that generated it, plus an *Event* object with additional information
 about the event::
 
    name, event = gui.get()
@@ -134,7 +135,7 @@ breaking out of it when we get None::
             break
 
 .. Note:: when comparing the event name with known string, remember
-          that Guietta modified widget name to be a valid Python
+          that Guietta modifies the widget name to be a valid Python
           identifier: all "special" characters and spaces are removed,
           and only letters a-z, A-Z and numbers 0-9 are kept, together with
           underscores. So if your button is called *Go!*, the exclamation
@@ -152,7 +153,7 @@ the *result* text with the actual result. In order to make this very easy,
 Guietta creates a
 `property <https://docs.python.org/3/library/functions.html#property>`_
 for each widget, using the widget name as the property name. Properties
-can be read and assigned to. So to read the value from *__num__*
+can be read and assigned to. So to read the value from the *__num__*
 editbox you can do something like this::
 
     value = gui.num
@@ -175,12 +176,14 @@ line into our loop::
 
     while True:
         name, event = gui.get()
+
         if name == 'Go':
             gui.result = float(gui.num)*2
+    
         elif name == None:
             break
 
-And the GUI will update the result every time the Go button is clicked.
+And the result label will be updated every time the Go button is clicked.
 
 A word on exceptions
 ++++++++++++++++++++
@@ -214,12 +217,14 @@ call::
 
    Gui.get(self, block=True, timeout=None)
 
-If we can pass a *timeout* argument (in seconds), the call will raise a
-``Gui.Empty`` exception if *timeout* seconds have passed without a event.
+If we pass a *timeout* argument (in seconds), the call will raise a
+``guietta.Empty`` exception if *timeout* seconds have passed without a event.
 This feature is useful to "wake up" the event loop and perform some tasks
-regularly. Just for demonstration purpose, this loop re-uses the
+regularly. Just for demonstration purposes, this loop re-uses the
 *Enter number* label to show a counter going up an 10 Hz. while still
 being responsive to the *Go* button::
+
+        from guietta import Empty
 
         counter = 0
         while True:
@@ -320,15 +325,20 @@ restarts. As in the *get()* case, it is important that callbacks execute
 quickly, because the GUI does not respond to user while they are executing.
 
 You can specify which callback is assigned to each widget after construction,
-using the *gui.event()* method. Going back to our first example, here is
-what we have to add::
+using the *gui.events()* method. Here is a rewrite of our first example with
+callbacks::
+
+    from guietta import Gui, _
 
     # Callback for the Go button
     def go(gui, dummy):
         gui.result = float(gui.num)*2
         
-    gui.events( [  _            ,    _     , go  ],
-                [  _            ,    _     ,  _  ] )
+    gui = Gui(  [ 'Enter number' , '__num__' , ['Go'] ],
+                [ 'Result ---> ' , 'result'  ,   _    ] )
+           
+    gui.events( [  _             ,    _      ,   go   ],
+                [  _             ,    _      ,   _    ] )
                 
     gui.run()
             
@@ -476,3 +486,4 @@ Notice how we first call the callback ourselves, giving it a default
 value, in order to have a plot ready when the GUI is displayed.
 
 
+Next topic: the `reference guide <reference.html>`_.

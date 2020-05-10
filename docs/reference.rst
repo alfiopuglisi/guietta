@@ -41,7 +41,7 @@ Here is the complete widget set::
       [    Yes     ,        No         , _                   ,     III      ],
       [  HS('slider2'),    ___         , ___                 ,      _       ] )
         
-    dummy = gui.get()
+    gui.show()
   
 
 
