@@ -179,58 +179,61 @@ class _DeferredCreationWidget:
     The actual widget is returned by the create() method
     '''
 
-    def __init__(self, *args):
-        self.args = args
-
     def create(self):
         pass
 
 
-class _ImageWidget(_DeferredCreationWidget):
-    '''A widget that can display either a text or an image'''
+def _image_fullpath(gui, filename):
+    '''Returns the full image path if the filename is valid, otherwise None'''
 
-    def create(self, gui):
-        text_or_filename, *name = self.args
-        name = name[0] if name else ''
+    if not os.path.isabs(filename):
+        fullpath = os.path.join(gui.images_dir, filename)
 
-        if not os.path.isabs(text_or_filename):
-            fullpath = os.path.join(gui.images_dir, text_or_filename)
-
-        if os.path.exists(fullpath):
-            widget = self.image_widget(fullpath, name)
-            if name == '':
-                name, _ = os.path.splitext(text_or_filename)
-            return (widget, name)
-        else:
-            return self.normal_widget(text_or_filename)
+    name, _ = os.path.splitext(filename)
+    if os.path.exists(fullpath):
+        return fullpath, name
+    else:
+        return None, name
 
 
-class L(_ImageWidget):
+class L(_DeferredCreationWidget):
     '''Text label or image label'''
 
-    def image_widget(self, fullpath, name):
-        label = QLabel()
-        label.setPixmap(QPixmap(fullpath))
-        return label
+    def __init__(self, text_or_filename):
+        self._text_or_filename = text_or_filename
 
-    def normal_widget(self, text):
-        return QLabel(text)
+    def create(self, gui):
+        fullpath, name = _image_fullpath(gui, self._text_or_filename)
+        if fullpath:
+            label = QLabel()
+            label.setPixmap(QPixmap(fullpath))
+            return (label, name)
+        else:
+            return (QLabel(self._text_or_filename), name)
 
 
-class B(_ImageWidget):
-    '''Text button or image button'''
+class B(_DeferredCreationWidget):
+    '''Text button or image+optional text button'''
 
-    def image_widget(self, fullpath, name):
-        return QPushButton(QIcon(fullpath), name)
+    def __init__(self, text_or_filename, text=''):
+        self._text_or_filename = text_or_filename
+        self._text = text
 
-    def normal_widget(self, text):
-        return QPushButton(text)
+    def create(self, gui):
+        fullpath, name = _image_fullpath(gui, self._text_or_filename)
+        if fullpath:
+            return (QPushButton(QIcon(fullpath), self._text), name)
+        else:
+            return (QPushButton(self._text_or_filename), name)
 
 
 class _AutoConnectButton(_DeferredCreationWidget):
 
+    def __init__(self, text):
+        self._text = text
+
     def create(self, gui_obj, connect_to=None):
-        button = QPushButton(self.args[0])
+        button = QPushButton(self._text)
         if connect_to:
             handler = _exception_wrapper(connect_to, gui_obj._exception_mode)
             button.clicked.connect(handler)
@@ -405,13 +408,16 @@ def _auto_connect(gui_obj, slot, x):
 
 def _check_widget(x):
     '''Check that x is a valid widget specification'''
+
     if (type(x) == tuple) and (len(x) == 2):
         if ((isinstance(x[0], QWidget)) and (isinstance(x[1], str))):
             return x
+
     if isinstance(x, QWidget) or (x in _specials):
         return x
-    raise ValueError('Element %s must be a widget '
-                     'or a (widget, name) tuple' % x)
+
+    raise ValueError('Element ' + str(x) + ' must be a widget '
+                     'or a (widget, name) tuple')
 
 
 def _process_slots(x):
@@ -441,8 +447,22 @@ def _check_string(x):
 def _create_deferred(gui, x):
     if isinstance(x, _DeferredCreationWidget):
         return x.create(gui)
+    elif isinstance(x, tuple) and len(x) == 2:
+        return (_create_deferred(gui, x[0]), x[1])
     else:
         return x
+
+
+def _collapse_names(x, first=True):
+    '''((widget, name1), name2) -> (widget, name2), arbitrarily nested'''
+
+    if not isinstance(x, tuple) or len(x) != 2:
+        return x
+
+    if first:
+        return (_collapse_names(x[0], first=False), x[1])
+    else:
+        return _collapse_names(x[0], first=False)
 
 
 def _layer_check(lol):
@@ -476,15 +496,17 @@ def _layer_check(lol):
 
 def _convert_compacts(x):
     '''
-    Compact elemeents processing.
-    
+    Compact elements processing.
+
     Converts:
         '__xxx___' to QLineEdit('xxx')
         'xxx'     to L('xxx')
-        ['xxx']   to B('xxx')  (any iterable will to)
-        
+        ['xxx']   to B('xxx')
+        ['xxx', 'yyy']   to B('xxx', 'yyy')
+
     L and B are used instead of QLabel and QPushButton in order to support
     images if xxx is a valid filename.
+    Lists with zero length or longer than 2 elements raise a ValueError.
     '''
 
     if isinstance(x, str) and x.startswith('__') and x.endswith('__'):
@@ -493,9 +515,16 @@ def _convert_compacts(x):
     elif isinstance(x, str):
         return L(x)
 
-    elif _iterable(x) and isinstance(x[0], str):
-        return B(x[0])
-
+    elif isinstance(x, list) and isinstance(x[0], str):
+        if len(x) == 1:
+            return B(x[0])
+        elif len(x) == 2:
+            return B(x[0], x[1])
+        else:
+            raise ValueError('Invalid syntax: ' + str(x))
+    elif isinstance(x, tuple) and len(x) == 2:
+        return (_convert_compacts(x[0]), x[1])
+        
     else:
         return x  # No change
 
@@ -539,6 +568,7 @@ class Gui:
         _filter_lol(lists, functools.partial(_auto_connect, self, self.close))
         _filter_lol(lists, _convert_compacts)
         _filter_lol(lists, functools.partial(_create_deferred, self))
+        _filter_lol(lists, _collapse_names)
         _filter_lol(lists, _check_widget)
 
         # Intermediate step that will be filled by replicating
