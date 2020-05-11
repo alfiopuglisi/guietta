@@ -28,6 +28,7 @@ For the constructor aruguments:
       1. B('xxx') becomes (QPushButton('xxx'), 'xxx')
       #. B('xxx.png', 'yyy' becomes (QPushButton(QIcon('xxx.png')), 'yyy')
    * Automatic buttons (Quit, Yes, No.. etc) are created and connected
+   * Separators are created
    * 2-tuples are rercursed into in order to expand
      the first element if needed.
        

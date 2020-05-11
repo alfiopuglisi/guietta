@@ -91,25 +91,6 @@ class ___:
 _specials = (_, ___, III)
 
 
-class _Separator(QFrame):
-    '''horizontal or vertical seperator'''
-
-    def __init__(self, linetype):
-        super().__init__()
-        self.setFrameShadow(QFrame.Sunken)
-        self.setFrameShape(linetype)
-        if linetype == QFrame.HLine:
-            self.setMinimumWidth(1)
-            self.setFixedHeight(10)
-        else:
-            self.setMinimumHeight(1)
-            self.setFixedWidth(10)
-
-
-Separator = _Separator(QFrame.HLine)
-VSeparator = _Separator(QFrame.VLine)
-
-
 ############
 # Property like get/set methods for fast widget access:
 # value = gui.name calls get()
@@ -246,6 +227,30 @@ Ok = _AutoConnectButton('Ok', 'close')
 Cancel = _AutoConnectButton('Cancel', 'close')
 Yes = _AutoConnectButton('Yes', 'close')
 No = _AutoConnectButton('No', 'close')
+
+
+class _Separator(_DeferredCreationWidget):
+    '''horizontal or vertical seperator'''
+
+    def __init__(self, linetype):
+        self._linetype = linetype
+
+    def create(self, gui):
+        frame = QFrame()
+        frame.setFrameShadow(QFrame.Sunken)
+        frame.setFrameShape(self._linetype)
+        if self._linetype == QFrame.HLine:
+            frame.setMinimumWidth(1)
+            frame.setFixedHeight(10)
+        else:
+            frame.setMinimumHeight(1)
+            frame.setFixedWidth(10)
+        return frame
+
+
+Separator = _Separator(QFrame.HLine)
+VSeparator = _Separator(QFrame.VLine)
+
 
 #########
 # Signals

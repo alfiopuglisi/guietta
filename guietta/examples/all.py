@@ -13,6 +13,7 @@ gui = Gui(
   [ '__edit__' ,  E('an edit box') , _                   ,   VSeparator ],
   [   Quit     ,        Ok         , Cancel              ,     III      ],
   [    Yes     ,        No         , _                   ,     III      ],
+   [ Separator ],
   [  HS('slider2'),    ___         , ___                 ,      _       ])
     
 dummy = gui.get()
