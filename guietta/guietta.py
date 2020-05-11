@@ -614,9 +614,16 @@ class Gui:
 
                 done.add(element)
 
-        if create_properties:
+        self.align_fake_properties()
+
+    def align_fake_properties(self):
+        '''Make sure that any and all widgets have a property'''
+
+        if self._create_properties:
             for name, widget in self._widgets.items():
                 self._fake_properties[name] = _fake_property(widget)
+        else:
+            self._fake_properties.clear()
 
     @property
     def widgets(self):
@@ -737,14 +744,11 @@ class Gui:
         for i, j, new_name in _enumerate_lol(lists):
             widget = self[i,j]
             old_name = names_by_widget[widget]
-            print('renaming', old_name, 'to', new_name)
 
             self._widgets[new_name] = self._widgets[old_name]
             del self._widgets[old_name]
 
-            if old_name in self._fake_properties:
-                self._fake_properties[new_name] = self._fake_properties[old_name]
-                del self._fake_properties[old_name]
+        self.align_fake_properties()
 
     def colors(self, *args):
         '''Defines the GUI colors'''
