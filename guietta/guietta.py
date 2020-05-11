@@ -222,7 +222,9 @@ class _AutoConnectButton(_DeferredCreationWidget):
         return button
 
 
+Exit = _AutoConnectButton('Exit', 'close')
 Quit = _AutoConnectButton('Quit', 'close')
+Close = _AutoConnectButton('Close', 'close')
 Ok = _AutoConnectButton('Ok', 'close')
 Cancel = _AutoConnectButton('Cancel', 'close')
 Yes = _AutoConnectButton('Yes', 'close')
