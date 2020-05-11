@@ -51,6 +51,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
+# We need a QApplication before creating any widgets
 if QApplication.instance() is None:
     app = QApplication([])
 
@@ -110,31 +111,62 @@ VSeparator = _Separator(QFrame.VLine)
 
 
 ############
-# Properties used for fast widget access: gui.a is a property to
-# get and set a's text or value
+# Property like get/set methods for fast widget access:
+# value = gui.name calls get()
+# gui.name = value calls set()
+# We cannot use real properties because they are defined on the class
+# and would be shared by different GUIs!
 
-def _text_property(name):
+InstanceProperty = namedtuple('InstanceProperty', 'get set')
+
+
+def _text_property(widget):
     '''Property for text-based widgets (labels, buttons)'''
 
-    def get_text(self):
-        return self._widgets[name].text()
+    def get_text():
+        return widget.text()
 
-    def set_text(self, value):
-        self._widgets[name].setText(str(value))
+    def set_text(value):
+        widget.setText(str(value))
 
-    return property(get_text, set_text, doc='Text of widget ' + str(name))
+    return InstanceProperty(get_text, set_text)
 
 
-def _value_property(name, typ):
+def _value_property(widget, typ):
     '''Property for value-based widgets (sliders)'''
 
-    def get_value(self):
-        return self._widgets[name].value()
+    def get_value():
+        return widget.value()
 
-    def set_value(self, value):
-        self._widgets[name].setValue(typ(value))
+    def set_value(value):
+        widget.setValue(typ(value))
 
-    return property(get_value, set_value, doc='Value of widget ' + str(name))
+    return InstanceProperty(get_value, set_value)
+
+
+def _dummy_property(widget):
+    '''Property for widgets that are not modifiable'''
+
+    def getx():
+        return widget
+
+    def setx():
+        pass
+
+    return InstanceProperty(getx, setx)
+
+
+def _fake_property(widget):
+    '''Create the instance property corresponding to `widget`'''
+
+    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
+        return _text_property(widget)
+
+    elif isinstance(widget, QAbstractSlider):
+        return _value_property(widget, int)
+
+    else:
+        return _dummy_property(widget)
 
 
 ########
@@ -293,7 +325,8 @@ class Ax:
 
     def __init__(self, widget):
         if not isinstance(widget, MatplotlibWidget):
-            raise TypeError('An instance of MatplotlibWidget is required')
+            raise TypeError('An instance of MatplotlibWidget is required, '
+                            'got %s instead' % widget.__class__.__name__)
         self.widget = widget
 
     def __enter__(self):
@@ -484,10 +517,14 @@ class Gui:
                                create_properties=True,
                                exceptions=Exceptions.POPUP):
 
+        # This line must be the first one in this method otherwise
+        # __setattr__ does not work.
+        self.__dict__['_fake_properties'] = {}
+
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
-        self._aliases = {}    # name aliases (1 alias per name)
         self._window = None
+        self._app = QApplication.instance()
 
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
@@ -556,16 +593,31 @@ class Gui:
 
         if create_properties:
             for name, widget in self._widgets.items():
-                if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
-                    setattr(self.__class__, name, _text_property(name))
-
-                if isinstance(widget, QAbstractSlider):
-                    setattr(self.__class__, name, _value_property(name, int))
+                self._fake_properties[name] = _fake_property(widget)
 
     @property
     def widgets(self):
         '''Read-only property with the widgets dictionary'''
         return self._widgets
+
+    def __getattr__(self, name):
+        '''Use fake_properties to emulate properties on this instance'''
+
+        if name in self.__dict__['_fake_properties']:
+            return self.__dict__['_fake_properties'][name].get()
+
+        # Default behaviour
+        raise AttributeError
+
+    def __setattr__(self, name, value):
+        '''Use fake_properties to emulate properties on this instance'''
+
+        if name in self.__dict__['_fake_properties']:
+            self.__dict__['_fake_properties'][name].set(value)
+            return
+
+        # Default behaviour
+        super().__setattr__(name, value)
 
     def _get_widget_and_name(self, element):
         '''Fish out the widget and its name from a declaration.
@@ -647,11 +699,11 @@ class Gui:
 
             signal.connect(_exception_wrapper(use_slot, self._exception_mode))
 
-    def names(self, *lists):
+    def rename(self, *lists):
         '''Overrides the default widget names
 
         The argument must be a layout with she same shape as the
-        initializer. Every element is a string with a name alias
+        initializer. Every element is a string with the new name
         for the widget in that position.
         '''
         _layer_check(lists)
@@ -659,10 +711,17 @@ class Gui:
 
         names_by_widget = {v: k for k, v in self._widgets.items()}
 
-        for i, j, alias in _enumerate_lol(lists):
-            item = self[i,j]
-            name = names_by_widget[item]
-            self._aliases[alias] = name
+        for i, j, new_name in _enumerate_lol(lists):
+            widget = self[i,j]
+            old_name = names_by_widget[widget]
+            print('renaming', old_name, 'to', new_name)
+
+            self._widgets[new_name] = self._widgets[old_name]
+            del self._widgets[old_name]
+
+            if old_name in self._fake_properties:
+                self._fake_properties[new_name] = self._fake_properties[old_name]
+                del self._fake_properties[old_name]
 
     def colors(self, *args):
         '''Defines the GUI colors'''
@@ -671,18 +730,6 @@ class Gui:
     def groups(self, *args):
         '''Defines the GUI widget groups'''
         raise NotImplementedError
-
-    def __getattr__(self, name):
-        '''Returns a widget using its name or alias'''
-
-        if name in self._aliases:
-            name = self._aliases[name]
-
-        if name in self._widgets:
-            return self._widgets[name]
-        else:
-            # Default behaviour
-            raise AttributeError
 
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
@@ -708,14 +755,12 @@ class Gui:
         '''
         Add all widgets to `obj`.
 
-        Adds all this Gui's widget to `obj` as new attributes. Aliases
-        defined with names() are also added. Typically used in classes
+        Adds all this Gui's widget to `obj` as new attributes.
+        Typically used in classes
         as an alternative from deriving from Gui.
         Duplicate attributes will raise an AttributeError.
         '''
-        widgets = {**self._widgets, **self._aliases}
-
-        for name, widget in widgets.items():
+        for name, widget in self._widgets.items():
             if hasattr(obj, name):
                 raise AttributeError('Cannot import: duplicate name ' + name)
             else:
@@ -723,13 +768,12 @@ class Gui:
 
     def run(self):
         '''Display the Gui and start the event loop.
-        
+
         This call is blocking and will return when the window is closed.
         Any user interaction must be done with callbacks.
         '''
-        app = QApplication.instance()
         self.show()
-        app.exec_()
+        self._app.exec_()
 
     def show(self):
         '''Shows the GUI. This call is non-blocking'''
@@ -743,16 +787,7 @@ class Gui:
     def _invert_dicts(self):
         if not self._inverted:
             self._names_by_widget = {v: k for k, v in self._widgets.items()}
-            self._alias_by_name = {v: k for k, v in self._aliases.items()}
             self._inverted = True
-
-    def _widget_name_or_alias(self, widget):
-        '''Returns the alias or, failing that, the name for the widget'''
-        name = self._names_by_widget[widget]
-        if name in self._alias_by_name:
-            return self._alias_by_name[name]
-        else:
-            return name
 
     def get(self, block=True, timeout=None):
         '''Runs the GUI in queue mode
@@ -790,7 +825,6 @@ class Gui:
                     signal.connect(handler)
             self._get_handler = True
 
-        self._app = QApplication.instance()
         self.window().closeEvent = self._stop_handler
         self.show()
         self._closed = False
@@ -811,7 +845,7 @@ class Gui:
             self._closed = True
             return (None, None)
         else:
-            name = self._widget_name_or_alias(widget)
+            name = self._names_by_widget[widget]
             return (name, Event(signal, args))
 
     def _event_handler(self, signal, widget, *args):
