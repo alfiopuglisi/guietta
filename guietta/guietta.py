@@ -428,6 +428,8 @@ def _process_slots(x):
         return ('default', x)
     elif _iterable(x) and isinstance(x[0], str) and callable(x[1]):
         return x
+    elif _iterable(x) and isinstance(x[0], str) and (x[1] is None):
+        return x
     else:
         raise ValueError('Element %s is not a valid slot assignment' % x)
 
@@ -721,6 +723,11 @@ class Gui:
                 except AttributeError as e:
                     raise ValueError('No signal %s found for widget %s' %
                                      (signal_name, str(item.__class__))) from e
+
+            if slot is None:
+                slot = functools.partial(self._event_handler,
+                                         signal,
+                                         item)
 
             if _bound_method(slot, to_whom=self):
                 use_slot = slot
