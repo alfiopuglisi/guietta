@@ -433,14 +433,13 @@ def _process_slots(x):
         return ('default', x)
     elif _iterable(x) and isinstance(x[0], str) and callable(x[1]):
         return x
-    elif x not in _specials:
+    else:
         raise ValueError('Element %s is not a valid slot assignment' % x)
-    return x
 
 
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
-        raise ValueError('Element %s is not a string' % x)
+        raise ValueError('Element %s is not a satring' % x)
     return x
 
 
