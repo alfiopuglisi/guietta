@@ -229,22 +229,23 @@ class B(_DeferredCreationWidget):
 
 class _AutoConnectButton(_DeferredCreationWidget):
 
-    def __init__(self, text):
+    def __init__(self, text, slot_name):
         self._text = text
+        self._slot_name = slot_name
 
-    def create(self, gui_obj, connect_to=None):
+    def create(self, gui):
         button = QPushButton(self._text)
-        if connect_to:
-            handler = _exception_wrapper(connect_to, gui_obj._exception_mode)
-            button.clicked.connect(handler)
+        slot = getattr(gui, self._slot_name)
+        handler = _exception_wrapper(slot, gui._exception_mode)
+        button.clicked.connect(handler)
         return button
 
 
-Quit = _AutoConnectButton('Quit')
-Ok = _AutoConnectButton('Ok')
-Cancel = _AutoConnectButton('Cancel')
-Yes = _AutoConnectButton('Yes')
-No = _AutoConnectButton('No')
+Quit = _AutoConnectButton('Quit', 'close')
+Ok = _AutoConnectButton('Ok', 'close')
+Cancel = _AutoConnectButton('Cancel', 'close')
+Yes = _AutoConnectButton('Yes', 'close')
+No = _AutoConnectButton('No', 'close')
 
 #########
 # Signals
@@ -398,12 +399,6 @@ def _filter_lol(lol, func):
     for row in lol:
         for i in range(len(row)):
             row[i] = func(row[i])
-
-
-def _auto_connect(gui_obj, slot, x):
-    if isinstance(x, _AutoConnectButton):
-        x = x.create(gui_obj, connect_to=slot)
-    return x
 
 
 def _check_widget(x):
@@ -564,7 +559,6 @@ class Gui:
 
         # Input argument checks
         _layer_check(lists)
-        _filter_lol(lists, functools.partial(_auto_connect, self, self.close))
         _filter_lol(lists, _convert_compacts)
         _filter_lol(lists, functools.partial(_create_deferred, self))
         _filter_lol(lists, _collapse_names)

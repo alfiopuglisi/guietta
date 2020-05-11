@@ -11,11 +11,6 @@ For the constructor aruguments:
     #. Expand single-elements ones to the longest using ___
     #. Check that all rows have the same length, raise ValueError if not.
 
-- Automatic buttons (Quit, Yes, No.. etc) are created and connected
-  (*auto_connect()*)
-    1. Creation of QPushButton('Quit')
-    #. Slot connection to self.close()
-
 - Compact syntax is expanded (*convert_compacts()*) 
     1. 'xxx' is converted to L('xxx')
     #. '__xxx__' is converted to QLineEdit('xxx')
@@ -32,6 +27,7 @@ For the constructor aruguments:
    * Buttons
       1. B('xxx') becomes (QPushButton('xxx'), 'xxx')
       #. B('xxx.png', 'yyy' becomes (QPushButton(QIcon('xxx.png')), 'yyy')
+   * Automatic buttons (Quit, Yes, No.. etc) are created and connected
    * 2-tuples are rercursed into in order to expand
      the first element if needed.
        
