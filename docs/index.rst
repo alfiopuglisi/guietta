@@ -8,4 +8,5 @@ Guietta!
    intro
    tutorial
    reference
+   internals
 
