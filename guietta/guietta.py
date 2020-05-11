@@ -270,6 +270,7 @@ class Empty(Exception):
     pass
 
 
+#####################
 # Exception handling
 
 class Exceptions(Enum):
@@ -423,8 +424,10 @@ def _check_widget(x):
 def _process_slots(x):
     '''Normalize slots assignments.
     
-    A callable is transformed into ('default', callable). Tuples already
-    in that format are type-checked. Specials (_, ___, III) are untouched.
+    A callable is transformed into ('default', callable). The callable
+    may be None to set it to the default get() handler.
+    Tuples already in that format are type-checked.
+    Specials (_, ___, III) are untouched.
     Other things raise a ValueError.
     '''
     if x in _specials:
@@ -446,10 +449,14 @@ def _check_string(x):
 
 
 def _create_deferred(gui, x):
+    '''Create the instances of _DeferredCreationWidget'''
+
     if isinstance(x, _DeferredCreationWidget):
         return x.create(gui)
+
     elif isinstance(x, tuple) and len(x) == 2:
         return (_create_deferred(gui, x[0]), x[1])
+
     else:
         return x
 
@@ -708,7 +715,6 @@ class Gui:
         unbound methods will get a single argument with a reference
         to this Gui instance.
         '''
-        # Input argument checks
         _layer_check(lists)
         _filter_lol(lists, _process_slots)
 
@@ -729,10 +735,9 @@ class Gui:
                     raise ValueError('No signal %s found for widget %s' %
                                      (signal_name, str(item.__class__))) from e
 
+            # Custom signal with default handler for get()
             if slot is None:
-                slot = functools.partial(self._event_handler,
-                                         signal,
-                                         item)
+                slot = functools.partial(self._event_handler, signal, item)
 
             if _bound_method(slot, to_whom=self):
                 use_slot = slot
