@@ -125,7 +125,7 @@ def _value_property(widget, typ):
     return InstanceProperty(get_value, set_value)
 
 
-def _dummy_property(widget):
+def _readonly_property(widget):
     '''Property for widgets that are not modifiable'''
 
     def getx():
@@ -147,7 +147,7 @@ def _fake_property(widget):
         return _value_property(widget, int)
 
     else:
-        return _dummy_property(widget)
+        return _readonly_property(widget)
 
 
 ########
@@ -155,10 +155,7 @@ def _fake_property(widget):
 # every time one is requested, otherwise we risk cross-window connections.
 
 class _DeferredCreationWidget:
-    '''Widget that will be created during Gui.__init__
-
-    The actual widget is returned by the create() method
-    '''
+    '''Widget that will be created during Gui.__init__'''
 
     def create(self):
         pass
@@ -171,6 +168,7 @@ def _image_fullpath(gui, filename):
         fullpath = os.path.join(gui.images_dir, filename)
 
     name, _ = os.path.splitext(filename)
+
     if os.path.exists(fullpath):
         return fullpath, name
     else:
@@ -425,7 +423,7 @@ def _check_widget(x):
 
 def _process_slots(x):
     '''Normalize slots assignments.
-    
+
     A callable is transformed into ('default', callable). The callable
     may be None to set it to the default get() handler.
     Tuples already in that format are type-checked.
