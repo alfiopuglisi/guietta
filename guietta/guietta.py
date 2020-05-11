@@ -512,15 +512,14 @@ def _convert_compacts(x):
         return L(x)
 
     elif isinstance(x, list) and isinstance(x[0], str):
-        if len(x) == 1:
-            return B(x[0])
-        elif len(x) == 2:
-            return B(x[0], x[1])
+        if len(x) == 1 or len(x) == 2:
+            return B(*x)
         else:
             raise ValueError('Invalid syntax: ' + str(x))
+
     elif isinstance(x, tuple) and len(x) == 2:
         return (_convert_compacts(x[0]), x[1])
-        
+
     else:
         return x  # No change
 
@@ -556,6 +555,7 @@ class Gui:
         self._closed = False
         self._inverted = False
         self._exception_mode = exceptions
+        self._create_properties = create_properties
 
         self.images_dir = images_dir
 
