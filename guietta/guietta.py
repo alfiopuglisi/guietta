@@ -37,6 +37,7 @@ Signals can be connected with gui.events() where every widget has:
 
 '''
 
+import re
 import queue
 import os.path
 import functools
@@ -272,7 +273,121 @@ VSeparator = _Separator(QFrame.VLine)
 # List box
 
 def LB(name):
+    '''Listbox'''
     return (QListWidget(), name)
+
+
+class CombinedWidget:
+    '''Base class for widgets that combine multiple ones'''
+    pass
+
+
+#################
+# Slider combined with editbox
+
+
+class _ValueSlider(CombinedWidget):
+    '''A slider combined with an inputbox for the value.'''
+
+    def __init__(self, orientation, name, anchor, myrange=None, unit=''):
+
+        if myrange is None:
+            myrange = range(0, 100, 1)
+        if unit != '':
+            unit = ' ' + unit
+
+        start, stop, step = myrange.start, myrange.stop, myrange.step
+
+        # Normalize things to step of 1
+        factor = 1.0 / step
+        step = 1
+        start *= factor
+        stop *= factor
+
+        slider = QSlider(orientation)
+        slider.setMinimum(start)
+        slider.setMaximum(stop)
+        slider.setSingleStep(step)
+
+        editbox = QLineEdit()
+
+        def slider_to_unit(v):
+            return v / factor
+
+        def unit_to_slider(v):
+            return v * factor
+
+        def update_editbox(value):
+            editbox.setText(str(slider_to_unit(value)) + unit)
+
+        def update_slider():
+            text = editbox.text()
+            pattern = r'^\s*(\d+)'
+            m = re.search(pattern, text)
+            if m:
+                value = m.group(1)
+                slider.setValue(unit_to_slider(float(value)))
+
+        slider.valueChanged.connect(update_editbox)
+        editbox.returnPressed.connect(update_slider)
+
+        self.slider = slider
+        self.editbox = editbox
+        self.anchor = anchor
+
+    def place(self, lol, row, col):
+
+        if self.slider.orientation() == Qt.Horizontal:
+            ncols = len(lol[row])
+            cells = [col]
+            for n in range(col+1, ncols):
+                if lol[row][n] == ___:
+                    cells.append(n)
+            if len(cells) < 2:
+                raise ValueError('HValueSlider needs at least '
+                                 'one horizontal continuation')
+   
+            if self.anchor == Qt.AnchorLeft:
+                first, last = self.editbox, self.slider
+            else:
+                first, last = self.slider, self.editbox
+
+            lol[row][cells[0]] = first
+            for n in cells[1:-1]:
+                lol[row][n] = self.slider
+            lol[row][cells[-1]] = last
+
+        else:
+            nrows = len(lol)
+            cells = [row]
+            for n in range(row+1, nrows):
+                if lol[n][col] == III:
+                    cells.append(n)
+            if len(cells) < 2:
+                raise ValueError('VValueSlider needs at least '
+                                 ' one vertical continuation')
+
+            if self.anchor == Qt.AnchorTop:
+                first, last = self.editbox, self.slider
+            else:
+                first, last = self.slider, self.editbox
+
+            lol[cells[0]][col] = first
+            for n in cells[1:-1]:
+                lol[n][col] = self.slider
+            lol[cells[-1]][col] = last
+
+
+def HValueSlider(name, myrange=None, unit='', anchor=Qt.AnchorRight):
+    '''A slider combined with an inputbox for the value.'''
+
+    return _ValueSlider(Qt.Horizontal, name, anchor, myrange, unit)
+
+
+def VValueSlider(name, myrange=None, unit='', anchor=Qt.AnchorBottom):
+    '''A slider combined with an inputbox for the value.'''
+
+    return _ValueSlider(Qt.Vertical, name, anchor, myrange, unit)
 
 
 #########
@@ -439,11 +554,12 @@ def _filter_lol(lol, func):
 def _check_widget(x):
     '''Check that x is a valid widget specification'''
 
-    if (type(x) == tuple) and (len(x) == 2):
-        if ((isinstance(x[0], QWidget)) and (isinstance(x[1], str))):
-            return x
+    if (type(x) == tuple) and (len(x) == 2) and \
+       isinstance(x[0], (QWidget, CombinedWidget)) and \
+       isinstance(x[1], str):
+        return x
 
-    if isinstance(x, QWidget) or (x in _specials):
+    if isinstance(x, (QWidget, CombinedWidget)) or (x in _specials):
         return x
 
     raise ValueError('Element ' + str(x) + ' must be a widget '
@@ -618,9 +734,14 @@ class Gui:
         # widgets when ___ and III are encountered.
         step1 = [[None] * len(lists[0]) for i in range(len(lists))]
 
+        # Expand the combined widgets
         for i, j, element in _enumerate_lol(lists, skip_specials=False):
-            # Special cases. ___ and 'III' will replicate
-            # the widgets from the previous column and row.
+            if isinstance(element, CombinedWidget):
+                element.place(lists, i, j)  # This modifies lists
+
+        # Expand remaining ___ and 'III' replicating
+        # the widgets from the previous column and row.
+        for i, j, element in _enumerate_lol(lists, skip_specials=False):
             if element == _:
                 element = None
             else:
