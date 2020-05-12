@@ -41,7 +41,7 @@ import queue
 import os.path
 import functools
 import itertools
-from enum import Enum, auto
+from enum import Enum
 from collections import Iterable, namedtuple
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
@@ -300,10 +300,12 @@ class Empty(Exception):
 class Exceptions(Enum):
     '''Enum type for exceptions handling'''
 
-    OFF = auto()            # Do not catch exceptions
-    SILENT = auto()         # Discard all exceptions silently
-    POPUP = auto()          # Popup error string
-    PRINT = auto()          # Print error string to stdout
+    # Do not use auto() becase it requires python3.6
+
+    OFF = 1                 # Do not catch exceptions
+    SILENT = 2              # Discard all exceptions silently
+    POPUP = 3               # Popup error string
+    PRINT = 4               # Print error string to stdout
     pass                    # callable = custom exception handler
 
 
