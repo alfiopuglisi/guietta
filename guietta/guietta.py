@@ -563,6 +563,11 @@ def _convert_compacts(x):
         return x  # No change
 
 
+class Userdata:
+    '''Container for user data'''
+    pass
+
+
 class Gui:
     '''Main GUI object.
 
@@ -583,6 +588,8 @@ class Gui:
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
         self.__dict__['_fake_properties'] = {}
+
+        self.userdata = Userdata()
 
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
