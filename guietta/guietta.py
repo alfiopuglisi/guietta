@@ -317,11 +317,12 @@ def _exception_wrapper(func, mode):
         handler = lambda e: None
 
     elif mode == Exceptions.PRINT:
-        handler = lambda e: print('Exception: ' + str(e))
+        handler = lambda e: print('Exception: %s\n%s' %
+                                  (e.__class__.__name__, str(e)))
 
     elif mode == Exceptions.POPUP:
-        handler = lambda e: QMessageBox.warning(None, "Error", str(e))
-
+        handler = lambda e: QMessageBox.warning(None, "Error", "%s\n%s" %
+                                                (e.__class__.__name__, str(e)))
     elif callable(mode):
         handler = mode
 
