@@ -47,7 +47,7 @@ from collections import Iterable, namedtuple
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
@@ -137,6 +137,19 @@ def _readonly_property(widget):
     return InstanceProperty(getx, setx)
 
 
+def _items_property(widget):
+    '''Property for widgets with string lists'''
+
+    def get_items():
+        return widget.selectedItems()
+
+    def set_items(lst):
+        widget.clear()
+        widget.addItems(lst)
+
+    return InstanceProperty(get_items, set_items)
+
+
 def _fake_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
@@ -145,6 +158,9 @@ def _fake_property(widget):
 
     elif isinstance(widget, QAbstractSlider):
         return _value_property(widget, int)
+
+    elif isinstance(widget, QAbstractItemView):
+        return _items_property(widget)
 
     else:
         return _readonly_property(widget)
@@ -252,13 +268,21 @@ Separator = _Separator(QFrame.HLine)
 VSeparator = _Separator(QFrame.VLine)
 
 
+#################
+# List box
+
+def LB(name):
+    return (QListWidget(), name)
+
+
 #########
 # Signals
 
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
-                    QSlider: 'valueChanged'}
+                    QSlider: 'valueChanged',
+                    QListWidget: 'currentTextChanged'}
 
 Event = namedtuple('Event', 'signal args')
 
