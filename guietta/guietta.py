@@ -382,16 +382,18 @@ class Ax:
 def M(name, width=5, height=3, dpi=100):
     '''Returns a Matplotlib Canvas widget'''
 
-    from matplotlib.figure import Figure
-    from matplotlib.backends.backend_qt5agg import FigureCanvas
+    if globals()['MatplotlibWidget'].__name__ == 'MatplotlibWidget':
 
-    class RealMatplotlibWidget(FigureCanvas):
-        def __init__(self, width, height, dpi):
-            figure = Figure(figsize=(width, height), dpi=dpi)
-            self.ax = figure.add_subplot(111)
-            super().__init__(figure)
+        from matplotlib.figure import Figure
+        from matplotlib.backends.backend_qt5agg import FigureCanvas
 
-    globals()['MatplotlibWidget'] = RealMatplotlibWidget
+        class RealMatplotlibWidget(FigureCanvas):
+            def __init__(self, width, height, dpi):
+                figure = Figure(figsize=(width, height), dpi=dpi)
+                self.ax = figure.add_subplot(111)
+                super().__init__(figure)
+
+        globals()['MatplotlibWidget'] = RealMatplotlibWidget
 
     widget = MatplotlibWidget(width, height, dpi)
     return (widget, name)
