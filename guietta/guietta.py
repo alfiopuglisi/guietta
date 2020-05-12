@@ -754,6 +754,12 @@ class Gui:
         _layer_check(lists)
         _filter_lol(lists, _process_slots)
 
+        if len(lists) != self._layout.rowCount() or \
+           len(lists[0]) != self._layout.columnCount():
+            raise ValueError('Input arguments for values() must have the '
+                             'same number of rows and cols as the constructor')
+
+
         for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
             signal_name, slot = pair
