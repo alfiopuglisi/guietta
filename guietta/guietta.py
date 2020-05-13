@@ -353,6 +353,11 @@ class _ValueSlider(CombinedWidget):
 
     def place(self, lol, row, col):
 
+        if self.anchor == Qt.AnchorLeft or self.anchor == Qt.AnchorTop:
+            first, last = self.editbox, (self.slider, self.name)
+        else:
+            first, last = (self.slider, self.name), self.editbox
+
         if self.slider.orientation() == Qt.Horizontal:
             ncols = len(lol[row])
             cells = [col]
@@ -362,11 +367,6 @@ class _ValueSlider(CombinedWidget):
             if len(cells) < 2:
                 raise ValueError('HValueSlider needs at least '
                                  'one horizontal continuation')
-   
-            if self.anchor == Qt.AnchorLeft:
-                first, last = self.editbox, (self.slider, self.name)
-            else:
-                first, last = (self.slider, self.name), self.editbox
 
             lol[row][cells[0]] = first
             for n in cells[1:-1]:
@@ -382,11 +382,6 @@ class _ValueSlider(CombinedWidget):
             if len(cells) < 2:
                 raise ValueError('VValueSlider needs at least '
                                  ' one vertical continuation')
-
-            if self.anchor == Qt.AnchorTop:
-                first, last = self.editbox, (self.slider, self.name)
-            else:
-                first, last = (self.slider, self.name), self.editbox
 
             lol[cells[0]][col] = first
             for n in cells[1:-1]:
