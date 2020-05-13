@@ -92,6 +92,10 @@ class ___:
 _specials = (_, ___, III)
 
 
+def _iterable(x):
+    return isinstance(x, Iterable) and not isinstance(x, str)
+
+
 ############
 # Property like get/set methods for fast widget access:
 # value = gui.name calls get()
@@ -103,13 +107,24 @@ InstanceProperty = namedtuple('InstanceProperty', 'get set')
 
 
 def _text_property(widget):
-    '''Property for text-based widgets (labels, buttons)'''
+    '''Property for text-based widgets (labels, buttons)
 
+    List of strings are joined with newlines when setting, and returned
+    as lists on get.
+    '''
     def get_text():
-        return widget.text()
+        lines = widget.text().split()
+        if len(lines) == 1:
+            return lines[0]
+        else:
+            return lines
 
     def set_text(value):
-        widget.setText(str(value))
+        if _iterable(value):
+            text = '\n'.join(map(str,value))
+        else:
+            text = str(value)
+        widget.setText(text)
 
     return InstanceProperty(get_text, set_text)
 
@@ -529,10 +544,6 @@ def _enumerate_lol(lol, skip_specials=True):
             if skip_specials and element in _specials:
                 continue
             yield i, j, element
-
-
-def _iterable(x):
-    return isinstance(x, Iterable) and not isinstance(x, str)
 
 
 def _normalize(x):
