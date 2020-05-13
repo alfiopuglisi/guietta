@@ -934,6 +934,22 @@ class Gui:
 
         return widget, name
 
+    def row_stretch(self, *lists):
+        '''Defines the row stretches'''
+
+        _layer_check(lists)
+
+        for i, j, stretch in _enumerate_lol(lists):
+            self._layout.setRowStretch(i, stretch)
+
+    def column_stretch(self, *lists):
+        '''Defines the column stretches'''
+
+        _layer_check(lists)
+
+        for i, j, stretch in _enumerate_lol(lists):
+            self._layout.setColumnStretch(j, stretch)
+
     def events(self, *lists):
         '''Defines the GUI events
 
