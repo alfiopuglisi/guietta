@@ -334,6 +334,7 @@ class _ValueSlider(CombinedWidget):
         self.slider = slider
         self.editbox = editbox
         self.anchor = anchor
+        self.name = name
 
     def place(self, lol, row, col):
 
@@ -348,9 +349,9 @@ class _ValueSlider(CombinedWidget):
                                  'one horizontal continuation')
    
             if self.anchor == Qt.AnchorLeft:
-                first, last = self.editbox, self.slider
+                first, last = self.editbox, (self.slider, self.name)
             else:
-                first, last = self.slider, self.editbox
+                first, last = (self.slider, self.name), self.editbox
 
             lol[row][cells[0]] = first
             for n in cells[1:-1]:
@@ -368,9 +369,9 @@ class _ValueSlider(CombinedWidget):
                                  ' one vertical continuation')
 
             if self.anchor == Qt.AnchorTop:
-                first, last = self.editbox, self.slider
+                first, last = self.editbox, (self.slider, self.name)
             else:
-                first, last = self.slider, self.editbox
+                first, last = (self.slider, self.name), self.editbox
 
             lol[cells[0]][col] = first
             for n in cells[1:-1]:
