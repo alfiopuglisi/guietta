@@ -38,6 +38,7 @@ Signals can be connected with gui.events() where every widget has:
 '''
 
 import re
+import sys
 import queue
 import os.path
 import functools
@@ -49,8 +50,9 @@ from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
@@ -523,6 +525,50 @@ def M(name, width=5, height=3, dpi=100):
 
     widget = MatplotlibWidget(width, height, dpi)
     return (widget, name)
+
+
+#####################
+# Stdout redirection
+
+class _StdoutListener(QObject):
+    '''File-like replacement for stdout/sterr'''
+
+    newData = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+    def write(self, data):
+        self.newData.emit(data)
+
+    def flush(self):
+        pass
+
+
+# One global listener object.
+_listener = _StdoutListener()
+
+
+class StdoutLog(QPlainTextEdit):
+    '''Log widget showing the stdout/stderr in the GUI'''
+
+    def __init__(self):
+        super().__init__('')
+        self.setReadOnly(True)
+
+        # We replace just the write method and not the whole stdout/stderr,
+        # because if the logging method is used, it makes a copy of
+        # sys.stderr and the replacement would not work!
+
+        sys.stdout.write = _listener.write
+        sys.stderr.write = _listener.write
+
+        _listener.newData.connect(self.dataAvail)
+
+    def dataAvail(self, data):
+        text = data.strip()
+        if text != '':
+            self.appendPlainText(text)
 
 
 # Some helper functions
