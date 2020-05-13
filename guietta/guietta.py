@@ -808,7 +808,7 @@ class Gui:
             return self.__dict__['_fake_properties'][name].get()
 
         # Default behaviour
-        raise AttributeError
+        raise AttributeError(name)
 
     def __setattr__(self, name, value):
         '''Use fake_properties to emulate properties on this instance'''
