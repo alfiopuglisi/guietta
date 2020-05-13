@@ -791,11 +791,10 @@ class Gui:
     def align_fake_properties(self):
         '''Make sure that any and all widgets have a property'''
 
+        self._fake_properties.clear()
         if self._create_properties:
             for name, widget in self._widgets.items():
                 self._fake_properties[name] = _fake_property(widget)
-        else:
-            self._fake_properties.clear()
 
     @property
     def widgets(self):
