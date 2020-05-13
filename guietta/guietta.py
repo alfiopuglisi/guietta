@@ -738,6 +738,26 @@ class Userdata:
     '''Container for user data'''
     pass
 
+##################
+# GUIs persistence
+# The global list keeps references to all GUIs and allows them
+# to remain open even after the function that created them exits.
+
+
+_guis = []
+
+
+def _add_to_persistence_list(gui):
+    _guis.append(gui)
+
+
+def _remove_from_persistence_list(gui):
+    try:
+        idx = _guis.index(gui)
+        del _guis[idx]
+    except ValueError:   # Not found
+        pass
+
 
 class Gui:
     '''Main GUI object.
@@ -752,15 +772,23 @@ class Gui:
     characters and only keeping letters, numbers and underscores.)
     '''
 
+    # Persistence settings
+    PERSISTENT = 1
+    DYNAMIC = 2
+
     def __init__(self, *lists, images_dir='.',
                                create_properties=True,
-                               exceptions=Exceptions.POPUP):
+                               exceptions=Exceptions.POPUP,
+                               persistence=PERSISTENT):
 
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
         self.__dict__['_fake_properties'] = {}
 
         self.userdata = Userdata()
+
+        if persistence == self.PERSISTENT:
+            _add_to_persistence_list(self)
 
         self._layout = QGridLayout()
         self._widgets = {}    # widgets by name
@@ -1008,7 +1036,11 @@ class Gui:
         if self._window is None:
             self._window = QWidget()
             self._window.setLayout(self._layout)
+            self._window.closeEvent = self._close_handler
         return self._window
+
+    def _close_handler(self, event):
+        _remove_from_persistence_list(self)
 
     def import_into(self, obj):
         '''
@@ -1038,7 +1070,7 @@ class Gui:
         '''Shows the GUI. This call is non-blocking'''
         self.window().show()
 
-    def close(self, dummy=None):    # Default arugment for clicked(bool)
+    def close(self, dummy=None):    # Default argument for clicked(bool)
         '''Close the window'''
         if self._window:
             self._window.close()
@@ -1114,6 +1146,7 @@ class Gui:
     def _stop_handler(self, event):
         self._event_queue.put((None, None, None))
         self._app.exit()  # Stop event loop
+        _remove_from_persistence_list(self)
 
     def _timeout_handler(self):
         self._event_queue.put(('timeout', None, None))
