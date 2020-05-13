@@ -44,7 +44,8 @@ import os.path
 import functools
 import itertools
 from enum import Enum
-from collections import Iterable, namedtuple
+from collections import namedtuple
+from collections.abc import Iterable
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
