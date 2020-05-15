@@ -1243,4 +1243,9 @@ class Gui:
                              args=(func, post_to_callback, *args))
         t.start()
 
+    def enable_drag_and_drop(self, from_, to):
+        '''Enable drag and drop between the two widgets'''
+
+        self.widgets[from_].setDragEnabled(True)
+        self.widgets[to].setAcceptDrops(True)
 # ___oOo___
