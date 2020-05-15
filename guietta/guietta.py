@@ -164,7 +164,7 @@ def _items_property(widget):
     '''Property for widgets with string lists'''
 
     def get_items():
-        return widget.selectedItems()
+        return map(lambda x: x.text(), widget.all_items())
 
     def set_items(lst):
         widget.clear()
@@ -294,9 +294,22 @@ VSeparator = _Separator(QFrame.VLine)
 #################
 # List box
 
+class QListWidgetWithDropSignal(QListWidget):
+    '''A QListWidget that emits a signal when something is dropped on it.'''
+
+    dropped = pyqtSignal()
+
+    def dropEvent(self, event):
+        super().dropEvent(event)
+        self.dropped.emit()
+
+    def all_items(self):
+        return self.findItems("*", Qt.MatchWildcard)
+
+
 def LB(name):
     '''Listbox'''
-    return (QListWidget(), name)
+    return (QListWidgetWithDropSignal(), name)
 
 
 class CombinedWidget:
@@ -415,7 +428,7 @@ _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
                     QSlider: 'valueChanged',
-                    QListWidget: 'currentTextChanged'}
+                    QListWidgetWithDropSignal: 'currentTextChanged'}
 
 Event = namedtuple('Event', 'signal args')
 
