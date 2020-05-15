@@ -1248,4 +1248,18 @@ class Gui:
 
         self.widgets[from_].setDragEnabled(True)
         self.widgets[to].setAcceptDrops(True)
+
+    def get_selections(self, name):
+
+        widget = self.widgets[name]
+
+        if hasattr(widget, 'selectedItems'):
+            return map(lambda x: x.text(), widget.selectedItems())
+
+        elif hasattr(widget, 'selectedText'):
+            return widget.selectedText()
+
+        else:
+            raise TypeError('Widget %s has not selection methods' % widget)
+
 # ___oOo___
