@@ -781,6 +781,8 @@ def _remove_from_persistence_list(gui):
 # Async processing
 
 class _result_event(QEvent):
+    '''Event used for callbacks processing'''
+
     def __init__(self, code, callbacks, args):
         QEvent.__init__(self, code)
         self.callbacks = callbacks
@@ -794,6 +796,8 @@ def _post_result(gui, callbacks, *result):
 
 
 def _customEvent(ev):
+    '''Replacement of QApplication.customEvent()'''
+
     callbacks = ev.callbacks
     args = ev.args
     for callback in callbacks:
@@ -1022,7 +1026,6 @@ class Gui:
            len(lists[0]) != self._layout.columnCount():
             raise ValueError('Input arguments for values() must have the '
                              'same number of rows and cols as the constructor')
-
 
         for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
