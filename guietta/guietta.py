@@ -781,31 +781,29 @@ def _remove_from_persistence_list(gui):
 # Async processing
 
 class _result_event(QEvent):
-    def __init__(self, code, func, args):
+    def __init__(self, code, callbacks, args):
         QEvent.__init__(self, code)
-        self.func = func
+        self.callbacks = callbacks
         self.args = args
 
 
-def _post_result(gui, callback, *result):
+def _post_result(gui, callbacks, *result):
     app = QApplication.instance()
     args = (gui,) + result
-    app.postEvent(app, _result_event(QEvent.User, callback, args))
+    app.postEvent(app, _result_event(QEvent.User, callbacks, args))
 
 
 def _customEvent(ev):
-    func = ev.func
+    callbacks = ev.callbacks
     args = ev.args
-    func(*args)
+    for callback in callbacks:
+        callback(*args)
 
 
-def _chain_functions(*funcs, first_arg):
-    '''Chain functions together
-
-    With `first_arg` = x and `funcs` = [f1,f2,f3] calculates:
-        f3(f2(f1(args)))
-    '''
-    return functools.reduce(lambda f2, f1: f1(f2), first_arg + funcs)
+def _chain_functions(f1, f2, *args):
+    '''Chain two functions together'''
+    first_result = f1(*args)
+    return f2(first_result)
 
 
 class Gui:
@@ -1217,7 +1215,7 @@ class Gui:
         self._event_queue.put(('timeout', None, None))
         self._app.exit()  # Stop event loop
 
-    def execute_in_background(self, func, args=(), callback=None):
+    def execute_in_background(self, func, args=(), callbacks=None):
         '''
         Executes `func` in a background thread and updates GUI with a callback.
 
@@ -1230,16 +1228,19 @@ class Gui:
 
         if not callable(func):
             raise TypeError('func must be a callable')
-        if not callable(callback):
-            raise TypeError('callback must be a callable')
+        if not _iterable(callbacks):
+            callbacks = [callbacks]
+        for callback in callbacks:
+            if not callable(callback):
+                raise TypeError('callback must be a callable'
+                                'or an iterable of callables')
 
-        post_to_callback = functools.partial(_post_result, self, callback)
+        post_to_callback = functools.partial(_post_result, self, callbacks)
         app = QApplication.instance()
         app.customEvent = _customEvent
 
         t = threading.Thread(target=_chain_functions,
-                             args=(func, post_to_callback),
-                             kwargs={'first_arg': args})
+                             args=(func, post_to_callback, *args))
         t.start()
 
 # ___oOo___
