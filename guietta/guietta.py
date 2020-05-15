@@ -40,6 +40,7 @@ Signals can be connected with gui.events() where every widget has:
 import re
 import sys
 import queue
+import signal
 import os.path
 import functools
 import itertools
@@ -58,6 +59,9 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject, QEvent
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
     app = QApplication([])
+
+# Needed in order for PyQt to play nice with Ctrl-C
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 # Widget shortcuts
 
