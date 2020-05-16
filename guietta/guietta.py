@@ -636,27 +636,10 @@ def M(name, width=5, height=3, dpi=100):
 #####################
 # Stdout redirection
 
-class _StdoutListener(QObject):
-    '''File-like replacement for stdout/sterr'''
-
-    newData = pyqtSignal(str)
-
-    def __init__(self):
-        super().__init__()
-
-    def write(self, data):
-        self.newData.emit(data)
-
-    def flush(self):
-        pass
-
-
-# One global listener object.
-_listener = _StdoutListener()
-
-
 class StdoutLog(QPlainTextEdit):
     '''Log widget showing the stdout/stderr in the GUI'''
+
+    newData = pyqtSignal(str)
 
     def __init__(self):
         super().__init__('')
@@ -666,10 +649,16 @@ class StdoutLog(QPlainTextEdit):
         # because if the logging module is used, it makes a copy of
         # sys.stderr and the replacement would not work!
 
-        sys.stdout.write = _listener.write
-        sys.stderr.write = _listener.write
+        sys.stdout.write = self._write
+        sys.stderr.write = self._write
 
-        _listener.newData.connect(self.dataAvail)
+        self.newData.connect(self.dataAvail)
+
+    # The write replacement uses a signal/slot instead of directly
+    # writing to the widget in order to be thread-safe.
+
+    def _write(self, data):
+        self.newData.emit(data)
 
     def dataAvail(self, data):
         text = data.strip()
