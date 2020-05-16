@@ -43,6 +43,7 @@ import queue
 import signal
 import os.path
 import functools
+import contextlib
 from enum import Enum
 from types import SimpleNamespace
 from collections import namedtuple, Counter
@@ -582,7 +583,8 @@ class MatplotlibWidget:
     pass
 
 
-class Ax:
+@contextlib.contextmanager
+def Ax(widget):
     '''
     Context manager to help drawing on Matplotlib widgets.
 
@@ -593,24 +595,15 @@ class Ax:
         with MatplotlibAx(gui.plot) as ax:
             ax.plot(...)
     '''
+    if not isinstance(widget, MatplotlibWidget):
+        raise TypeError('An instance of MatplotlibWidget is required, '
+                        'got %s instead' % widget.__class__.__name__)
+    ax = widget.ax
+    ax.clear()
 
-    def __init__(self, widget):
-        if not isinstance(widget, MatplotlibWidget):
-            raise TypeError('An instance of MatplotlibWidget is required, '
-                            'got %s instead' % widget.__class__.__name__)
-        self.widget = widget
+    yield ax
 
-    def __enter__(self):
-        self.ax = self.widget.ax
-        self.ax.clear()
-        return self.ax
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        # Propagate exceptions
-        if exc_type is not None:
-            return False
-
-        self.ax.figure.canvas.draw()
+    ax.figure.canvas.draw()
 
 
 def M(name, width=5, height=3, dpi=100):
