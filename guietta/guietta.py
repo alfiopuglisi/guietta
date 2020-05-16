@@ -45,6 +45,7 @@ import os.path
 import functools
 import itertools
 from enum import Enum
+from types import SimpleNamespace
 from collections import namedtuple
 from collections.abc import Iterable
 
@@ -752,10 +753,6 @@ def _convert_compacts(x):
         return x  # No change
 
 
-class Userdata:
-    '''Container for user data'''
-    pass
-
 ##################
 # GUIs persistence
 # The global list keeps references to all GUIs and allows them
@@ -835,7 +832,7 @@ class Gui:
         # __setattr__ does not work.
         self.__dict__['_fake_properties'] = {}
 
-        self.userdata = Userdata()
+        self.userdata = SimpleNamespace()
 
         if persistence == self.PERSISTENT:
             _add_to_persistence_list(self)
