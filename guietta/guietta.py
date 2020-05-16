@@ -43,10 +43,9 @@ import queue
 import signal
 import os.path
 import functools
-import itertools
 from enum import Enum
 from types import SimpleNamespace
-from collections import namedtuple
+from collections import namedtuple, Counter
 from collections.abc import Sequence, Mapping, MutableSequence
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
@@ -920,7 +919,8 @@ class Gui:
             _add_to_persistence_list(self)
 
         self._layout = QGridLayout()
-        self._widgets = {}    # widgets by name
+        self._widgets = {}         # widgets by name
+        self._counter = Counter()  # widgets counter
         self._window = None
         self._app = QApplication.instance()
 
@@ -1054,12 +1054,9 @@ class Gui:
         name = _normalize(name)
 
         # If the name is a duplicate, auto-number it starting with 2.
-        if name in self._widgets:
-            for n in itertools.count(start=2):
-                new_name = name + str(n)
-                if new_name not in self._widgets:
-                    name = new_name
-                    break
+        self._counter[name] += 1
+        if self._counter[name] > 1:
+            name = name + str(self._counter[name])
 
         return widget, name
 
