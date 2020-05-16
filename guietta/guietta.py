@@ -788,8 +788,8 @@ def _layer_check(lol):
     '''
     for row in lol:
         if not _mutable_sequence(row):
-            raise ValueError('Arguments are not lists '
-                             '(or other mutable iterables)')
+            raise TypeError('Arguments are not lists '
+                            '(or other mutable iterables)')
 
     row_lengths = [len(row) for row in lol]
     ncols = max(row_lengths)
