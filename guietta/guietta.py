@@ -1022,10 +1022,11 @@ class Gui:
         _layer_check(lists)
         _filter_lol(lists, _process_slots)
 
-        if len(lists) != self._layout.rowCount() or \
+        if len(lists) > self._layout.rowCount() or \
            len(lists[0]) != self._layout.columnCount():
             raise ValueError('Input arguments for values() must have the '
-                             'same number of rows and cols as the constructor')
+                             'same number of columns as the constructor and '
+                             'as many or less lines')
 
         for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
