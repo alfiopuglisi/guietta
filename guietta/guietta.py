@@ -1071,6 +1071,12 @@ class Gui:
 
         _layer_check(lists)
 
+        if len(lists) > self._layout.rowCount() or \
+           len(lists[0]) != self._layout.columnCount():
+            raise ValueError('Input arguments for row_stretch() must have '
+                             'the same number of columns as the constructor '
+                             'and as many or less lines')
+
         for i, j, stretch in _enumerate_lol(lists):
             self._layout.setRowStretch(i, stretch)
 
@@ -1078,6 +1084,12 @@ class Gui:
         '''Defines the column stretches'''
 
         _layer_check(lists)
+
+        if len(lists) > self._layout.rowCount() or \
+           len(lists[0]) != self._layout.columnCount():
+            raise ValueError('Input arguments for column_stretch() must have '
+                             'the same number of columns as the constructor '
+                             'and as many or less lines')
 
         for i, j, stretch in _enumerate_lol(lists):
             self._layout.setColumnStretch(j, stretch)
