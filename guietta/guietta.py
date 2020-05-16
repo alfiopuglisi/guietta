@@ -370,19 +370,33 @@ def LB(name):
     return (QListWidgetWithDropSignal(), name)
 
 
+#################
+# Slider combined with editbox
+
+class QLineEditDoNotErase(QLineEdit):
+    '''A QLineEdit that whose contents must not be erased
+
+    Gui constructor erases all the QLineEdit content because normally
+    it is the widget name. This class signals that the contents should
+    not be erased.
+    '''
+    pass
+
+
 class CombinedWidget:
     '''Base class for widgets that combine multiple ones'''
     pass
 
 
-#################
-# Slider combined with editbox
-
-
 class _ValueSlider(CombinedWidget):
     '''A slider combined with an inputbox for the value.'''
 
-    def __init__(self, orientation, name, anchor, myrange=None, unit=''):
+    def __init__(self, orientation,
+                      name,
+                      anchor,
+                      myrange=None,
+                      unit='',
+                      default=None):
 
         if myrange is None:
             myrange = range(0, 100, 1)
@@ -402,7 +416,7 @@ class _ValueSlider(CombinedWidget):
         slider.setMaximum(stop)
         slider.setSingleStep(step)
 
-        editbox = QLineEdit()
+        editbox = QLineEditDoNotErase()
 
         def slider_to_unit(v):
             return v / factor
@@ -423,6 +437,11 @@ class _ValueSlider(CombinedWidget):
 
         slider.valueChanged.connect(update_editbox)
         editbox.returnPressed.connect(update_slider)
+
+        if default is None:
+            slider.setValue(start)
+        else:
+            slider.setValue(unit_to_slider(default))
 
         self.slider = slider
         self.editbox = editbox
@@ -467,16 +486,18 @@ class _ValueSlider(CombinedWidget):
             lol[cells[-1]][col] = last
 
 
-def HValueSlider(name, myrange=None, unit='', anchor=Qt.AnchorRight):
+def HValueSlider(name, myrange=None, unit='',
+                 anchor=Qt.AnchorRight, default=None):
     '''A slider combined with an inputbox for the value.'''
 
-    return _ValueSlider(Qt.Horizontal, name, anchor, myrange, unit)
+    return _ValueSlider(Qt.Horizontal, name, anchor, myrange, unit, default)
 
 
-def VValueSlider(name, myrange=None, unit='', anchor=Qt.AnchorBottom):
+def VValueSlider(name, myrange=None, unit='',
+                 anchor=Qt.AnchorBottom, default=None):
     '''A slider combined with an inputbox for the value.'''
 
-    return _ValueSlider(Qt.Vertical, name, anchor, myrange, unit)
+    return _ValueSlider(Qt.Vertical, name, anchor, myrange, unit, default)
 
 
 #########
@@ -633,7 +654,7 @@ class StdoutLog(QPlainTextEdit):
         self.setReadOnly(True)
 
         # We replace just the write method and not the whole stdout/stderr,
-        # because if the logging method is used, it makes a copy of
+        # because if the logging module is used, it makes a copy of
         # sys.stderr and the replacement would not work!
 
         sys.stdout.write = _listener.write
@@ -966,7 +987,8 @@ class Gui:
 
                 # Special case for QLineEdit, make it empty.
                 if isinstance(widget, QLineEdit):
-                    widget.setText('')
+                    if not isinstance(widget, QLineEditDoNotErase):
+                        widget.setText('')
 
                 done.add(element)
 
