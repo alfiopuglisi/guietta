@@ -168,7 +168,7 @@ def _items_property(widget):
 
     def set_items(lst):
         widget.clear()
-        widget.addItems(lst)
+        widget.addItems(map(str, lst))
 
     return InstanceProperty(get_items, set_items)
 
