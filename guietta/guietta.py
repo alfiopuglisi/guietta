@@ -748,7 +748,7 @@ def _process_slots(x):
 
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
-        raise ValueError('Element %s is not a satring' % x)
+        raise ValueError('Element %s is not a string' % x)
     return x
 
 
@@ -1142,7 +1142,7 @@ class Gui:
     def rename(self, *lists):
         '''Overrides the default widget names
 
-        The argument must be a layout with she same shape as the
+        The argument must be a layout with the same shape as the
         initializer. Every element is a string with the new name
         for the widget in that position.
         '''
@@ -1344,6 +1344,6 @@ class Gui:
             return widget.selectedText()
 
         else:
-            raise TypeError('Widget %s has not selection methods' % widget)
+            raise TypeError('Widget %s has no selection methods' % widget)
 
 # ___oOo___
