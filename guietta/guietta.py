@@ -155,10 +155,7 @@ def _readonly_property(widget):
     def getx():
         return widget
 
-    def setx():
-        pass
-
-    return InstanceProperty(getx, setx)
+    return InstanceProperty(getx, None)
 
 
 def _items_property(widget):
