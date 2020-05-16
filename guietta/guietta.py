@@ -1117,16 +1117,15 @@ class Gui:
 
             if signal_name == 'default':
                 try:
-                    signal = getattr(item, _default_signals[item.__class__])
+                    signal_name = _default_signals[item.__class__]
                 except KeyError as e:
                     raise ValueError('No default event for widget %s ' %
                                      str(item.__class__)) from e
-            else:
-                try:
-                    signal = getattr(item, signal_name)
-                except AttributeError as e:
-                    raise ValueError('No signal %s found for widget %s' %
-                                     (signal_name, str(item.__class__))) from e
+            try:
+                signal = getattr(item, signal_name)
+            except AttributeError as e:
+                raise ValueError('No signal %s found for widget %s' %
+                                 (signal_name, str(item.__class__))) from e
 
             # Custom signal with default handler for get()
             if slot is None:
