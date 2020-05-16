@@ -874,10 +874,15 @@ class _result_event(QEvent):
         self.args = args
 
 
-def _post_result(gui, callback, *result):
-    app = QApplication.instance()
-    args = (gui,) + result
-    app.postEvent(app, _result_event(QEvent.User, callback, args))
+def _background_processing(gui, func, callback, *args):
+
+    result = func(*args)
+    if callback:
+        if not _sequence(result):
+            result = (result,)
+        app = QApplication.instance()
+        args = (gui,) + result
+        app.postEvent(app, _result_event(QEvent.User, callback, args))
 
 
 def _customEvent(ev):
@@ -886,12 +891,6 @@ def _customEvent(ev):
     callback = ev.callback
     args = ev.args
     callback(*args)
-
-
-def _chain_functions(f1, f2, *args):
-    '''Chain two functions together'''
-    first_result = f1(*args)
-    return f2(first_result)
 
 
 class Gui:
@@ -1317,13 +1316,11 @@ class Gui:
         if not callable(callback):
             raise TypeError('callback must be a callable')
 
-        post_to_callback = functools.partial(_post_result, self, callback)
-
         app = QApplication.instance()
         app.customEvent = _customEvent
 
-        t = threading.Thread(target=_chain_functions,
-                             args=(func, post_to_callback, *args))
+        t = threading.Thread(target=_background_processing,
+                             args=(self, func, callback, *args))
         t.start()
 
     def enable_drag_and_drop(self, from_, to):
