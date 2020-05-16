@@ -47,7 +47,7 @@ import itertools
 from enum import Enum
 from types import SimpleNamespace
 from collections import namedtuple
-from collections.abc import Iterable, Mapping, MutableSequence
+from collections.abc import Sequence, Mapping, MutableSequence
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
@@ -100,11 +100,11 @@ class ___:
 _specials = (_, ___, III)
 
 
-def _iterable(x):
-    return isinstance(x, Iterable) and not isinstance(x, str)
+def _sequence(x):
+    return isinstance(x, Sequence) and not isinstance(x, str)
 
 
-def _mutable_iterable(x):
+def _mutable_sequence(x):
     return isinstance(x, MutableSequence) and not isinstance(x, str)
 
 ############
@@ -131,7 +131,7 @@ def _text_property(widget):
             return lines
 
     def set_text(value):
-        if _iterable(value):
+        if _sequence(value):
             text = '\n'.join(map(str, value))
         else:
             text = str(value)
@@ -217,7 +217,7 @@ class SmartQLabel(QWidget):
             self._label2.setText('\n'.join(values))
             self._label2.show()
 
-        elif _iterable(value):
+        elif _sequence(value):
             self._label2.hide()
             lines = [str(x).strip() for x in value]
             self._label1.setText('\n'.join(lines))
@@ -732,9 +732,9 @@ def _process_slots(x):
         return x
     elif callable(x):
         return ('default', x)
-    elif _iterable(x) and isinstance(x[0], str) and callable(x[1]):
+    elif _sequence(x) and isinstance(x[0], str) and callable(x[1]):
         return x
-    elif _iterable(x) and isinstance(x[0], str) and (x[1] is None):
+    elif _sequence(x) and isinstance(x[0], str) and (x[1] is None):
         return x
     else:
         raise ValueError('Element %s is not a valid slot assignment' % x)
@@ -781,7 +781,7 @@ def _layer_check(lol):
     4. Check that all rows have the same length, raise ValueError if not.
     '''
     for row in lol:
-        if not _mutable_iterable(row):
+        if not _mutable_sequence(row):
             raise ValueError('Arguments are not lists '
                              '(or other mutable iterables)')
 
