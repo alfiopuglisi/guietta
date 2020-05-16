@@ -190,39 +190,46 @@ def _items_property(widget):
 #########
 
 class SmartQLabel(QWidget):
-    '''A smarter QLabel that accepts strings, lists and dicts'''
+    '''A smarter QLabel that accepts strings, lists and dicts.
+
+    Internally is a QHBoxLayout with two labels. The right label is
+    usually hidden, and only the left label is used for simple strings
+    and lists, which are shown one element per line.
+    If a dict is passed, both labels are shown and used for keys and
+    values respectively, one element per line.
+    '''
 
     def __init__(self, text=''):
 
         super().__init__()
         self._layout = QHBoxLayout()
-        self._label1 = QLabel('')
-        self._label2 = QLabel('')
-        self._layout.addWidget(self._label1)
-        self._layout.addWidget(self._label2)
+        self._left = QLabel('')
+        self._right = QLabel('')
+        self._layout.addWidget(self._left)
+        self._layout.addWidget(self._right)
         self.setLayout(self._layout)
         self.setText(text)
 
     def setText(self, value):
 
         if isinstance(value, str):
-            self._label2.hide()
-            self._label1.setText(value)
+            self._right.hide()
+            self._left.setText(value)
 
         elif isinstance(value, Mapping):
             keys = [str(x).strip() for x in value.keys()]
             values = [str(x).strip() for x in value.values()]
-            self._label1.setText('\n'.join(keys))
-            self._label2.setText('\n'.join(values))
-            self._label2.show()
+            self._left.setText('\n'.join(keys))
+            self._right.setText('\n'.join(values))
+            self._right.show()
 
         elif _sequence(value):
-            self._label2.hide()
+            self._right.hide()
             lines = [str(x).strip() for x in value]
-            self._label1.setText('\n'.join(lines))
+            self._left.setText('\n'.join(lines))
         else:
             return TypeError('SmartQLabel value must be set to a string, '
-                             'a mapping or an iterable')
+                             'a mapping or a sequence')
 
         self._orig_value = value
 
