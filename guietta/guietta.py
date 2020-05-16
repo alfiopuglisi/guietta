@@ -781,27 +781,26 @@ def _remove_from_persistence_list(gui):
 # Async processing
 
 class _result_event(QEvent):
-    '''Event used for callbacks processing'''
+    '''Event used for callback processing'''
 
-    def __init__(self, code, callbacks, args):
+    def __init__(self, code, callback, args):
         QEvent.__init__(self, code)
-        self.callbacks = callbacks
+        self.callback = callback
         self.args = args
 
 
-def _post_result(gui, callbacks, *result):
+def _post_result(gui, callback, *result):
     app = QApplication.instance()
     args = (gui,) + result
-    app.postEvent(app, _result_event(QEvent.User, callbacks, args))
+    app.postEvent(app, _result_event(QEvent.User, callback, args))
 
 
 def _customEvent(ev):
     '''Replacement of QApplication.customEvent()'''
 
-    callbacks = ev.callbacks
+    callback = ev.callback
     args = ev.args
-    for callback in callbacks:
-        callback(*args)
+    callback(*args)
 
 
 def _chain_functions(f1, f2, *args):
@@ -1219,7 +1218,7 @@ class Gui:
         self._event_queue.put(('timeout', None, None))
         self._app.exit()  # Stop event loop
 
-    def execute_in_background(self, func, args=(), callbacks=None):
+    def execute_in_background(self, func, args=(), callback=None):
         '''
         Executes `func` in a background thread and updates GUI with a callback.
 
@@ -1232,14 +1231,11 @@ class Gui:
 
         if not callable(func):
             raise TypeError('func must be a callable')
-        if not _iterable(callbacks):
-            callbacks = [callbacks]
-        for callback in callbacks:
-            if not callable(callback):
-                raise TypeError('callback must be a callable'
-                                'or an iterable of callables')
+        if not callable(callback):
+            raise TypeError('callback must be a callable')
 
-        post_to_callback = functools.partial(_post_result, self, callbacks)
+        post_to_callback = functools.partial(_post_result, self, callback)
+
         app = QApplication.instance()
         app.customEvent = _customEvent
 
