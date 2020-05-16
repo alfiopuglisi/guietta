@@ -47,7 +47,7 @@ import itertools
 from enum import Enum
 from types import SimpleNamespace
 from collections import namedtuple
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, MutableSequence
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
@@ -103,6 +103,9 @@ _specials = (_, ___, III)
 def _iterable(x):
     return isinstance(x, Iterable) and not isinstance(x, str)
 
+
+def _mutable_iterable(x):
+    return isinstance(x, MutableSequence) and not isinstance(x, str)
 
 ############
 # Property like get/set methods for fast widget access:
@@ -778,8 +781,9 @@ def _layer_check(lol):
     4. Check that all rows have the same length, raise ValueError if not.
     '''
     for row in lol:
-        if not _iterable(row):
-            raise ValueError('Arguments are not lists (or iterables)')
+        if not _mutable_iterable(row):
+            raise ValueError('Arguments are not lists '
+                             '(or other mutable iterables)')
 
     row_lengths = [len(row) for row in lol]
     ncols = max(row_lengths)
