@@ -47,13 +47,13 @@ import itertools
 from enum import Enum
 from types import SimpleNamespace
 from collections import namedtuple
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-from PyQt5.QtWidgets import QPlainTextEdit
+from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject, QEvent
 
@@ -129,10 +129,24 @@ def _text_property(widget):
 
     def set_text(value):
         if _iterable(value):
-            text = '\n'.join(map(str,value))
+            text = '\n'.join(map(str, value))
         else:
             text = str(value)
         widget.setText(text)
+
+    return InstanceProperty(get_text, set_text)
+
+
+def _smart_property(widget):
+    '''Property for smart widgets (SmartQLabel)
+
+    processing is done in the widget
+    '''
+    def get_text():
+        return widget.text()
+
+    def set_text(value):
+        widget.setText(value)
 
     return InstanceProperty(get_text, set_text)
 
@@ -171,11 +185,57 @@ def _items_property(widget):
     return InstanceProperty(get_items, set_items)
 
 
+#########
+
+class SmartQLabel(QWidget):
+    '''A smarter QLabel that accepts strings, lists and dicts'''
+
+    def __init__(self, text=''):
+
+        super().__init__()
+        self._layout = QHBoxLayout()
+        self._label1 = QLabel('')
+        self._label2 = QLabel('')
+        self._layout.addWidget(self._label1)
+        self._layout.addWidget(self._label2)
+        self.setLayout(self._layout)
+        self.setText(text)
+
+    def setText(self, value):
+
+        if isinstance(value, str):
+            self._label2.hide()
+            self._label1.setText(value)
+
+        elif isinstance(value, Mapping):
+            keys = [str(x).strip() for x in value.keys()]
+            values = [str(x).strip() for x in value.values()]
+            self._label1.setText('\n'.join(keys))
+            self._label2.setText('\n'.join(values))
+            self._label2.show()
+
+        elif _iterable(value):
+            self._label2.hide()
+            lines = [str(x).strip() for x in value]
+            self._label1.setText('\n'.join(lines))
+        else:
+            return TypeError('SmartQLabel value must be set to a string, '
+                             'a mapping or an iterable')
+
+        self._orig_value = value
+
+    def text(self):
+        return self._orig_value
+
+
 def _fake_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
     if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
         return _text_property(widget)
+
+    elif isinstance(widget, SmartQLabel):
+        return _smart_property(widget)
 
     elif isinstance(widget, QAbstractSlider):
         return _value_property(widget, int)
@@ -225,7 +285,7 @@ class L(_DeferredCreationWidget):
             label.setPixmap(QPixmap(fullpath))
             return (label, name)
         else:
-            return (QLabel(self._text_or_filename), name)
+            return (SmartQLabel(self._text_or_filename), name)
 
 
 class B(_DeferredCreationWidget):
