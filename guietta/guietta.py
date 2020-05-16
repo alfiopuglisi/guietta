@@ -838,8 +838,7 @@ def _add_to_persistence_list(gui):
 
 def _remove_from_persistence_list(gui):
     try:
-        idx = _guis.index(gui)
-        del _guis[idx]
+        _guis.remove(gui)
     except ValueError:   # Not found
         pass
 
