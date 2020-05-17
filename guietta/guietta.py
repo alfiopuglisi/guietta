@@ -699,7 +699,7 @@ def _process_slots(x):
 
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
-        raise ValueError('Element %s is not a string' % x)
+        raise TypeError('Element %s is not a string' % str(x))
     return x
 
 
