@@ -46,7 +46,7 @@ import functools
 import contextlib
 from enum import Enum
 from types import SimpleNamespace
-from collections import namedtuple, Counter
+from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
@@ -875,8 +875,8 @@ class Gui:
             _add_to_persistence_list(self)
 
         self._layout = QGridLayout()
-        self._widgets = {}         # widgets by name
-        self._counter = Counter()  # widgets counter
+        self._widgets = {}                # widgets by name
+        self._counter = defaultdict(int)  # widgets counter
         self._window = None
         self._app = QApplication.instance()
 
