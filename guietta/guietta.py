@@ -188,11 +188,7 @@ class SmartQLabel(QWidget):
 
     def setText(self, value):
 
-        if isinstance(value, str):
-            self._right.hide()
-            self._left.setText(value)
-
-        elif isinstance(value, Mapping):
+        if isinstance(value, Mapping):
             keys = [str(x).strip() for x in value.keys()]
             values = [str(x).strip() for x in value.values()]
             self._left.setText('\n'.join(keys))
@@ -203,9 +199,10 @@ class SmartQLabel(QWidget):
             self._right.hide()
             lines = [str(x).strip() for x in value]
             self._left.setText('\n'.join(lines))
+
         else:
-            return TypeError('SmartQLabel value must be set to a string, '
-                             'a mapping or a sequence')
+            self._right.hide()
+            self._left.setText(str(value))
 
         self._orig_value = value
 
