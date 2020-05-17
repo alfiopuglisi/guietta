@@ -55,7 +55,7 @@ from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
 from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject, QEvent
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QEvent
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
