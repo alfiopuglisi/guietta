@@ -1129,8 +1129,7 @@ class Gui:
         return self._layout
 
     def window(self):
-        '''Builds a QT window containin all the Gui widgets and returns it'''
-
+        '''Builds a QT window containing all the Gui widgets and returns it'''
         if self._window is None:
             self._window = QWidget()
             self._window.setLayout(self._layout)
