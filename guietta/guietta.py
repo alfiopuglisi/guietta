@@ -1120,21 +1120,9 @@ class Gui:
 
         self.align_fake_properties()
 
-    def colors(self, *args):
-        '''Defines the GUI colors'''
-        raise NotImplementedError
-
-    def groups(self, *args):
-        '''Defines the GUI widget groups'''
-        raise NotImplementedError
-
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
         return self._layout.itemAtPosition(name[0], name[1]).widget()
-
-    def all(group=''):
-        '''Replicates command on all widgets'''
-        raise NotImplementedError
 
     def layout(self):
         '''Returns the Gui layout, containing all the widgets'''
