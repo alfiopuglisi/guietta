@@ -56,6 +56,11 @@ class UploadCommand(Command):
 
         sys.exit()
 
+# If you use Anaconda, installing PyQt5 with pip breaks
+# the one shipped with Anaconda, (segfault when importing
+# because of difference in the binary libraries),
+# and there is no easy fix. So we don't put it in the requirements.
+
 
 setup(name=NAME,
       description=DESCRIPTION,
@@ -70,16 +75,10 @@ setup(name=NAME,
       author_email=EMAIL,
       author=AUTHOR,
       license=LICENSE,
-#      keywords=KEYWORDS,
       packages=['guietta',
                 'guietta.examples',
                 ],
-#      package_data={
-#          'arte': ['data/*'],
-#      },
-      install_requires=['PyQt5',
-                        ],
-#      include_package_data=True,
+      install_requires= [],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
       )
