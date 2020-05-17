@@ -28,9 +28,11 @@ author = 'Alfio Timothy Puglisi'
 # Otherwise the build on readthedocs.io fails!
 
 class QtWidgets:
-    QPushButton = QLabel = QLineEdit = QCheckBox = None
-    QRadioButton = QSlider = QWidget = QGridLayout = None
-    QAbstractSlider = QAbstractButton = QMessageBox = None
+    QPushButton = QLabel = QLineEdit = QCheckBox = object
+    QRadioButton = QSlider = QWidget = QGridLayout = object
+    QAbstractSlider = QAbstractButton = QMessageBox = object
+    QListWidget = QAbstractItemView = QPlainTextEdit = object
+    QHBoxLayout = object
     class QFrame:
         HLine = VLine = Sunken = None
         def setFrameShadow(self, a): pass

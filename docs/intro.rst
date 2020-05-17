@@ -54,6 +54,11 @@ with a few more lines::
 That's enough to get it working! That was 15 lines in total, including
 a few blank ones for clarity.
 
+Here is the result on my computer:
+
+.. image:: example.png
+
+
 Of course users are devious, so as a minimum we should add some exception
 catching where the result is calculated, otherwise the code will break if
 something that is not a number is found in the input widgets. But that's
