@@ -154,7 +154,7 @@ def _items_property(widget):
     '''Property for widgets with string lists'''
 
     def get_items():
-        return map(lambda x: x.text(), widget.all_items())
+        return map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
 
     def set_items(lst):
         widget.clear()
@@ -342,9 +342,6 @@ class QListWidgetWithDropSignal(QListWidget):
     def dropEvent(self, event):
         super().dropEvent(event)
         self.dropped.emit()
-
-    def all_items(self):
-        return self.findItems("*", Qt.MatchWildcard)
 
 
 def LB(name):
