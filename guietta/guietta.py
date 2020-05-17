@@ -118,38 +118,13 @@ InstanceProperty = namedtuple('InstanceProperty', 'get set')
 
 
 def _text_property(widget):
-    '''Property for text-based widgets (labels, buttons)
+    '''Property for text-based widgets (labels, buttons)'''
 
-    List of strings are joined with newlines when setting, and returned
-    as lists on get.
-    '''
-    def get_text():
-        lines = widget.text().split()
-        if len(lines) == 1:
-            return lines[0]
-        else:
-            return lines
-
-    def set_text(value):
-        if _sequence(value):
-            text = '\n'.join(map(str, value))
-        else:
-            text = str(value)
-        widget.setText(text)
-
-    return InstanceProperty(get_text, set_text)
-
-
-def _smart_property(widget):
-    '''Property for smart widgets (SmartQLabel)
-
-    processing is done in the widget
-    '''
     def get_text():
         return widget.text()
 
-    def set_text(value):
-        widget.setText(value)
+    def set_text(text):
+        widget.setText(text)
 
     return InstanceProperty(get_text, set_text)
 
@@ -241,11 +216,8 @@ class SmartQLabel(QWidget):
 def _fake_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
-    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit)):
+    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit, SmartQLabel)):
         return _text_property(widget)
-
-    elif isinstance(widget, SmartQLabel):
-        return _smart_property(widget)
 
     elif isinstance(widget, QAbstractSlider):
         return _value_property(widget, int)
