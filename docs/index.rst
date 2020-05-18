@@ -17,7 +17,7 @@ Guietta is a tool that makes simple GUIs *simple*::
     gui.run()
 
 
-And here is what appears:
+And here it is:
 
 .. image:: example.png
 
