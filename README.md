@@ -19,4 +19,6 @@ Guietta is a tool that makes simple GUIs *simple*::
 
 And here it is:
 
-.. image:: http://guietta.com/_images/example.png
+![Example GUI](http://guietta.com/_images/example.png)
+
+
