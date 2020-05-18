@@ -53,7 +53,7 @@ from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
 from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout
+from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 
@@ -147,7 +147,10 @@ def _readonly_property(widget):
     def getx():
         return widget
 
-    return InstanceProperty(getx, None)
+    def setx(x):
+        raise AttributeError('This property is read-only')
+
+    return InstanceProperty(getx, setx)
 
 
 def _items_property(widget):
@@ -159,6 +162,22 @@ def _items_property(widget):
     def set_items(lst):
         widget.clear()
         widget.addItems(map(str, lst))
+
+    return InstanceProperty(get_items, set_items)
+
+
+def _combobox_property(widget):
+    '''Property for comboboxes'''
+
+    def get_items():
+        texts = [widget.itemText(i) for i in range(widget.count())]
+        data = [widget.itemData(i) for i in range(widget.count())]
+        return dict(zip(texts, data))
+
+    def set_items(dct):
+        widget.clear()
+        for k, v in dct.items():
+            widget.addItem(k, v)
 
     return InstanceProperty(get_items, set_items)
 
@@ -222,6 +241,8 @@ def _fake_property(widget):
     elif isinstance(widget, QAbstractItemView):
         return _items_property(widget)
 
+    elif isinstance(widget, QComboBox):
+        return _combobox_property(widget)
     else:
         return _readonly_property(widget)
 
@@ -345,6 +366,26 @@ def LB(name):
     '''Listbox'''
     return (QListWidgetWithDropSignal(), name)
 
+
+#######################
+# Combobox
+
+def CB(name, list_or_dict):
+    '''Combobox'''
+
+    cb = QComboBox()
+    if isinstance(list_or_dict, Mapping):
+        for k, v in list_or_dict.items():
+            cb.addItem(k, v)
+
+    elif _sequence(list_or_dict):
+        for v in list_or_dict:
+            cb.addItem(v, None)
+    else:
+        raise TypeError('ComboBox initalizer must be either a sequence '
+                        'or a mapping')
+
+    return (cb, name)
 
 #################
 # Slider combined with editbox
@@ -1284,6 +1325,12 @@ class Gui:
 
         elif hasattr(widget, 'selectedText'):
             return widget.selectedText()
+
+        elif hasattr(widget, 'currentText') and hasattr(widget, 'currentData'):
+            return widget.currentText(), widget.currentData()
+
+        elif hasattr(widget, 'currentText'):
+            return widget.currentText()
 
         else:
             raise TypeError('Widget %s has no selection methods' % widget)
