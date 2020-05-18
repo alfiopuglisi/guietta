@@ -12,7 +12,7 @@ Install Guietta
 
 ``pip install guietta``
 
-This should also automatically install PyQt5, if you don't already have it.
+This should also automatically install PySide2, if you don't already have it.
 If you plan to use Matplotlib together with guietta, you should install that
 too. It is not done automatically.
 

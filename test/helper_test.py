@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import _sequence, _mutable_sequence
 
-from PyQt5.QtWidgets import QWidget 
+from PySide2.QtWidgets import QWidget 
 
 class HelperTest(unittest.TestCase):
     

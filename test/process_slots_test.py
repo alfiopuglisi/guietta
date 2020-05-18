@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import _process_slots, _specials
 
-from PyQt5.QtWidgets import QWidget
+from PySide2.QtWidgets import QWidget
 
 '''
     A callable is transformed into ('default', callable). The callable

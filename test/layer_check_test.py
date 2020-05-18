@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import _layer_check
 
-from PyQt5.QtWidgets import QWidget
+from PySide2.QtWidgets import QWidget
 
 
 class LayerCheckTest(unittest.TestCase):

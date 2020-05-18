@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from guietta import B, E, _, Gui, Quit
-from PyQt5.QtWidgets import QSlider
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QSlider
+from PySide2.QtCore import Qt
 
 def do_eval(gui, *args):
     gui.result = eval(gui.expr)

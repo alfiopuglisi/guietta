@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtCore import Qt
+from PySide2.QtCore import Qt
 from guietta import Gui, _, ___, III, HValueSlider, VValueSlider
 
 def do_slider(gui, value):

@@ -17,12 +17,22 @@ Guietta is a tool that makes simple GUIs *simple*::
     gui.run()
 
 
-And here is what appears::
+And here is what appears:
 
 .. image:: example.png
 
 
+Installation
+============
 
+ **pip install guietta**
+ 
+
+If you use conda, please read our page on
+`QT incompatibilities with conda <qt_conda.html>`_.
+
+Documentation
+=============
 
 .. toctree::
    :maxdepth: 1

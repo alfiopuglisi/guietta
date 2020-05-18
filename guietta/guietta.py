@@ -49,13 +49,13 @@ from types import SimpleNamespace
 from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QEvent
+from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout
+from PySide2.QtGui import QPixmap, QIcon
+from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
@@ -334,7 +334,7 @@ VSeparator = _Separator(QFrame.VLine)
 class QListWidgetWithDropSignal(QListWidget):
     '''A QListWidget that emits a signal when something is dropped on it.'''
 
-    dropped = pyqtSignal()
+    dropped = Signal()
 
     def dropEvent(self, event):
         super().dropEvent(event)
@@ -598,7 +598,7 @@ def M(name, width=5, height=3, dpi=100):
 class StdoutLog(QPlainTextEdit):
     '''Log widget showing the stdout/stderr in the GUI'''
 
-    newData = pyqtSignal(str)
+    newData = Signal(str)
 
     def __init__(self):
         super().__init__('')

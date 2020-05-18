@@ -24,7 +24,7 @@ author = 'Alfio Timothy Puglisi'
 
 # -- General configuration ---------------------------------------------------
 
-# Mock the PyQt5 module
+# Mock the PySide2 module
 # Otherwise the build on readthedocs.io fails!
 
 class QtWidgets:
@@ -45,7 +45,7 @@ class QtWidgets:
             return 1    # With this, the main file will not trty
                         # to create a new one.
 
-sys.modules['PyQt5.QtWidgets'] = QtWidgets
+sys.modules['PySide2.QtWidgets'] = QtWidgets
 
 sys.path.insert(0, os.path.abspath('..'))
 from guietta.__version__ import __version__

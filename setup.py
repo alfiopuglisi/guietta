@@ -13,8 +13,8 @@ AUTHOR = 'Alfio Puglisi'
 LICENSE = 'MIT'
 #KEYWORDS = 
 
-here = os.path.abspath(os.path.dirname(__file__))
 # Load the package's __version__.py module as a dictionary.
+here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 with open(os.path.join(here, NAME, '__version__.py')) as f:
     exec(f.read(), about)
@@ -56,11 +56,6 @@ class UploadCommand(Command):
 
         sys.exit()
 
-# If you use Anaconda, installing PyQt5 with pip breaks
-# the one shipped with Anaconda, (segfault when importing
-# because of difference in the binary libraries),
-# and there is no easy fix. So we don't put it in the requirements.
-
 
 setup(name=NAME,
       description=DESCRIPTION,
@@ -78,7 +73,7 @@ setup(name=NAME,
       packages=['guietta',
                 'guietta.examples',
                 ],
-      install_requires= [],
+      install_requires=['PySide2'],
       test_suite='test',
-      cmdclass={'upload': UploadCommand, },
+      cmdclass={'upload': UploadCommand},
       )

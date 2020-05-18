@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import _convert_compacts, L, B
 
-from PyQt5.QtWidgets import QWidget, QLineEdit
+from PySide2.QtWidgets import QWidget, QLineEdit
 
 '''
     Converts:
