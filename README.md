@@ -2,7 +2,7 @@
 
 A tool for making simple Python GUIs
 
-Guietta is a tool that makes simple GUIs *simple*::
+Guietta is a tool that makes simple GUIs *simple*:
 
 
     from guietta import _, Gui, Quit
