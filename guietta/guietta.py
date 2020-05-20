@@ -38,9 +38,11 @@ Signals can be connected with gui.events() where every widget has:
 '''
 
 import re
+import ast
 import sys
 import queue
 import signal
+import inspect
 import os.path
 import functools
 import contextlib
@@ -1362,4 +1364,69 @@ class Gui:
         else:
             raise TypeError('Widget %s has no selection methods' % widget)
 
-# ___oOo___
+    class Analyzer(ast.NodeVisitor):
+        '''
+        AST analyzer that detects all instances of attribute access like::
+
+            a = gui.widget
+        '''
+
+        def __init__(self, decorator_name='auto'):
+            self.gui_name = None
+            self.accessed_widgets = set()
+            self.decorator_name = decorator_name
+
+        def visit_Attribute(self, node):
+            if (
+                isinstance(node.value, ast.Name)
+                and node.value.id == self.gui_name
+                and isinstance(node.ctx, ast.Load)
+                and node.attr != self.decorator_name
+            ):
+                #print('Detected attribute read access: ', node.attr)
+                self.accessed_widgets.add(node.attr)
+            self.generic_visit(node)
+
+        def visit_FunctionDef(self, node):
+            decorators = node.decorator_list
+            for d in decorators:
+                if (
+                    isinstance(d, ast.Attribute)
+                    and d.attr == self.decorator_name
+                ):
+                    self.gui_name = d.value.id
+                    #print('Our decorator on "' + self.gui_name + '" !')
+            self.generic_visit(node)
+
+    def auto(self, func):
+        '''Auto-connection decorator.
+
+        Analyzes a function and auto-connects the function
+        as a slot for all widgets that are accessed in the function itself.
+        '''
+        source = inspect.getsource(func)
+        tree = ast.parse('if 1:\n' + source)  # if 1: arbitrary indentation
+
+        analyzer = Gui.Analyzer(decorator_name=Gui.auto.__name__)
+        analyzer.visit(tree)
+        for widget_name in analyzer.accessed_widgets:
+            try:
+                widget = self.widgets[widget_name]
+                klass = widget.__class__
+                signal = getattr(widget, _default_signals[klass])
+
+                if _bound_method(func, to_whom=self):
+                    use_slot = func
+                else:
+                    use_slot = functools.partial(func, self)
+
+                signal.connect(_exception_wrapper(use_slot,
+                                                  self._exception_mode))
+            except KeyError as e:
+                # widget not found or no default signal defined
+                # print('KeyError:', str(e))
+                pass
+
+        return func
+
+        # ___oOo___
