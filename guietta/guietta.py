@@ -125,7 +125,10 @@ def _text_property(widget):
         return widget.text()
 
     def set_text(text):
-        widget.setText(str(text))
+        if isinstance(widget, SmartQLabel):
+            widget.setText(text)
+        else:
+            widget.setText(str(text))
 
     return InstanceProperty(get_text, set_text)
 
