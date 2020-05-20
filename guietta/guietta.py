@@ -54,6 +54,7 @@ from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
 from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+from PySide2.QtWidgets import QSplashScreen
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 
@@ -879,6 +880,29 @@ def _customEvent(ev):
     callback = ev.callback
     args = ev.args
     callback(*args)
+
+
+def splash(text, width=None, height=None, color=Qt.lightGray, image=None):
+    '''Display and return a splash screen.
+
+    The splashscreen must be closed with close() or finish(gui.window()).
+    Alternatively, it will close when the user clicks on it.
+    '''
+    if image is None:
+        if width is None:
+            width = 400
+        if height is None:
+            height = 100
+        pixmap = QPixmap(width, height)
+        pixmap.fill(color)
+    else:
+        pixmap = QPixmap(image)
+    splash = QSplashScreen(pixmap)
+    splash.showMessage(text)
+    splash.show()
+    app = QApplication.instance()
+    app.processEvents()
+    return splash
 
 
 class Gui:
