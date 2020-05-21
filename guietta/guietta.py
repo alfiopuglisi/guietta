@@ -110,7 +110,6 @@ def _sequence(x):
 def _mutable_sequence(x):
     return isinstance(x, MutableSequence) and not isinstance(x, str)
 
-
 ############
 # Property like get/set methods for fast widget access:
 # value = gui.name calls get()
@@ -119,36 +118,6 @@ def _mutable_sequence(x):
 # and would be shared by different GUIs!
 
 InstanceProperty = namedtuple('InstanceProperty', 'get set')
-
-
-class DummyCallable():
-    '''no-op callable used when a widget has not been connected to anything'''
-
-    def __init__(self, widget):
-        self._widget = widget
-
-    def __call__(self):
-        pass
-
-
-def _signal_property(widget):
-    '''Property that handles the widget's default signal
-
-    widgets and their slots are double-linked using _connected_to
-    and _widget properties respectively. Since the signal/slot assignments
-    can be done multiple times, _connected_to (returned by get()) is a list.
-    '''
-
-    def getx():
-        if hasattr(widget, '_connected_to') and len(widget._connected_to) > 0:
-            return widget._connected_to
-        else:
-            return [DummyCallable(widget)]
-
-    def setx(value):
-        _connect(None, widget, signal_name='default', slot=value)
-
-    return InstanceProperty(getx, setx)
 
 
 def _text_property(widget):
@@ -269,10 +238,7 @@ class SmartQLabel(QWidget):
 def _fake_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
-    if isinstance(widget, QAbstractButton):
-        return _signal_property(widget)
-
-    if isinstance(widget, (QLabel, QLineEdit, SmartQLabel)):
+    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit, SmartQLabel)):
         return _text_property(widget)
 
     elif isinstance(widget, QAbstractSlider):
@@ -775,31 +741,6 @@ def _process_slots(x):
         raise ValueError('Element %s is not a valid slot assignment' % x)
 
 
-def _signal_pair(x):
-    '''Normalize a signal pair spefication
-
-    since the instance property returns the current slot list (which may be
-    a DummyCallable), use _widget_from_slot_list to recover the widget.
-
-    Valid specs:
-    ('textChanged', gui.a)    # Full signal spec
-    gui.a                     # Default signal(s)
-    '''
-    if isinstance(x, tuple) and isinstance(x[0], str):
-        return (x[0], _widget_from_slot_list(x[1]))
-    else:
-        return ('default', _widget_from_slot_list(x))
-
-
-def _widget_from_slot_list(x):
-    '''Recover the widget from a slot list'''
-
-    if _sequence(x) and len(x) > 0 and hasattr(x[0], '_widget'):
-        return x[0]._widget
-    else:
-        raise ValueError('Element %s is not a valid signal spec' % x)
-
-
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
         raise TypeError('Element %s is not a string' % str(x))
@@ -969,56 +910,6 @@ def splash(text, width=None, height=None, color=Qt.lightGray, image=None):
     return splash
 
 
-def _connect(gui_obj, widget, signal_name, slot):
-
-    # If called without a gui_obj, look it up using the widget attributes.
-    if gui_obj is None:
-        if hasattr(widget, '_gui'):
-            gui_obj = widget._gui
-        else:
-            raise TypeError('Widget %s does not seem to belong to any '
-                            'Gui object' % widget.__class__.__name__)
-
-    if signal_name == 'default':
-        try:
-            signal_name = _default_signals[widget.__class__]
-        except KeyError as e:
-            raise ValueError('No default event for widget %s ' %
-                             str(widget.__class__)) from e
-    try:
-        signal = getattr(widget, signal_name)
-    except AttributeError as e:
-        raise ValueError('No signal %s found for widget %s' %
-                         (signal_name, str(widget.__class__))) from e
-
-    # Custom signal with default handler for get()
-    if slot is None:
-        slot = functools.partial(gui_obj._event_handler, signal, widget)
-
-    if _bound_method(slot, to_whom=gui_obj):
-        use_slot = slot
-    else:
-        use_slot = functools.partial(slot, gui_obj)
-
-    signal.connect(_exception_wrapper(use_slot, gui_obj._exception_mode))
-    widget._connected_to.append(use_slot)
-
-
-def slot(*slot_defs):
-    '''Decorator to connect a function to a series of signals'''
-    
-    signal_pairs = map(_signal_pair, slot_defs)
-
-    def real_decorator(f):
-        for signal_pair in signal_pairs:
-            signal_name, widget = signal_pair
-            _connect(None, widget, signal_name, f)
-        return f
-
-    return real_decorator
-
-
-
 class Gui:
     '''Main GUI object.
 
@@ -1119,8 +1010,6 @@ class Gui:
 
                 widget, name = self._get_widget_and_name(element)
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
-                widget._gui = self
-                widget._connected_to = []
                 self._widgets[name] = widget
 
                 # Special case for QLineEdit, make it empty.
@@ -1253,7 +1142,7 @@ class Gui:
         for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
             signal_name, slot = pair
-            _connect(self, item, signal_name, slot)
+            self._connect(item, signal_name, slot)
 
     def rename(self, *lists):
         '''Overrides the default widget names
@@ -1487,6 +1376,31 @@ class Gui:
                     #print('Our decorator on "' + self.gui_name + '" !')
             self.generic_visit(node)
 
+    def _connect(self, widget, signal_name, slot):
+
+        if signal_name == 'default':
+            try:
+                signal_name = _default_signals[widget.__class__]
+            except KeyError as e:
+                raise ValueError('No default event for widget %s ' %
+                                 str(widget.__class__)) from e
+        try:
+            signal = getattr(widget, signal_name)
+        except AttributeError as e:
+            raise ValueError('No signal %s found for widget %s' %
+                             (signal_name, str(widget.__class__))) from e
+
+        # Custom signal with default handler for get()
+        if slot is None:
+            slot = functools.partial(self._event_handler, signal, widget)
+
+        if _bound_method(slot, to_whom=self):
+            use_slot = slot
+        else:
+            use_slot = functools.partial(slot, self)
+
+        signal.connect(_exception_wrapper(use_slot, self._exception_mode))
+
     def auto(self, func):
         '''Auto-connection decorator.
 
@@ -1504,7 +1418,7 @@ class Gui:
             if widget_name in self.widgets:
                 try:
                     widget = self.widgets[widget_name]
-                    _connect(self, widget, 'default', func)
+                    self._connect(widget, 'default', func)
 
                 except ValueError as e:
                     # No default signal defined
