@@ -1142,29 +1142,7 @@ class Gui:
         for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
             signal_name, slot = pair
-
-            if signal_name == 'default':
-                try:
-                    signal_name = _default_signals[item.__class__]
-                except KeyError as e:
-                    raise ValueError('No default event for widget %s ' %
-                                     str(item.__class__)) from e
-            try:
-                signal = getattr(item, signal_name)
-            except AttributeError as e:
-                raise ValueError('No signal %s found for widget %s' %
-                                 (signal_name, str(item.__class__))) from e
-
-            # Custom signal with default handler for get()
-            if slot is None:
-                slot = functools.partial(self._event_handler, signal, item)
-
-            if _bound_method(slot, to_whom=self):
-                use_slot = slot
-            else:
-                use_slot = functools.partial(slot, self)
-
-            signal.connect(_exception_wrapper(use_slot, self._exception_mode))
+            self._connect(item, signal_name, slot)
 
     def rename(self, *lists):
         '''Overrides the default widget names
@@ -1398,6 +1376,31 @@ class Gui:
                     #print('Our decorator on "' + self.gui_name + '" !')
             self.generic_visit(node)
 
+    def _connect(self, widget, signal_name, slot):
+
+        if signal_name == 'default':
+            try:
+                signal_name = _default_signals[widget.__class__]
+            except KeyError as e:
+                raise ValueError('No default event for widget %s ' %
+                                 str(widget.__class__)) from e
+        try:
+            signal = getattr(widget, signal_name)
+        except AttributeError as e:
+            raise ValueError('No signal %s found for widget %s' %
+                             (signal_name, str(widget.__class__))) from e
+
+        # Custom signal with default handler for get()
+        if slot is None:
+            slot = functools.partial(self._event_handler, signal, widget)
+
+        if _bound_method(slot, to_whom=self):
+            use_slot = slot
+        else:
+            use_slot = functools.partial(slot, self)
+
+        signal.connect(_exception_wrapper(use_slot, self._exception_mode))
+
     def auto(self, func):
         '''Auto-connection decorator.
 
@@ -1409,23 +1412,18 @@ class Gui:
 
         analyzer = Gui.Analyzer(decorator_name=Gui.auto.__name__)
         analyzer.visit(tree)
+
         for widget_name in analyzer.accessed_widgets:
-            try:
-                widget = self.widgets[widget_name]
-                klass = widget.__class__
-                signal = getattr(widget, _default_signals[klass])
 
-                if _bound_method(func, to_whom=self):
-                    use_slot = func
-                else:
-                    use_slot = functools.partial(func, self)
+            if widget_name in self.widgets:
+                try:
+                    widget = self.widgets[widget_name]
+                    self._connect(widget, 'default', func)
 
-                signal.connect(_exception_wrapper(use_slot,
-                                                  self._exception_mode))
-            except KeyError as e:
-                # widget not found or no default signal defined
-                # print('KeyError:', str(e))
-                pass
+                except ValueError as e:
+                    # No default signal defined
+                    # print('KeyError:', str(e))
+                    pass
 
         return func
 
