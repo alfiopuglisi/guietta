@@ -111,6 +111,109 @@ def _mutable_sequence(x):
     return isinstance(x, MutableSequence) and not isinstance(x, str)
 
 
+#########
+# Context managers
+
+class ContextMixin():
+    '''Mixin class to allow a widget to be used with the `with` statement.
+
+    The with code block is used to compile a function that will be connected
+    to the widget's default signal.
+    '''
+
+    def __enter__(self):
+        self._start = inspect.stack()[1]
+        return self
+
+    def __exit__(self, *args):
+        end = inspect.stack()[1]
+
+        lines, first = inspect.getsourcelines(self._start.frame)
+
+        withlines = lines[self._start.lineno + first -1 : end.lineno + first]
+        withsource = textwrap.dedent(''.join(withlines))
+
+        tree = ast.parse(withsource)
+        analyzer = _Analyzer()
+        analyzer.visit(tree)
+        gui_name = analyzer.gui_name
+
+        if gui_name is None:
+            raise ValueError('Could not determine the Gui instance identifier')
+
+        slotlines = withlines[1:]
+        slotsource = textwrap.dedent(''.join(slotlines))
+
+        code = 'def slot(%s, *args):\n' % gui_name
+        code += textwrap.indent(slotsource, ' ')
+
+        # heed the Python docs warning about modifying locals()
+        scope = locals().copy()
+        exec(code, globals(), scope)
+
+        if hasattr(self, '_widget'):
+            widget = self._widget
+        else:
+            widget = self
+
+        _connect(None, widget, signal_name='default', slot=scope['slot'])
+
+        return True   # Cancel the exception raised by the first execution
+
+    @classmethod
+    def convert_object(cls, obj):
+        '''Add this class as a mixin after an object has been created'''
+        base_cls = obj.__class__
+        base_cls_name = obj.__class__.__name__
+        new_name = 'Context' + base_cls_name
+        obj.__class__ = type(new_name, (base_cls, cls), {})
+
+
+class _Analyzer(ast.NodeVisitor):
+    '''
+    AST analyzer that detects all instances of attribute access like::
+
+        a = gui.widget
+    '''
+
+    def __init__(self, decorator_name='auto'):
+        self.gui_name = None
+        self.accessed_widgets = set()
+        self.decorator_name = decorator_name
+
+    def visit_Attribute(self, node):
+        '''Detect all reads like "gui.widget"'''
+
+        if (
+            isinstance(node.value, ast.Name)
+            and node.value.id == self.gui_name
+            and isinstance(node.ctx, ast.Load)
+            and node.attr != self.decorator_name
+        ):
+            self.accessed_widgets.add(node.attr)
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node):
+        '''Detect "gui" in "@gui.auto"'''
+
+        decorators = node.decorator_list
+        for d in decorators:
+            if (
+                isinstance(d, ast.Attribute)
+                and d.attr == self.decorator_name
+            ):
+                self.gui_name = d.value.id
+        self.generic_visit(node)
+
+    def visit_With(self, node):
+        '''Detect "gui" in "with gui.widget'''
+
+        for item in node.items:
+            if isinstance(item.context_expr, ast.Attribute):
+                self.gui_name = item.context_expr.value.id
+        self.generic_visit(node)
+
+
 ############
 # Property like get/set methods for fast widget access:
 # value = gui.name calls get()
@@ -119,6 +222,36 @@ def _mutable_sequence(x):
 # and would be shared by different GUIs!
 
 InstanceProperty = namedtuple('InstanceProperty', 'get set')
+
+
+class _ContextStr(str, ContextMixin):
+    def __new__(cls, widget, *args, **kw):
+        return str.__new__(cls, *args, **kw)
+
+    def __init__(self, widget, *args, **kwargs):
+        self._widget = widget
+
+
+class _ContextInt(int, ContextMixin):
+    def __new__(cls, widget, *args, **kw):
+        return int.__new__(cls, *args, **kw)
+
+    def __init__(self, widget, *args, **kwargs):
+        self._widget = widget
+
+
+class _ContextList(list, ContextMixin):
+
+    def __init__(self, widget, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._widget = widget
+
+
+class _ContextDict(dict, ContextMixin):
+
+    def __init__(self, widget, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._widget = widget
 
 
 def _signal_property(widget):
@@ -140,7 +273,8 @@ def _text_property(widget):
     '''Property for text-based widgets (labels, buttons)'''
 
     def get_text():
-        return widget.text()
+        text = widget.text()
+        return _ContextStr(widget, text)
 
     def set_text(text):
         if isinstance(widget, SmartQLabel):
@@ -155,7 +289,11 @@ def _value_property(widget, typ):
     '''Property for value-based widgets (sliders)'''
 
     def get_value():
-        return widget.value()
+        value = widget.value()
+        if typ == int:
+            return _ContextInt(widget, value)
+        else:
+            return value
 
     def set_value(value):
         widget.setValue(typ(value))
@@ -179,7 +317,8 @@ def _items_property(widget):
     '''Property for widgets with string lists'''
 
     def get_items():
-        return map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
+        items = map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
+        return _ContextList(widget, items)
 
     def set_items(lst):
         widget.clear()
@@ -194,7 +333,7 @@ def _combobox_property(widget):
     def get_items():
         texts = [widget.itemText(i) for i in range(widget.count())]
         data = [widget.itemData(i) for i in range(widget.count())]
-        return dict(zip(texts, data))
+        return _ContextDict(widget, zip(texts, data))
 
     def set_items(dct):
         widget.clear()
@@ -273,97 +412,6 @@ def _fake_property(widget):
         return _readonly_property(widget)
 
 
-#########
-# Context managers
-
-class ContextMixin():
-    '''Mixin class to allow a widget to be used with the `with` statement.
-
-    The with code block is used to compile a function that will be connected
-    to the widget's default signal.
-    '''
-
-    def __enter__(self):
-        self._start = inspect.stack()[1]
-        return self
-
-    def __exit__(self, *args):
-        end = inspect.stack()[1]
-
-        lines, first = inspect.getsourcelines(self._start.frame)
-
-        withlines = lines[self._start.lineno + first -1 : end.lineno + first]
-        withsource = textwrap.dedent(''.join(withlines))
-
-        tree = ast.parse(withsource)
-        analyzer = _Analyzer()
-        analyzer.visit(tree)
-        gui_name = analyzer.gui_name
-
-        slotlines = withlines[1:]
-        slotsource = textwrap.dedent(''.join(slotlines))
-
-        code = 'def slot(%s, *args):\n' % gui_name
-        code += textwrap.indent(slotsource, ' ')
-
-        # heed the Python docs warning about modifying locals()
-        scope = locals().copy()
-        exec(code, globals(), scope)
-        _connect(None, self, signal_name='default', slot=scope['slot'])
-
-        return True   # Cancel the exception raised by the first execution
-
-
-class QContextPushButton(ContextMixin, QPushButton):
-    '''A button that can be connected using the with statement'''
-    pass
-
-
-class _Analyzer(ast.NodeVisitor):
-    '''
-    AST analyzer that detects all instances of attribute access like::
-
-        a = gui.widget
-    '''
-
-    def __init__(self, decorator_name='auto'):
-        self.gui_name = None
-        self.accessed_widgets = set()
-        self.decorator_name = decorator_name
-
-    def visit_Attribute(self, node):
-        '''Detect all reads like "gui.widget"'''
-
-        if (
-            isinstance(node.value, ast.Name)
-            and node.value.id == self.gui_name
-            and isinstance(node.ctx, ast.Load)
-            and node.attr != self.decorator_name
-        ):
-            self.accessed_widgets.add(node.attr)
-        self.generic_visit(node)
-
-    def visit_FunctionDef(self, node):
-        '''Detect "gui" in "@gui.auto"'''
-
-        decorators = node.decorator_list
-        for d in decorators:
-            if (
-                isinstance(d, ast.Attribute)
-                and d.attr == self.decorator_name
-            ):
-                self.gui_name = d.value.id
-        self.generic_visit(node)
-
-    def visit_With(self, node):
-        '''Detect "gui" in "with gui.widget'''
-
-        for item in node.items:
-            if isinstance(item.context_expr, ast.Attribute):
-                self.gui_name = item.context_expr.value.id
-        self.generic_visit(node)
-
-
 ########
 # Widgets created with the special syntax. We need to make a new instance
 # every time one is requested, otherwise we risk cross-window connections.
@@ -415,9 +463,9 @@ class B(_DeferredCreationWidget):
     def create(self, gui):
         fullpath, name = _image_fullpath(gui, self._text_or_filename)
         if fullpath:
-            return (QContextPushButton(QIcon(fullpath), self._text), name)
+            return (QPushButton(QIcon(fullpath), self._text), name)
         else:
-            return (QContextPushButton(self._text_or_filename), name)
+            return (QPushButton(self._text_or_filename), name)
 
 
 class _AutoConnectButton(_DeferredCreationWidget):
@@ -427,7 +475,7 @@ class _AutoConnectButton(_DeferredCreationWidget):
         self._slot_name = slot_name
 
     def create(self, gui):
-        button = QContextPushButton(self._text)
+        button = QPushButton(self._text)
         slot = getattr(gui, self._slot_name)
         handler = _exception_wrapper(slot, gui._exception_mode)
         button.clicked.connect(handler)
@@ -638,11 +686,22 @@ def VValueSlider(name, myrange=None, unit='',
 # Signals
 
 _default_signals = {QPushButton: 'clicked',
-                    QContextPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
                     QSlider: 'valueChanged',
-                    QListWidgetWithDropSignal: 'currentTextChanged'}
+                    QListWidgetWithDropSignal: 'currentTextChanged',
+                    QComboBox: 'textActivated' }
+
+
+def _default_signal_lookup(widget):
+    '''Looks up the default signal for a widget that may be a derived class'''
+
+    for base_class, signal_name in _default_signals.items():
+        if isinstance(widget, base_class):
+            return signal_name
+    else:
+        raise KeyError(widget.__class__.__name__)
+
 
 Event = namedtuple('Event', 'signal args')
 
@@ -1034,9 +1093,9 @@ def _connect(gui_obj, widget, signal_name, slot):
 
     if signal_name == 'default':
         try:
-            signal_name = _default_signals[widget.__class__]
+            signal_name = _default_signal_lookup(widget)
         except KeyError as e:
-            raise ValueError('No default event for widget %s ' %
+            raise ValueError('No default signal for widget %s ' %
                              str(widget.__class__)) from e
     try:
         signal = getattr(widget, signal_name)
@@ -1156,6 +1215,7 @@ class Gui:
 
                 widget, name = self._get_widget_and_name(element)
                 widget._gui = self
+                ContextMixin.convert_object(widget)
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
                 self._widgets[name] = widget
 
@@ -1396,13 +1456,17 @@ class Gui:
         # Connect handler for all events
         if not self._get_handler:
             for widget in self._widgets.values():
-                klass = widget.__class__
-                if klass in _default_signals:
-                    signal = getattr(widget, _default_signals[klass])
+                try:
+                    signal_name = _default_signal_lookup(widget)
+                    signal = getattr(widget, signal_name)
                     handler = functools.partial(self._event_handler,
                                                 signal,
                                                 widget)
                     signal.connect(handler)
+                except KeyError:
+                    # Lookup failed, skipping widget
+                    pass
+
             self._get_handler = True
 
         self.window().closeEvent = self._stop_handler

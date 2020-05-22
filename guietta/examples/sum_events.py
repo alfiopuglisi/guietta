@@ -2,7 +2,7 @@
 
 from guietta import _, ___, Gui, Quit, Exceptions
 
-def calculate(gui, dummy):
+def calculate(gui, *args):
     result = float(gui.num1) + float(gui.num2)
     gui.result = result
         
