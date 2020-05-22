@@ -44,6 +44,7 @@ import queue
 import signal
 import inspect
 import os.path
+import textwrap
 import functools
 import contextlib
 from enum import Enum
@@ -110,6 +111,7 @@ def _sequence(x):
 def _mutable_sequence(x):
     return isinstance(x, MutableSequence) and not isinstance(x, str)
 
+
 ############
 # Property like get/set methods for fast widget access:
 # value = gui.name calls get()
@@ -118,6 +120,21 @@ def _mutable_sequence(x):
 # and would be shared by different GUIs!
 
 InstanceProperty = namedtuple('InstanceProperty', 'get set')
+
+
+def _signal_property(widget):
+    '''Property that handles the widget's default signal
+
+    Assign a callable to this property in order to connect a function
+    as a slot for the widget default signal.
+    '''
+    def getx():
+        raise AttributeError('This property cannot be read.')
+
+    def setx(value):
+        _connect(None, widget, signal_name='default', slot=value)
+
+    return InstanceProperty(getx, setx)
 
 
 def _text_property(widget):
@@ -238,7 +255,10 @@ class SmartQLabel(QWidget):
 def _fake_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
-    if isinstance(widget, (QLabel, QAbstractButton, QLineEdit, SmartQLabel)):
+    if isinstance(widget, QAbstractButton):
+        return _signal_property(widget)
+
+    elif isinstance(widget, (QLabel, QLineEdit, SmartQLabel)):
         return _text_property(widget)
 
     elif isinstance(widget, QAbstractSlider):
@@ -249,6 +269,7 @@ def _fake_property(widget):
 
     elif isinstance(widget, QComboBox):
         return _combobox_property(widget)
+
     else:
         return _readonly_property(widget)
 
@@ -910,6 +931,40 @@ def splash(text, width=None, height=None, color=Qt.lightGray, image=None):
     return splash
 
 
+def _connect(gui_obj, widget, signal_name, slot):
+
+    # If called without a gui_obj, look it up using the widget attributes.
+    if gui_obj is None:
+        if hasattr(widget, '_gui'):
+            gui_obj = widget._gui
+        else:
+            raise TypeError('Widget %s does not seem to belong to any '
+                            'Gui object' % widget.__class__.__name__)
+
+    if signal_name == 'default':
+        try:
+            signal_name = _default_signals[widget.__class__]
+        except KeyError as e:
+            raise ValueError('No default event for widget %s ' %
+                             str(widget.__class__)) from e
+    try:
+        signal = getattr(widget, signal_name)
+    except AttributeError as e:
+        raise ValueError('No signal %s found for widget %s' %
+                         (signal_name, str(widget.__class__))) from e
+
+    # Custom signal with default handler for get()
+    if slot is None:
+        slot = functools.partial(gui_obj._event_handler, signal, widget)
+
+    if _bound_method(slot, to_whom=gui_obj):
+        use_slot = slot
+    else:
+        use_slot = functools.partial(slot, gui_obj)
+
+    signal.connect(_exception_wrapper(use_slot, gui_obj._exception_mode))
+
+
 class Gui:
     '''Main GUI object.
 
@@ -1009,6 +1064,7 @@ class Gui:
                         colspan += 1
 
                 widget, name = self._get_widget_and_name(element)
+                widget._gui = self
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
                 self._widgets[name] = widget
 
@@ -1142,7 +1198,7 @@ class Gui:
         for i, j, pair in _enumerate_lol(lists):
             item = self[i,j]
             signal_name, slot = pair
-            self._connect(item, signal_name, slot)
+            _connect(self, item, signal_name, slot)
 
     def rename(self, *lists):
         '''Overrides the default widget names
@@ -1376,31 +1432,6 @@ class Gui:
                     #print('Our decorator on "' + self.gui_name + '" !')
             self.generic_visit(node)
 
-    def _connect(self, widget, signal_name, slot):
-
-        if signal_name == 'default':
-            try:
-                signal_name = _default_signals[widget.__class__]
-            except KeyError as e:
-                raise ValueError('No default event for widget %s ' %
-                                 str(widget.__class__)) from e
-        try:
-            signal = getattr(widget, signal_name)
-        except AttributeError as e:
-            raise ValueError('No signal %s found for widget %s' %
-                             (signal_name, str(widget.__class__))) from e
-
-        # Custom signal with default handler for get()
-        if slot is None:
-            slot = functools.partial(self._event_handler, signal, widget)
-
-        if _bound_method(slot, to_whom=self):
-            use_slot = slot
-        else:
-            use_slot = functools.partial(slot, self)
-
-        signal.connect(_exception_wrapper(use_slot, self._exception_mode))
-
     def auto(self, func):
         '''Auto-connection decorator.
 
@@ -1408,7 +1439,7 @@ class Gui:
         as a slot for all widgets that are accessed in the function itself.
         '''
         source = inspect.getsource(func)
-        tree = ast.parse('if 1:\n' + source)  # if 1: arbitrary indentation
+        tree = ast.parse(textwrap.dedent(source))
 
         analyzer = Gui.Analyzer(decorator_name=Gui.auto.__name__)
         analyzer.visit(tree)
@@ -1418,9 +1449,9 @@ class Gui:
             if widget_name in self.widgets:
                 try:
                     widget = self.widgets[widget_name]
-                    self._connect(widget, 'default', func)
+                    _connect(self, widget, 'default', func)
 
-                except ValueError as e:
+                except ValueError:
                     # No default signal defined
                     # print('KeyError:', str(e))
                     pass
