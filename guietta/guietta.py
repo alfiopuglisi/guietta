@@ -114,7 +114,7 @@ def _mutable_sequence(x):
 #########
 # Context managers
 
-class ContextMixin():
+class ContextMixIn():
     '''Mixin class to allow a widget to be used with the `with` statement.
 
     The with code block is used to compile a function that will be connected
@@ -224,7 +224,7 @@ class _Analyzer(ast.NodeVisitor):
 InstanceProperty = namedtuple('InstanceProperty', 'get set')
 
 
-class _ContextStr(str, ContextMixin):
+class _ContextStr(str, ContextMixIn):
     def __new__(cls, widget, *args, **kw):
         return str.__new__(cls, *args, **kw)
 
@@ -232,7 +232,7 @@ class _ContextStr(str, ContextMixin):
         self._widget = widget
 
 
-class _ContextInt(int, ContextMixin):
+class _ContextInt(int, ContextMixIn):
     def __new__(cls, widget, *args, **kw):
         return int.__new__(cls, *args, **kw)
 
@@ -240,14 +240,14 @@ class _ContextInt(int, ContextMixin):
         self._widget = widget
 
 
-class _ContextList(list, ContextMixin):
+class _ContextList(list, ContextMixIn):
 
     def __init__(self, widget, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._widget = widget
 
 
-class _ContextDict(dict, ContextMixin):
+class _ContextDict(dict, ContextMixIn):
 
     def __init__(self, widget, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1215,7 +1215,7 @@ class Gui:
 
                 widget, name = self._get_widget_and_name(element)
                 widget._gui = self
-                ContextMixin.convert_object(widget)
+                ContextMixIn.convert_object(widget)
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
                 self._widgets[name] = widget
 
