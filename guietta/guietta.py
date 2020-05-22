@@ -70,7 +70,6 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 # Widget shortcuts
 
-B = QPushButton
 E = QLineEdit
 C = QCheckBox
 R = QRadioButton
@@ -129,7 +128,7 @@ def _signal_property(widget):
     as a slot for the widget default signal.
     '''
     def getx():
-        raise AttributeError('This property cannot be read.')
+        return widget
 
     def setx(value):
         _connect(None, widget, signal_name='default', slot=value)
@@ -274,6 +273,95 @@ def _fake_property(widget):
         return _readonly_property(widget)
 
 
+#########
+# Context managers
+
+class ContextMixin():
+    '''Mixin class to allow a widget to be used with the `with` statement.
+
+    The with code block is used to compile a function that will be connected
+    to the widget's default signal.
+    '''
+
+    def __enter__(self):
+        self._start = inspect.stack()[1]
+        return self
+
+    def __exit__(self, *args):
+        end = inspect.stack()[1]
+
+        lines, first = inspect.getsourcelines(self._start.frame)
+
+        withlines = lines[self._start.lineno + first -1 : end.lineno + first]
+        withsource = textwrap.dedent(''.join(withlines))
+
+        tree = ast.parse(withsource)
+        analyzer = _Analyzer()
+        analyzer.visit(tree)
+        gui_name = analyzer.gui_name
+
+        slotlines = withlines[1:]
+        slotsource = textwrap.dedent(''.join(slotlines))
+
+        code = 'def slot(%s, *args):\n' % gui_name
+        code += textwrap.indent(slotsource, ' ')
+
+        exec(code)
+        _connect(None, self, signal_name='default', slot=locals()['slot'])
+
+        return True   # Cancel the exception raised by the first execution
+
+
+class QContextPushButton(ContextMixin, QPushButton):
+    '''A button that can be connected using the with statement'''
+    pass
+
+
+class _Analyzer(ast.NodeVisitor):
+    '''
+    AST analyzer that detects all instances of attribute access like::
+
+        a = gui.widget
+    '''
+
+    def __init__(self, decorator_name='auto'):
+        self.gui_name = None
+        self.accessed_widgets = set()
+        self.decorator_name = decorator_name
+
+    def visit_Attribute(self, node):
+        '''Detect all reads like "gui.widget"'''
+
+        if (
+            isinstance(node.value, ast.Name)
+            and node.value.id == self.gui_name
+            and isinstance(node.ctx, ast.Load)
+            and node.attr != self.decorator_name
+        ):
+            self.accessed_widgets.add(node.attr)
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node):
+        '''Detect "gui" in "@gui.auto"'''
+
+        decorators = node.decorator_list
+        for d in decorators:
+            if (
+                isinstance(d, ast.Attribute)
+                and d.attr == self.decorator_name
+            ):
+                self.gui_name = d.value.id
+        self.generic_visit(node)
+
+    def visit_With(self, node):
+        '''Detect "gui" in "with gui.widget'''
+
+        for item in node.items:
+            if isinstance(item.context_expr, ast.Attribute):
+                self.gui_name = item.context_expr.value.id
+        self.generic_visit(node)
+
+
 ########
 # Widgets created with the special syntax. We need to make a new instance
 # every time one is requested, otherwise we risk cross-window connections.
@@ -325,9 +413,9 @@ class B(_DeferredCreationWidget):
     def create(self, gui):
         fullpath, name = _image_fullpath(gui, self._text_or_filename)
         if fullpath:
-            return (QPushButton(QIcon(fullpath), self._text), name)
+            return (QContextPushButton(QIcon(fullpath), self._text), name)
         else:
-            return (QPushButton(self._text_or_filename), name)
+            return (QContextPushButton(self._text_or_filename), name)
 
 
 class _AutoConnectButton(_DeferredCreationWidget):
@@ -337,7 +425,7 @@ class _AutoConnectButton(_DeferredCreationWidget):
         self._slot_name = slot_name
 
     def create(self, gui):
-        button = QPushButton(self._text)
+        button = QContextPushButton(self._text)
         slot = getattr(gui, self._slot_name)
         handler = _exception_wrapper(slot, gui._exception_mode)
         button.clicked.connect(handler)
@@ -548,6 +636,7 @@ def VValueSlider(name, myrange=None, unit='',
 # Signals
 
 _default_signals = {QPushButton: 'clicked',
+                    QContextPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
                     QSlider: 'valueChanged',
@@ -1398,38 +1487,6 @@ class Gui:
         else:
             raise TypeError('Widget %s has no selection methods' % widget)
 
-    class Analyzer(ast.NodeVisitor):
-        '''
-        AST analyzer that detects all instances of attribute access like::
-
-            a = gui.widget
-        '''
-
-        def __init__(self, decorator_name='auto'):
-            self.gui_name = None
-            self.accessed_widgets = set()
-            self.decorator_name = decorator_name
-
-        def visit_Attribute(self, node):
-            if (
-                isinstance(node.value, ast.Name)
-                and node.value.id == self.gui_name
-                and isinstance(node.ctx, ast.Load)
-                and node.attr != self.decorator_name
-            ):
-                self.accessed_widgets.add(node.attr)
-            self.generic_visit(node)
-
-        def visit_FunctionDef(self, node):
-            decorators = node.decorator_list
-            for d in decorators:
-                if (
-                    isinstance(d, ast.Attribute)
-                    and d.attr == self.decorator_name
-                ):
-                    self.gui_name = d.value.id
-            self.generic_visit(node)
-
     def auto(self, func):
         '''Auto-connection decorator.
 
@@ -1439,7 +1496,7 @@ class Gui:
         source = inspect.getsource(func)
         tree = ast.parse(textwrap.dedent(source))
 
-        analyzer = Gui.Analyzer(decorator_name=Gui.auto.__name__)
+        analyzer = _Analyzer(decorator_name=Gui.auto.__name__)
         analyzer.visit(tree)
 
         for widget_name in analyzer.accessed_widgets:
