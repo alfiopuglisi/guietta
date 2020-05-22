@@ -210,7 +210,7 @@ def _combobox_property(widget):
 class SmartQLabel(QWidget):
     '''A smarter QLabel that accepts strings, lists and dicts.
 
-    Internally is a QHBoxLayout with two labels. The right label is
+    Internally it's a QHBoxLayout with two labels. The right label is
     usually hidden, and only the left label is used for simple strings
     and lists, which are shown one element per line.
     If a dict is passed, both labels are shown and used for keys and
@@ -275,7 +275,7 @@ def _fake_property(widget):
 
 
 ########
-# Widgets create with the special syntax. We need to make a new instance
+# Widgets created with the special syntax. We need to make a new instance
 # every time one is requested, otherwise we risk cross-window connections.
 
 class _DeferredCreationWidget:
@@ -1417,7 +1417,6 @@ class Gui:
                 and isinstance(node.ctx, ast.Load)
                 and node.attr != self.decorator_name
             ):
-                #print('Detected attribute read access: ', node.attr)
                 self.accessed_widgets.add(node.attr)
             self.generic_visit(node)
 
@@ -1429,7 +1428,6 @@ class Gui:
                     and d.attr == self.decorator_name
                 ):
                     self.gui_name = d.value.id
-                    #print('Our decorator on "' + self.gui_name + '" !')
             self.generic_visit(node)
 
     def auto(self, func):
@@ -1453,9 +1451,8 @@ class Gui:
 
                 except ValueError:
                     # No default signal defined
-                    # print('KeyError:', str(e))
                     pass
 
         return func
 
-        # ___oOo___
+# ___oOo___
