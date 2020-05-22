@@ -306,8 +306,10 @@ class ContextMixin():
         code = 'def slot(%s, *args):\n' % gui_name
         code += textwrap.indent(slotsource, ' ')
 
-        exec(code)
-        _connect(None, self, signal_name='default', slot=locals()['slot'])
+        # heed the Python docs warning about modifying locals()
+        scope = locals().copy()
+        exec(code, globals(), scope)
+        _connect(None, self, signal_name='default', slot=scope['slot'])
 
         return True   # Cancel the exception raised by the first execution
 
