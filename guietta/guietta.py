@@ -128,9 +128,20 @@ class ContextMixIn():
     def __exit__(self, *args):
         end = inspect.stack()[1]
 
-        lines, first = inspect.getsourcelines(self._start.frame)
+        if end.filename == '<stdin>':
+            import readline
+            idx = readline.get_current_history_length()
+            withlines = []
+            while True:
+                line = readline.get_history_item(idx)
+                withlines.insert(0, line)
+                if line.strip().startswith('with'):
+                    break
+                idx -= 1
+        else:
+            lines, first = inspect.getsourcelines(self._start.frame)
+            withlines = lines[self._start.lineno + first -1 : end.lineno + first]
 
-        withlines = lines[self._start.lineno + first -1 : end.lineno + first]
         withsource = textwrap.dedent(''.join(withlines))
 
         tree = ast.parse(withsource)

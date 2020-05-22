@@ -25,7 +25,8 @@ With plain QT, you have two choices:
    other way around? How things are going to line up?
  
 It's not over. In both cases, now define a function that does
-the calculation, connect the right signal to the right slot, etc etc....
+the calculation, connect the right signal to the right slot (what was the
+signal name again?), etc etc....
 
 I've given up already.
 
@@ -39,30 +40,30 @@ Using Guietta's compact syntax, here is how the layout looks like::
       [  'Result:  -->'  , 'result' ,  _  ,    _   ,       _        ],
       [  _               ,    _     ,  _  ,    _   ,      Quit      ] )
     
+   
 can you *see* the GUI? Right in the code? We can add then the behaviour
 with a few more lines::
 
-    while True:
-        name, event = gui.get()
-    
-        if name == 'Calculate':
-            gui.result = float(gui.a) + float(gui.b)
+    with gui.Calculate:
+       gui.result = float(gui.a) + float(gui.b)
+        
+    gui.run()
 
-        elif name is None:
-            break
 
-That's enough to get it working! That was 15 lines in total, including
+That's enough to get it working! That was 11 lines in total, including
 a few blank ones for clarity.
 
-Here is the result on my computer:
+And here is the result on my computer:
 
 .. image:: example.png
 
+It's *that* simple.
 
-Of course users are devious, so as a minimum we should add some exception
-catching where the result is calculated, otherwise the code will break if
-something that is not a number is found in the input widgets. But that's
-true in any program.
+.. note:: for IPython users: if you type the previous example on the command
+          prompt, it may or may not work (it appears to work on recent
+          ipython versions). IPython does strange things
+          with the command history. If it does not work, put the example
+          into a file and run it.
 
 What Guietta is
 ---------------
@@ -70,9 +71,8 @@ What Guietta is
 Guietta is actually a thin wrapper over QT. It allows one to quickly
 create QT widgets, assemble them into a layout, and make it responsive
 to user input. All standard QT features are available, including
-signals/slots and the event loop (which was not used in the previous
-example, but see below),
-so if you know enough QT, you can do some pretty amazing things.
+signals/slots and the event loop, so if you know enough QT,
+you can do some pretty amazing things.
 
 And if you have a big graphical program with multiple windows and pop-ups,
 you can use a subset of Guietta to simplify the window creation where
