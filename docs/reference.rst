@@ -26,13 +26,13 @@ Widgets
 
 Here is the complete widget set::
 
-    from guietta import Gui, B, E, L, HS, VS, Separator, VSeparator
+    from guietta import Gui, B, E, L, HS, VS, HSeparator, VSeparator
     from guietta import Yes, No, Ok, Cancel, Quit, _, ___, III
     
     gui = Gui(
     
        [ '<center>A big GUI with all of Guietta''s widgets</center>'],
-       [ Separator ],
+       [ HSeparator ],
     
       [ 'Label'    , 'imagelabel.jpeg' , L('another label')  , VS('slider1')],
       [  _         ,     ['button']    , B('another button') ,     III      ],
@@ -74,7 +74,7 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | VS('name')      |   QSlider(Qt::Horizontal)             | 'name'      |
 +-----------------+---------------------------------------+-------------+
-| Separator       |   Horizontal separator                |             |
+| HSeparator      |   Horizontal separator                |             |
 +-----------------+---------------------------------------+-------------+
 | VSeparator      |   Vertical separator                  |             |
 +-----------------+---------------------------------------+-------------+
