@@ -53,7 +53,7 @@ These property-like attributes are created on the fly when the GUI is
 built. We cannot use real properties, because these are class attributes
 and they would be shared between instances. Instead, there is a
 dictionary *self._fake_properties* which contains a mapping from property
-name to a pair of get/set functions (a namedtuple is used as a container
+name to a pair of get/set functions (a namedtuple is used for the pair
 in order to have nice methods names). These methods are set to the ones
 appropriate for the widget type at construction time.
 

@@ -15,7 +15,7 @@ Guietta is a tool that makes simple GUIs *simple*::
     )
 
     with gui.Calculate:
-        gui.result = float(gui.num1) + float(gui.num2)
+        gui.result = float(gui.a) + float(gui.b)
     
     gui.run()
 

@@ -92,60 +92,12 @@ MS Paint. It does not do super-fancy layouts, or cinema-like animations.
 Aren't you just copying from PySimpleGUI?
 -----------------------------------------
 
-PySimpeGUI is a much bigger project with a bigger goal: produce a
+PySimpleGUI is a much bigger project with a bigger goal: produce a
 GUI framework that can work with multiple interfaces (QT, TKinter, even
 web-based) and is easy to use for the beginner. PySimpleGUI's simplified
 syntax was a great idea and it was the inspiration for Guietta,
 but it stopped to soon. Guietta goes much further in simplifying things,
 and as a result it has less features than PySimpleGUI.
-
-What was that gui.get() in the example??
-----------------------------------------
-Taking another idea from PySimpleGUI, Guietta has a non-callback mode
-where a GUI acts exactly as a queue of events: programs will instantiate
-the GUI and call get() in a loop to be notified when an event has happened.
-
-This greatly simplifies the creation of very simple GUIs. As soon as
-you have more than two or three buttons, the traditional callback approach
-becomes more manageable, and Guietta of course fully supports it::
-
-
-    from guietta import _, Gui, Quit
-    
-    def calc(gui, dummy):
-        gui.result = float(gui.a) + float(gui.b)
-            
-    gui = Gui(
-        
-      [  'Enter numbers:', '__a__'  , '+' , '__b__',  ['Calculate'] ],
-      [  'Result:  -->'  , 'result' ,  _  ,    _   ,       _        ],
-      [  _               ,    _     ,  _  ,    _   ,      Quit      ] )
-    
-    gui.events(
-    
-        [  _             ,    _     ,  _  ,   _    ,    calc   ],
-        [  _             ,    _     ,  _  ,   _    ,    _      ],
-        [  _             ,    _     ,  _  ,   _    ,    _      ] )
-    
-    gui.run()
-
-As you can see, an additional events() layer was created, with exactly
-the same layout as the first one. In this layout the callback function
-for each widget is defined, and it's easy to see that the *calc*
-function is called when the *Calculate* button is clicked.
-
-In QT-speak, we have just connected the *calc* slot to the signal
-emitted by the Calculate button. We did not specifty the signal, so Guietta
-chose a default signal, which for buttons happens to be *clicked()* and it's
-what we want in almost all cases. The slot will be called with our gui
-as its first argument, plus any other argument that the signal might have.
-Since QT adds a "checked" argument even to buttons that are not checkboxes,
-we have added a dummy argument.
-
-This method also has the advantage that Guietta handles the exception
-catching in callbacks. In this example, if the float() conversion fails,
-a error popup will be shown. This behaviour is configurable.
-
 
 The layout doesn't respect PEP8!
 --------------------------------
