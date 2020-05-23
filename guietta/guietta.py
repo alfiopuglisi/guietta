@@ -1171,6 +1171,7 @@ class Gui:
         self._create_properties = create_properties
 
         self.images_dir = images_dir
+        self.is_running = False
 
         # Input argument checks
         _layer_check(lists)
@@ -1424,7 +1425,9 @@ class Gui:
         Any user interaction must be done with callbacks.
         '''
         self.show()
+        self.is_running = True
         self._app.exec_()
+        self.is_running = False
 
     def show(self):
         '''Shows the GUI. This call is non-blocking'''
