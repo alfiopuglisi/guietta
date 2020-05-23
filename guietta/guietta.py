@@ -232,7 +232,7 @@ class _Analyzer(ast.NodeVisitor):
 # We cannot use real properties because they are defined on the class
 # and would be shared by different GUIs!
 
-InstanceProperty = namedtuple('InstanceProperty', 'get set')
+_InstanceProperty = namedtuple('InstanceProperty', 'get set')
 
 
 class _ContextStr(str, ContextMixIn):
@@ -277,7 +277,7 @@ def _signal_property(widget):
     def setx(value):
         _connect(None, widget, signal_name='default', slot=value)
 
-    return InstanceProperty(getx, setx)
+    return _InstanceProperty(getx, setx)
 
 
 def _text_property(widget):
@@ -293,7 +293,7 @@ def _text_property(widget):
         else:
             widget.setText(str(text))
 
-    return InstanceProperty(get_text, set_text)
+    return _InstanceProperty(get_text, set_text)
 
 
 def _value_property(widget, typ):
@@ -309,7 +309,7 @@ def _value_property(widget, typ):
     def set_value(value):
         widget.setValue(typ(value))
 
-    return InstanceProperty(get_value, set_value)
+    return _InstanceProperty(get_value, set_value)
 
 
 def _readonly_property(widget):
@@ -321,7 +321,7 @@ def _readonly_property(widget):
     def setx(x):
         raise AttributeError('This property is read-only')
 
-    return InstanceProperty(getx, setx)
+    return _InstanceProperty(getx, setx)
 
 
 def _items_property(widget):
@@ -335,7 +335,7 @@ def _items_property(widget):
         widget.clear()
         widget.addItems(map(str, lst))
 
-    return InstanceProperty(get_items, set_items)
+    return _InstanceProperty(get_items, set_items)
 
 
 def _combobox_property(widget):
@@ -351,7 +351,7 @@ def _combobox_property(widget):
         for k, v in dct.items():
             widget.addItem(k, v)
 
-    return InstanceProperty(get_items, set_items)
+    return _InstanceProperty(get_items, set_items)
 
 
 #########
