@@ -16,7 +16,7 @@ List of widget shortcuts:
     R('text')      ->   QRadioButton('text')
     HS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
     VS('name')     ->   QSlider(Qt::Horizontal), name set to 'name'
-    Separator      ->   Horizontal separator
+    HSeparator     ->   Horizontal separator
     VSeparator     ->   Vertical separator
     widget         ->   any valid QT widget is accepted
     (widget, name) ->   any valid QT widget, name set to 'name'
@@ -73,16 +73,6 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 E = QLineEdit
 C = QCheckBox
 R = QRadioButton
-
-
-def HS(name):
-    '''Horizontal slider'''
-    return (QSlider(Qt.Horizontal), name)
-
-
-def VS(name):
-    '''Vertical slider'''
-    return (QSlider(Qt.Vertical), name)
 
 
 class III:
@@ -430,8 +420,24 @@ def _fake_property(widget):
 class _DeferredCreationWidget:
     '''Widget that will be created during Gui.__init__'''
 
-    def create(self):
+    def __init__(self, name):
+        self._name = name
+
+    def create(self, gui):
         pass
+
+class HS(_DeferredCreationWidget):
+    '''Horizontal slider'''
+
+    def create(self, gui):
+        return (QSlider(Qt.Horizontal), self._name)
+
+
+class VS(_DeferredCreationWidget):
+    '''Vertcal slider'''
+
+    def create(self, gui):
+        return (QSlider(Qt.Vertical), self._name)
 
 
 def _image_fullpath(gui, filename):
@@ -493,20 +499,54 @@ class _AutoConnectButton(_DeferredCreationWidget):
         return button
 
 
-Exit = _AutoConnectButton('Exit', 'close')
-Quit = _AutoConnectButton('Quit', 'close')
-Close = _AutoConnectButton('Close', 'close')
-Ok = _AutoConnectButton('Ok', 'close')
-Cancel = _AutoConnectButton('Cancel', 'close')
-Yes = _AutoConnectButton('Yes', 'close')
-No = _AutoConnectButton('No', 'close')
+class Exit(_AutoConnectButton):
+    '''Exit button'''
+
+    def __init__(self, name='Exit'):
+        super().__init__(name, 'close')
+
+
+class Quit(_AutoConnectButton):
+    '''Quit button'''
+
+    def __init__(self, name='Quit'):
+        super().__init__(name, 'close')
+
+
+class Ok(_AutoConnectButton):
+    '''Ok button'''
+
+    def __init__(self, name='Ok'):
+        super().__init__(name, 'close')
+
+
+class Cancel(_AutoConnectButton):
+    '''Cancel button'''
+
+    def __init__(self, name='Cancel'):
+        super().__init__(name, 'close')
+
+
+class Yes(_AutoConnectButton):
+    '''Yes button'''
+
+    def __init__(self, name='Yes'):
+        super().__init__(name, 'close')
+
+
+class No(_AutoConnectButton):
+    '''No button'''
+
+    def __init__(self, name='No'):
+        super().__init__(name, 'close')
 
 
 class _Separator(_DeferredCreationWidget):
     '''horizontal or vertical seperator'''
 
-    def __init__(self, linetype):
+    def __init__(self, linetype, name):
         self._linetype = linetype
+        self._name = name
 
     def create(self, gui):
         frame = QFrame()
@@ -518,17 +558,27 @@ class _Separator(_DeferredCreationWidget):
         else:
             frame.setMinimumHeight(1)
             frame.setFixedWidth(10)
-        return frame
+        return (frame, self._name)
 
 
-Separator = _Separator(QFrame.HLine)
-VSeparator = _Separator(QFrame.VLine)
+class HSeparator(_Separator):
+    '''Horizontal separator'''
+
+    def __init__(self, name='hseparator'):
+        super().__init__(QFrame.HLine, name)
+
+
+class VSeparator(_Separator):
+    '''Vertical separator'''
+
+    def __init__(self, name='vseparator'):
+        super().__init__(QFrame.VLine, name)
 
 
 #################
 # List box
 
-class QListWidgetWithDropSignal(QListWidget):
+class _QListWidgetWithDropSignal(QListWidget):
     '''A QListWidget that emits a signal when something is dropped on it.'''
 
     dropped = Signal()
@@ -538,35 +588,44 @@ class QListWidgetWithDropSignal(QListWidget):
         self.dropped.emit()
 
 
-def LB(name):
+class LB(_DeferredCreationWidget):
     '''Listbox'''
-    return (QListWidgetWithDropSignal(), name)
+
+    def create(self, gui):
+        return (_QListWidgetWithDropSignal(), self._name)
 
 
 #######################
 # Combobox
 
-def CB(name, list_or_dict):
+class CB(_DeferredCreationWidget):
     '''Combobox'''
 
-    cb = QComboBox()
-    if isinstance(list_or_dict, Mapping):
-        for k, v in list_or_dict.items():
-            cb.addItem(k, v)
+    def __init__(self, name, list_or_dict):
+        self._name = name
+        self._list_or_dict = list_or_dict
 
-    elif _sequence(list_or_dict):
-        for v in list_or_dict:
-            cb.addItem(v, None)
-    else:
-        raise TypeError('ComboBox initalizer must be either a sequence '
-                        'or a mapping')
+    def create(self, gui):
 
-    return (cb, name)
+        cb = QComboBox()
+        if isinstance(self._list_or_dict, Mapping):
+            for k, v in self._list_or_dict.items():
+                cb.addItem(k, v)
+
+        elif _sequence(self._list_or_dict):
+            for v in self._list_or_dict:
+                cb.addItem(v, None)
+        else:
+            raise TypeError('ComboBox initalizer must be either a sequence '
+                            'or a mapping')
+
+        return (cb, self._name)
+
 
 #################
 # Slider combined with editbox
 
-class QLineEditDoNotErase(QLineEdit):
+class _QLineEditDoNotErase(QLineEdit):
     '''A QLineEdit that whose contents must not be erased
 
     Gui constructor erases all the QLineEdit content because normally
@@ -576,12 +635,12 @@ class QLineEditDoNotErase(QLineEdit):
     pass
 
 
-class CombinedWidget:
+class _CombinedWidget:
     '''Base class for widgets that combine multiple ones'''
     pass
 
 
-class _ValueSlider(CombinedWidget):
+class _ValueSlider(_CombinedWidget):
     '''A slider combined with an inputbox for the value.'''
 
     def __init__(self, orientation,
@@ -609,7 +668,7 @@ class _ValueSlider(CombinedWidget):
         slider.setMaximum(stop)
         slider.setSingleStep(step)
 
-        editbox = QLineEditDoNotErase()
+        editbox = _QLineEditDoNotErase()
 
         def slider_to_unit(v):
             return v / factor
@@ -679,18 +738,22 @@ class _ValueSlider(CombinedWidget):
             lol[cells[-1]][col] = last
 
 
-def HValueSlider(name, myrange=None, unit='',
-                 anchor=Qt.AnchorRight, default=None):
+class HValueSlider(_ValueSlider):
     '''A slider combined with an inputbox for the value.'''
 
-    return _ValueSlider(Qt.Horizontal, name, anchor, myrange, unit, default)
+    def __init__(self, name, myrange=None, unit='',
+                       anchor=Qt.AnchorRight, default=None):
+
+        super().__init__(Qt.Horizontal, name, anchor, myrange, unit, default)
 
 
-def VValueSlider(name, myrange=None, unit='',
-                 anchor=Qt.AnchorBottom, default=None):
+class VValueSlider(_ValueSlider):
     '''A slider combined with an inputbox for the value.'''
 
-    return _ValueSlider(Qt.Vertical, name, anchor, myrange, unit, default)
+    def __init__(self, name, myrange=None, unit='',
+                       anchor=Qt.AnchorBottom, default=None):
+
+        super().__init__(Qt.Vertical, name, anchor, myrange, unit, default)
 
 
 #########
@@ -700,8 +763,8 @@ _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
                     QSlider: 'valueChanged',
-                    QListWidgetWithDropSignal: 'currentTextChanged',
-                    QComboBox: 'textActivated' }
+                    _QListWidgetWithDropSignal: 'currentTextChanged',
+                    QComboBox: 'textActivated'}
 
 
 def _default_signal_lookup(widget):
@@ -801,24 +864,32 @@ def Ax(widget):
     ax.figure.canvas.draw()
 
 
-def M(name, width=5, height=3, dpi=100):
-    '''Returns a Matplotlib Canvas widget'''
+class M(_DeferredCreationWidget):
+    '''A Matplotlib Canvas widget'''
 
-    if globals()['MatplotlibWidget'].__name__ == 'MatplotlibWidget':
+    def __init__(self, name, width=5, height=3, dpi=100):
 
-        from matplotlib.figure import Figure
-        from matplotlib.backends.backend_qt5agg import FigureCanvas
+        self._name = name
+        self._width = width
+        self._height = height
+        self._dpi = dpi
 
-        class RealMatplotlibWidget(FigureCanvas):
-            def __init__(self, width, height, dpi):
-                figure = Figure(figsize=(width, height), dpi=dpi)
-                self.ax = figure.add_subplot(111)
-                super().__init__(figure)
+    def create(self, gui):
+        if globals()['MatplotlibWidget'].__name__ == 'MatplotlibWidget':
 
-        globals()['MatplotlibWidget'] = RealMatplotlibWidget
+            from matplotlib.figure import Figure
+            from matplotlib.backends.backend_qt5agg import FigureCanvas
 
-    widget = MatplotlibWidget(width, height, dpi)
-    return (widget, name)
+            class RealMatplotlibWidget(FigureCanvas):
+                def __init__(self, width, height, dpi):
+                    figure = Figure(figsize=(width, height), dpi=dpi)
+                    self.ax = figure.add_subplot(111)
+                    super().__init__(figure)
+
+            globals()['MatplotlibWidget'] = RealMatplotlibWidget
+
+        widget = MatplotlibWidget(self._width, self._height, self._dpi)
+        return (widget, self._name)
 
 
 #####################
@@ -887,15 +958,48 @@ def _filter_lol(lol, func):
             row[i] = func(row[i])
 
 
+def _list_base_classes(cls):
+    bases = list(cls.__bases__)
+    for base in bases:
+        bases.extend(_list_base_classes(base))
+    return bases
+
+
+def _create_default_widgets(x):
+    '''If a widget class is specified, create one with a default name'''
+
+    if isinstance(x, type):
+        bases = _list_base_classes(x)
+        if (
+            QWidget in bases
+            or _CombinedWidget in bases
+            or _DeferredCreationWidget in bases
+        ):
+            return x()
+
+    # Also recurse into (WidgetClass, 'name')
+    if (
+        type(x) == tuple
+        and (len(x) == 2)
+        and isinstance(x[1], str)
+    ):
+        return (_create_default_widgets(x[0]), x[1])
+
+    return x
+
+
 def _check_widget(x):
     '''Check that x is a valid widget specification'''
 
-    if (type(x) == tuple) and (len(x) == 2) and \
-       isinstance(x[0], (QWidget, CombinedWidget)) and \
-       isinstance(x[1], str):
+    if (
+        type(x) == tuple
+        and (len(x) == 2)
+        and isinstance(x[0], (QWidget, _CombinedWidget))
+        and isinstance(x[1], str)
+    ):
         return x
 
-    if isinstance(x, (QWidget, CombinedWidget)) or (x in _specials):
+    if isinstance(x, (QWidget, _CombinedWidget)) or (x in _specials):
         return x
 
     raise ValueError('Element ' + str(x) + ' must be a widget '
@@ -1176,6 +1280,7 @@ class Gui:
         # Input argument checks
         _layer_check(lists)
         _filter_lol(lists, _convert_compacts)
+        _filter_lol(lists, _create_default_widgets)
         _filter_lol(lists, functools.partial(_create_deferred, self))
         _filter_lol(lists, _collapse_names)
         _filter_lol(lists, _check_widget)
@@ -1186,7 +1291,7 @@ class Gui:
 
         # Expand the combined widgets
         for i, j, element in _enumerate_lol(lists, skip_specials=False):
-            if isinstance(element, CombinedWidget):
+            if isinstance(element, _CombinedWidget):
                 element.place(lists, i, j)  # This modifies lists
 
         # Expand remaining ___ and 'III' replicating
@@ -1233,7 +1338,7 @@ class Gui:
 
                 # Special case for QLineEdit, make it empty.
                 if isinstance(widget, QLineEdit):
-                    if not isinstance(widget, QLineEditDoNotErase):
+                    if not isinstance(widget, _QLineEditDoNotErase):
                         widget.setText('')
 
                 done.add(element)
