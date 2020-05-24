@@ -581,11 +581,11 @@ class VSeparator(_Separator):
 class _QListWidgetWithDropSignal(QListWidget):
     '''A QListWidget that emits a signal when something is dropped on it.'''
 
-    dropped = Signal()
+    drop = Signal()
 
     def dropEvent(self, event):
         super().dropEvent(event)
-        self.dropped.emit()
+        self.drop.emit()
 
 
 class LB(_DeferredCreationWidget):
