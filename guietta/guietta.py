@@ -1173,7 +1173,12 @@ def _customEvent(ev):
     callback(*args)
 
 
-def splash(text, width=None, height=None, color=Qt.lightGray, image=None):
+def splash(text,
+           textalign=Qt.AlignHCenter | Qt.AlignVCenter,
+           width=None,
+           height=None,
+           color=Qt.lightGray,
+           image=None):
     '''Display and return a splash screen.
 
     The splashscreen must be closed with close() or finish(gui.window()).
@@ -1189,7 +1194,7 @@ def splash(text, width=None, height=None, color=Qt.lightGray, image=None):
     else:
         pixmap = QPixmap(image)
     splash = QSplashScreen(pixmap)
-    splash.showMessage(text)
+    splash.showMessage(text, alignment=textalign)
     splash.show()
     app = QApplication.instance()
     app.processEvents()
