@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2019-05-26
+
+### Changed
+  - Fixing incompatibilites between GitHub's and PyPI's README format.
+
 ## [0.3.1] - 2019-05-26
 
 ### Added
