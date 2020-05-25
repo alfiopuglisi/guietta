@@ -1,17 +1,18 @@
 # Changelog
 
-## [0.3.1]
+## [0.3.1] - 2019-05-26
 
 ### Added
- - Support for ComboBoxes
- - Splash Screen
+ - Support for ComboBoxes (using QComboBox)
+ - Splash Screen (using QSplashScreen)
  - @auto decorator syntax
  - "with" context manager syntax
- - removed all functions-generating widgest, all widgets are classes
- - widgets can be specified with just the class, a default widget name
-   will be used.
+ - removed all widget-generating functions, all widgets are now classes
+ - widgets can be specified with just the class, a widget with a default name
+   will be allocated.
  
 ### Changed
+ - "dropped" signal for list boxes (QListBox) renamed to "drop"
 
 ## [0.3.0] - 2019-05-18
 
