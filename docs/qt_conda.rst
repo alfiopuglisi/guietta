@@ -8,6 +8,8 @@ using conda::
 
   conda install -c conda-forge pyside2
 
+This command sometimes takes a lot of time to complete. Give it time.
+
 Long version:
 
 pip and conda do not work well together. In particular, Conda ships
