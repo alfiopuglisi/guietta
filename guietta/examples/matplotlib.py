@@ -9,7 +9,10 @@ def replot(gui, value):
         ax.set_title('y=tan(x)')
         t = np.linspace(0, 1+value/10, 500)
         ax.plot(t, np.tan(t), ".-")
- 
+
+
+def click(gui, x, y):
+    print('Mouse click:', x, y)
 
 gui = Gui(
     
@@ -21,9 +24,10 @@ gui = Gui(
 
 gui.events(
     
-    [  _            ,  _ , _ ,   replot    ], 
+    [  click        ,  _ , _ ,   replot    ], 
     [  _            ,  _ , _ ,   _          ], 
     [  _            ,  _ , _ ,   _          ], )
+
 
 replot(gui, 1)
 

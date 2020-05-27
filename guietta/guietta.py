@@ -882,17 +882,27 @@ class M(_DeferredCreationWidget):
             from matplotlib.backends.backend_qt5agg import FigureCanvas
 
             class RealMatplotlibWidget(FigureCanvas):
+
+                clicked = Signal(float, float)
+
                 def __init__(self, width, height, dpi):
                     figure = Figure(figsize=(width, height), dpi=dpi)
                     self.ax = figure.add_subplot(111)
                     super().__init__(figure)
+                    figure.canvas.mpl_connect('button_press_event',
+                                              self._on_button_press)
+
+                def _on_button_press(self, event):
+                    self.clicked.emit(event.xdata, event.ydata)
 
             globals()['MatplotlibWidget'] = RealMatplotlibWidget
+            _default_signals[RealMatplotlibWidget] = 'clicked'
+
 
         widget = MatplotlibWidget(self._width, self._height, self._dpi)
         return (widget, self._name)
 
-
+        
 #####################
 # Stdout redirection
 
