@@ -323,7 +323,8 @@ def _items_property(widget):
 
     def set_items(lst):
         widget.clear()
-        widget.addItems(map(str, lst))
+        widget.addItems(list(map(str, lst)))  # use list() to support
+                                              # PySide v5.9
 
     return _InstanceProperty(get_items, set_items)
 

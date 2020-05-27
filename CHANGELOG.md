@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.3] - 
+
+### Changed
+  - Support for older PySide versions (v5.9+)
+
 ## [0.3.2] - 2019-05-26
 
 ### Changed
