@@ -257,6 +257,7 @@ While extremely simple and intuitive, this style has a few caveats:
     - signal arguments are not supported. The example above was a mouse click,
       but for example a *valueChanged()* signal from a slider would not have
       transferred the new slider value.
+    - the *as* clause in the *with* statement cannot be used.
     - like the @auto decorator above, it is not guaranteed to work on
       a Python prompt. It works on the standard Python one, but for example
       will not work with some versions of IPython.
