@@ -703,10 +703,12 @@ class _ValueSlider(_CombinedWidget):
 
     def place(self, lol, row, col):
 
+        slider_name = (self.slider, self.name)
+
         if self.anchor == Qt.AnchorLeft or self.anchor == Qt.AnchorTop:
-            first, last = self.editbox, (self.slider, self.name)
+            first, last = self.editbox, slider_name
         else:
-            first, last = (self.slider, self.name), self.editbox
+            first, last = slider_name, self.editbox
 
         if self.slider.orientation() == Qt.Horizontal:
             ncols = len(lol[row])
@@ -720,7 +722,7 @@ class _ValueSlider(_CombinedWidget):
 
             lol[row][cells[0]] = first
             for n in cells[1:-1]:
-                lol[row][n] = self.slider
+                lol[row][n] = slider_name
             lol[row][cells[-1]] = last
 
         else:
@@ -735,7 +737,7 @@ class _ValueSlider(_CombinedWidget):
 
             lol[cells[0]][col] = first
             for n in cells[1:-1]:
-                lol[n][col] = self.slider
+                lol[n][col] = slider_name
             lol[cells[-1]][col] = last
 
 
