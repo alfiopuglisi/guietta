@@ -1,9 +1,16 @@
 # Changelog
 
+
 ## [0.3.3] - 
 
 ### Changed
   - Support for older PySide versions (v5.9+)
+  - Fixed bug in ValueSlider layout
+  - Internal refactor adding the new Rows class.
+
+### Added
+  - 'clicked' signal for Matplotlib widgets
+
 
 ## [0.3.2] - 2019-05-26
 
@@ -23,6 +30,7 @@
  
 ### Changed
  - "dropped" signal for list boxes (QListBox) renamed to "drop"
+
 
 ## [0.3.0] - 2019-05-18
 
