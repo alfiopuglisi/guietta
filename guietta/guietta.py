@@ -164,6 +164,7 @@ class ContextMixIn():
     @classmethod
     def convert_object(cls, obj):
         '''Add this class as a mixin after an object has been created'''
+
         base_cls = obj.__class__
         base_cls_name = obj.__class__.__name__
         new_name = 'Context' + base_cls_name
@@ -701,7 +702,7 @@ class _ValueSlider(_CombinedWidget):
         self.anchor = anchor
         self.name = name
 
-    def place(self, lol, row, col):
+    def place(self, rows, row, col):
 
         slider_name = (self.slider, self.name)
 
@@ -711,34 +712,34 @@ class _ValueSlider(_CombinedWidget):
             first, last = slider_name, self.editbox
 
         if self.slider.orientation() == Qt.Horizontal:
-            ncols = len(lol[row])
+            ncols = len(rows[row])
             cells = [col]
             for n in range(col+1, ncols):
-                if lol[row][n] == ___:
+                if rows[row, n] == ___:
                     cells.append(n)
             if len(cells) < 2:
                 raise ValueError('HValueSlider needs at least '
                                  'one horizontal continuation')
 
-            lol[row][cells[0]] = first
+            rows[row, cells[0]] = first
             for n in cells[1:-1]:
-                lol[row][n] = slider_name
-            lol[row][cells[-1]] = last
+                rows[row, n] = slider_name
+            rows[row, cells[-1]] = last
 
         else:
-            nrows = len(lol)
+            nrows = len(rows)
             cells = [row]
             for n in range(row+1, nrows):
-                if lol[n][col] == III:
+                if rows[n, col] == III:
                     cells.append(n)
             if len(cells) < 2:
                 raise ValueError('VValueSlider needs at least '
                                  ' one vertical continuation')
 
-            lol[cells[0]][col] = first
+            rows[cells[0], col] = first
             for n in cells[1:-1]:
-                lol[n][col] = slider_name
-            lol[cells[-1]][col] = last
+                rows[n, col] = slider_name
+            rows[cells[-1], col] = last
 
 
 class HValueSlider(_ValueSlider):
@@ -940,20 +941,6 @@ class StdoutLog(QPlainTextEdit):
 
 # Some helper functions
 
-
-def _enumerate_lol(lol, skip_specials=True):
-    '''
-    Enumerate a list of lists in 2d. Usage::
-
-        for row, column, element in _enumerate_lol(lists)
-    '''
-    for i, row in enumerate(lol):
-        for j, element in enumerate(row):
-            if skip_specials and element in _specials:
-                continue
-            yield i, j, element
-
-
 def _normalize(x):
     '''Return x without all special characters. Keep only a-zA-Z0-9 and _'''
     return ''.join(c for c in x if c.isalnum() or c == '_')
@@ -962,13 +949,6 @@ def _normalize(x):
 def _bound_method(method, to_whom):
     '''Return True is `method` is bound to `to_whom`'''
     return hasattr(method, '__self__') and method.__self__ == to_whom
-
-
-def _filter_lol(lol, func):
-    '''Apply func to all elements in a list of lists'''
-    for row in lol:
-        for i in range(len(row)):
-            row[i] = func(row[i])
 
 
 def _list_base_classes(cls):
@@ -1071,32 +1051,100 @@ def _collapse_names(x, first=True):
         return _collapse_names(x[0], first=False)
 
 
-def _layer_check(lol):
+class Rows:
     '''
-    Check that arguments to __init__ and others is OK.
+    Represents a list of rows
 
-    1. Check that all elements are iterables
-    2. Take the longest
-    3. Expand single-elements ones to the longest using ___
-    4. Check that all rows have the same length, raise ValueError if not.
+    Used in the Gui constructor and several other methods
     '''
-    for row in lol:
-        if not _mutable_sequence(row):
-            raise TypeError('Arguments are not lists '
-                            '(or other mutable iterables)')
 
-    row_lengths = [len(row) for row in lol]
-    ncols = max(row_lengths)
+    def __init__(self, rows):
+        self.check(rows)
+        self.rows = rows
 
-    for row in lol:
-        if len(row) == 1:
-            row += [___] * (ncols - len(row))
+    def __getitem__(self, idx):
+        if isinstance(idx, int):
+            return self.rows[idx]
+        elif len(idx) == 2:
+            return self.rows[idx[0]][idx[1]]
+        else:
+            raise TypeError('Unsupported index type:', idx)
 
-    for row in lol:
-        if len(row) != ncols:
-            raise ValueError('Row lengths differ:'
-                             ' row has %d elements instead of %d' %
-                             (len(row), ncols))
+    def __setitem__(self, idx, value):
+        if isinstance(idx, int):
+            self.rows[idx] = value
+        elif len(idx) == 2:
+            self.rows[idx[0]][idx[1]] = value
+        else:
+            raise TypeError('Unsupported index type:', idx)
+
+    def __len__(self):
+        return len(self.rows)
+
+    def copy(self, init=None):
+        rows = [[None] * len(self.rows[0]) for i in range(len(self.rows))]
+        return Rows(rows)
+
+    @staticmethod
+    def check(rows):
+        '''
+        Check rows have the correct format:
+
+        1. All rows must be iterables
+        2. With the same length, or with a single element that will be
+           expanded using ___
+        '''
+
+        for row in rows:
+            if not _mutable_sequence(row):
+                raise TypeError('Not all rows are not lists '
+                                '(or other mutable iterables)')
+
+        row_lengths = [len(row) for row in rows]
+        ncols = max(row_lengths)
+
+        for row in rows:
+            if len(row) == 1:
+                row += [___] * (ncols - len(row))
+
+        for row in rows:
+            if len(row) != ncols:
+                raise ValueError('Row lengths differ:'
+                                 ' row has %d elements instead of %d' %
+                                 (len(row), ncols))
+
+    def check_same(self, other, allow_less_rows=True):
+
+        nrows1 = len(self.rows)
+        nrows2 = len(other.rows)
+
+        if nrows1 > nrows2:
+            raise ValueError('Too many rows')
+
+        if nrows1 < nrows2 and not allow_less_rows:
+            raise ValueError('Too few rows')
+
+        for row1, row2 in zip(self.rows, other.rows):
+            if len(row1) != len(row2):
+                raise ValueError('Row lengths differ')
+
+    def enumerate(self, skip_specials=True):
+        '''
+        Enumerate in 2d. Usage::
+
+            for row, column, element in rows.enumerate():
+        '''
+        for i, row in enumerate(self.rows):
+            for j, element in enumerate(row):
+                if skip_specials and element in _specials:
+                    continue
+                yield i, j, element
+
+    def map_in_place(self, func):
+        '''Apply func to all elements'''
+        for row in self.rows:
+            for i in range(len(row)):
+                row[i] = func(row[i])
 
 
 # Compact element processing
@@ -1296,56 +1344,56 @@ class Gui:
         self.is_running = False
 
         # Input argument checks
-        _layer_check(lists)
-        _filter_lol(lists, _convert_compacts)
-        _filter_lol(lists, _create_default_widgets)
-        _filter_lol(lists, functools.partial(_create_deferred, self))
-        _filter_lol(lists, _collapse_names)
-        _filter_lol(lists, _check_widget)
+        self._rows = Rows(lists)
+        self._rows.map_in_place(_convert_compacts)
+        self._rows.map_in_place(_create_default_widgets)
+        self._rows.map_in_place(functools.partial(_create_deferred, self))
+        self._rows.map_in_place(_collapse_names)
+        self._rows.map_in_place(_check_widget)
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and III are encountered.
-        step1 = [[None] * len(lists[0]) for i in range(len(lists))]
+        step1 = self._rows.copy(init=None)
 
         # Expand the combined widgets
-        for i, j, element in _enumerate_lol(lists, skip_specials=False):
+        for i, j, element in self._rows.enumerate(skip_specials=False):
             if isinstance(element, _CombinedWidget):
-                element.place(lists, i, j)  # This modifies lists
+                element.place(self._rows, i, j)  # This modifies rows
 
         # Expand remaining ___ and 'III' replicating
         # the widgets from the previous column and row.
-        for i, j, element in _enumerate_lol(lists, skip_specials=False):
+        for i, j, element in self._rows.enumerate(skip_specials=False):
             if element == _:
                 element = None
             else:
                 if element == ___:
                     if j > 0:
-                        element = step1[i][j-1]
+                        element = step1[i, j-1]
                     else:
                         raise IndexError('___ at the beginning of a row')
                 if element == III:
                     if i > 0:
-                        element = step1[i-1][j]
+                        element = step1[i-1, j]
                     else:
                         raise IndexError('III at the start of a column')
                 if element is None:
                     raise ValueError('Continuation from empty grid cell')
 
-            step1[i][j] = element
+            step1[i, j] = element
 
         # Now a multi-cell widget has been replicated both in rows
         # and in columns. Look for repetitions to calculate spans.
 
         done = set([None])  # Skip empty elements
-        for i, j, element in _enumerate_lol(step1):
+        for i, j, element in step1.enumerate():
             if element not in done:
                 rowspan = 0
                 colspan = 0
                 for ii in range(i, len(lists)):
-                    if step1[ii][j] == element:
+                    if step1[ii, j] == element:
                         rowspan += 1
                 for jj in range(j, len(lists[0])):
-                    if step1[i][jj] == element:
+                    if step1[i, jj] == element:
                         colspan += 1
 
                 widget, name = self._get_widget_and_name(element)
@@ -1428,29 +1476,19 @@ class Gui:
     def row_stretch(self, *lists):
         '''Defines the row stretches'''
 
-        _layer_check(lists)
+        rows = Rows(lists)
+        rows.check_same(self._rows, allow_less_rows=True)
 
-        if len(lists) > self._layout.rowCount() or \
-           len(lists[0]) != self._layout.columnCount():
-            raise ValueError('Input arguments for row_stretch() must have '
-                             'the same number of columns as the constructor '
-                             'and as many or less lines')
-
-        for i, j, stretch in _enumerate_lol(lists):
+        for i, j, stretch in rows.enumerate():
             self._layout.setRowStretch(i, stretch)
 
     def column_stretch(self, *lists):
         '''Defines the column stretches'''
 
-        _layer_check(lists)
+        rows = Rows(lists)
+        rows.check_same(self._rows, allow_less_rows=True)
 
-        if len(lists) > self._layout.rowCount() or \
-           len(lists[0]) != self._layout.columnCount():
-            raise ValueError('Input arguments for column_stretch() must have '
-                             'the same number of columns as the constructor '
-                             'and as many or less lines')
-
-        for i, j, stretch in _enumerate_lol(lists):
+        for i, j, stretch in rows.enumerate():
             self._layout.setColumnStretch(j, stretch)
 
     def events(self, *lists):
@@ -1472,16 +1510,12 @@ class Gui:
         unbound methods will get a single argument with a reference
         to this Gui instance.
         '''
-        _layer_check(lists)
-        _filter_lol(lists, _process_slots)
+        rows = Rows(lists)
+        rows.check_same(self._rows, allow_less_rows=True)
 
-        if len(lists) > self._layout.rowCount() or \
-           len(lists[0]) != self._layout.columnCount():
-            raise ValueError('Input arguments for values() must have the '
-                             'same number of columns as the constructor and '
-                             'as many or less lines')
+        rows.map_in_place(_process_slots)
 
-        for i, j, pair in _enumerate_lol(lists):
+        for i, j, pair in rows.enumerate():
             item = self[i,j]
             signal_name, slot = pair
             _connect(self, item, signal_name, slot)
@@ -1493,12 +1527,14 @@ class Gui:
         initializer. Every element is a string with the new name
         for the widget in that position.
         '''
-        _layer_check(lists)
-        _filter_lol(lists, _check_string)
+        rows = Rows(lists)
+        rows.check_same(self._rows, allow_less_rows=True)
+
+        rows.map_in_place(_check_string)
 
         names_by_widget = {v: k for k, v in self._widgets.items()}
 
-        for i, j, new_name in _enumerate_lol(lists):
+        for i, j, new_name in rows.enumerate():
             widget = self[i,j]
             old_name = names_by_widget[widget]
 
