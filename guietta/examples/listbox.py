@@ -6,9 +6,7 @@ def listbox(gui, text):
     print(text)
 
 def test(gui, *args):
-    lst = gui.listbox
-    for item in lst:
-        print('item:',item.text())
+    print(gui.listbox)
     
 
 gui = Gui(
