@@ -29,7 +29,15 @@ Installation
 ============
 
  **pip install guietta**
- 
+
+
+Troubleshooting
+===============
+
+Guietta uses Qt5, and some Linux distributions, like Ubuntu 16.04, appear
+to have an incomplete default installation. If you encounter trouble
+running guietta, please read the
+`troubleshooting guide <troubleshooting.html>`_.
 
 If you use conda, please read our page on
 `QT incompatibilities with conda <qt_conda.html>`_.
