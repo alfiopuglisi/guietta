@@ -31,6 +31,11 @@ Installation
  **pip install guietta**
 
 
+Source code
+===========
+
+https://github.com/alfiopuglisi/guietta
+
 Troubleshooting
 ===============
 
