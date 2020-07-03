@@ -15,7 +15,7 @@ while True:
         name, event = gui.get(timeout=0.1)
     except Empty:
         counter += 1
-        gui.counte = counter
+        gui.counter = counter
         continue
 
     if name == 'Eval':
