@@ -10,7 +10,7 @@ Guietta is a tool that makes simple GUIs *simple*:
     gui = Gui(
         
       [  'Enter numbers:', '__a__'  , '+' , '__b__',  ['Calculate'] ],
-      [  'Result:  -->'  , 'result' ,  _  ,    _   ,       _        ],
+      [  'Result:  -->'  , '__result__' ,  _  ,    _   ,       _        ],
       [  _               ,    _     ,  _  ,    _   ,      Quit      ]
     )
 
