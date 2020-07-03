@@ -445,9 +445,10 @@ class VS(_DeferredCreationWidget):
 def _image_fullpath(gui, filename):
     '''Returns the full image path if the filename is valid, otherwise None'''
 
-    fullpath = None
     if not os.path.isabs(filename):
         fullpath = os.path.join(gui.images_dir, filename)
+    else:
+        fullpath = filename
 
     name, _ = os.path.splitext(filename)
 
