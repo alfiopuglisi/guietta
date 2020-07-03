@@ -24,10 +24,6 @@ And here it is:
 
 .. image:: example.png
 
-More complicated examples are shown here:
-
-`More screenshots <more_screenshots.html>`_.
-
 Installation
 ============
 
