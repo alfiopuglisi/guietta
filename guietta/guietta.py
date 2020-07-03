@@ -452,7 +452,7 @@ def _image_fullpath(gui, filename):
 
     name, _ = os.path.splitext(filename)
 
-    if fullpath and os.path.exists(fullpath):
+    if os.path.exists(fullpath):
         return fullpath, name
     else:
         return None, name
