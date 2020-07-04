@@ -456,6 +456,28 @@ provided that you have four PNG images with the correct filename
 in the same directory as the python script. Notice how we use ``os.path``
 to get the directory where our script resides.
 
+Radio buttons
+-------------
+
+Radio buttons can be created using the R() widget, which stands for a
+QRadioButton() instance. By default, all radio buttons in a single Gui
+instance are exclusive. If multiple radio buttons are desired, Guietta
+makes available ten pre-defined widgets classes called R0, R1, R2 ... R9,
+which will create radio buttons belonging to one of the 10 groups.
+For example::
+
+    from guietta import Gui, R1, R2, R3
+
+    gui = Gui(
+        [ R1('rad1')  ,  R2('rad3')  , R3('rad5')   ],
+        [ R1('rad2')  ,  R2('rad4')  , R3('rad6')   ],
+    )
+
+    gui.run()
+
+That code creates six radio buttons, belonging to three different
+exclusive groups arranged vertically.
+
 Special layouts
 ---------------
 
