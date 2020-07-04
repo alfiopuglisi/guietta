@@ -57,7 +57,7 @@ from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
 from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
 from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-from PySide2.QtWidgets import QSplashScreen, QFileDialog
+from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 
@@ -442,6 +442,80 @@ class VS(_DeferredCreationWidget):
         return (QSlider(Qt.Vertical), self._name)
 
 
+class _R(_DeferredCreationWidget):
+    '''Radio button in a group'''
+
+    _group = None
+
+    def __init__(self, text):
+        self._text = text
+
+    def create(self, gui):
+        button = QRadioButton(self._text)
+        gui._groups[self._group].addButton(button)
+        return (button, self._text)
+
+
+class R0(_R):
+    '''Radio button in pre-defined button group #0'''
+
+    _group = 0
+
+
+class R1(_R):
+    '''Radio button in pre-defined button group #1'''
+
+    _group = 1
+
+
+class R2(_R):
+    '''Radio button in pre-defined button group #2'''
+
+    _group = 2
+
+
+class R3(_R):
+    '''Radio button in pre-defined button group #3'''
+
+    _group = 3
+
+
+class R4(_R):
+    '''Radio button in pre-defined button group #4'''
+
+    _group = 4
+
+
+class R5(_R):
+    '''Radio button in pre-defined button group #5'''
+
+    _group = 5
+
+
+class R6(_R):
+    '''Radio button in pre-defined button group #6'''
+
+    _group = 6
+
+
+class R7(_R):
+    '''Radio button in pre-defined button group #7'''
+
+    _group = 7
+
+
+class R8(_R):
+    '''Radio button in pre-defined button group #8'''
+
+    _group = 8
+
+
+class R9(_R):
+    '''Radio button in pre-defined button group #9'''
+
+    _group = 9
+
+
 def _image_fullpath(gui, filename):
     '''Returns the full image path if the filename is valid, otherwise None'''
 
@@ -768,6 +842,7 @@ class VValueSlider(_ValueSlider):
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
+                    QRadioButton: 'toggled',
                     QAbstractSlider: 'valueChanged',
                     _QListWidgetWithDropSignal: 'currentTextChanged',
                     QComboBox: 'textActivated'}
@@ -1344,6 +1419,9 @@ class Gui:
 
         self.images_dir = images_dir
         self.is_running = False
+
+        # Prefedined button groups
+        self._groups = [QButtonGroup() for i in range(10)]
 
         # Input argument checks
         self._rows = Rows(lists)

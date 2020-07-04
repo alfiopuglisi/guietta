@@ -7,7 +7,7 @@
 
 from guietta import Gui, B, E, L, HS, VS, HSeparator, VSeparator
 from guietta import Yes, No, Ok, Cancel, Quit, _, ___, III
-from guietta import R, C
+from guietta import R1, R2, C
 
 from PySide2.QtWidgets import QDial, QLCDNumber, QTableWidget, QProgressBar
 from PySide2.QtWidgets import QTableWidgetItem, QHeaderView, QButtonGroup
@@ -22,8 +22,8 @@ gui = Gui(
   [ 'Label'    , 'imagelabel.jpeg' , L('another label')  , VS('slider1')],
   [  _         ,     ['button']    , B('another button') ,     III      ],
   [ '__edit__' ,  E('an edit box') , _                   ,   VSeparator ],
-  [ R('rad1')  ,  R('rad2')        , R('rad3')           ,     III      ],
-  [ R('rad4')  ,  R('rad5')        , R('rad6')           ,     III      ],
+  [ R1('rad1') ,  R1('rad2')       , R1('rad3')          ,     III      ],
+  [ R2('rad4') ,  R2('rad5')       , R2('rad6')          ,     III      ],
   [ C('ck1')   ,   C('ck2')        , C('ck3')            ,     III      ],
   [   Quit     ,        Ok         , Cancel              ,     III      ],
   [    Yes     ,        No         , _                   ,     III      ],
@@ -37,15 +37,6 @@ gui = Gui(
 )
 
 gui.window().setGeometry( 100, 100, 600, 900 )      # posx, posy, w, h
-
-g1 = QButtonGroup()
-g2 = QButtonGroup()
-g1.addButton( gui.rad1 )
-g1.addButton( gui.rad2 )
-g1.addButton( gui.rad3 )
-g2.addButton( gui.rad4 )
-g2.addButton( gui.rad5 )
-g2.addButton( gui.rad6 )
 
 gui.widgets['dial'].setNotchesVisible( True )
 

@@ -163,11 +163,17 @@ Table of default signals:
 +----------------------+----------------------------------+
 |  QCheckBox           |  stateChanged(int)               |
 +----------------------+----------------------------------+
+|  QRadioButton        |  toggled())                      |
++----------------------+----------------------------------+
 |  QAbstractSlider     |  valueChanged(int)               |
 |  (QSlider, QDial,    |                                  |
 |  QProgressBar)       |                                  |
 +----------------------+----------------------------------+
-
+| QListWidget          |  currentTextChanged              |
++----------------------+----------------------------------+
+| QComboBox            | textActivated                    |
++----------------------+----------------------------------+
+                    
 Widgets not listed in this table must be connected using the tuple syntax.
 
 Properties
