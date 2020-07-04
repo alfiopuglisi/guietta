@@ -768,7 +768,7 @@ class VValueSlider(_ValueSlider):
 _default_signals = {QPushButton: 'clicked',
                     QLineEdit: 'returnPressed',
                     QCheckBox: 'stateChanged',
-                    QSlider: 'valueChanged',
+                    QAbstractSlider: 'valueChanged',
                     _QListWidgetWithDropSignal: 'currentTextChanged',
                     QComboBox: 'textActivated'}
 
