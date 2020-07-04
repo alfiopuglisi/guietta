@@ -1,7 +1,16 @@
 # Changelog
 
+## [0.3.4] -
 
-## [0.3.3] - 
+### Added
+  - Added default signal 'valueChanged' for QDial and QScrollBar
+  
+### Changed
+  - Fixed bug for images when using the full file path
+  - Fixed small bugs in the examples
+
+
+## [0.3.3] - 2020-06-18
 
 ### Changed
   - Support for older PySide versions (v5.9+)
@@ -12,12 +21,13 @@
   - 'clicked' signal for Matplotlib widgets
 
 
-## [0.3.2] - 2019-05-26
+## [0.3.2] - 2020-05-26
 
 ### Changed
   - Fixing incompatibilites between GitHub's and PyPI's README format.
 
-## [0.3.1] - 2019-05-26
+
+## [0.3.1] - 2020-05-26
 
 ### Added
  - Support for ComboBoxes (using QComboBox)
@@ -32,7 +42,7 @@
  - "dropped" signal for list boxes (QListBox) renamed to "drop"
 
 
-## [0.3.0] - 2019-05-18
+## [0.3.0] - 2020-05-18
 
 ### Changed
  - Using PySide2 bindings instead of PyQt5
