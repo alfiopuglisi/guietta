@@ -200,6 +200,21 @@ which is fired every time the text in the editbox is updated by the user.
 Try it and you should see the value in the result label updating
 at every keystroke.
 
+Assign a callable
++++++++++++++++++
+
+Buttons (ordinary buttons, checkboxes and radio buttons, that in QT are
+all derived from QAbstractButton) can be assigned any python callable using
+Guietta's magic properties::
+
+    def handler(gui, *args):
+        print('handler!')
+        
+    gui.mybutton = handler
+
+Due to how the QT signal/slots mechanism works, it is not possble to read
+the same property to get the button handler.
+
 Automatic events
 ++++++++++++++++
 

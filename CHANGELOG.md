@@ -4,6 +4,7 @@
 
 ### Added
   - Added default signal 'valueChanged' for QDial and QScrollBar
+  - Pre-defined button groups
   
 ### Changed
   - Fixed bug for images when using the full file path
