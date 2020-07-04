@@ -844,7 +844,7 @@ _default_signals = {QPushButton: 'clicked',
                     QCheckBox: 'stateChanged',
                     QRadioButton: 'toggled',
                     QAbstractSlider: 'valueChanged',
-                    _QListWidgetWithDropSignal: 'currentTextChanged',
+                    QListWidget: 'currentTextChanged',
                     QComboBox: 'textActivated'}
 
 
