@@ -122,16 +122,11 @@ will be displayed using two columns, one item per line, with keys on the left
 column and values on the right one. Anything else is converted to a string
 using str() on the value being assigned.
 
-Magic properties work for buttons and other widgets too.
-This code will read the contents of the Go button and assign it to the
-editbox::
-
-  gui.num = gui.Go
-
-Guietta's properties are guaranteed to always use strings: whatever is
-displayed is converted to as string using the str() built-in.
-Reading from a property will return either a string, or a list of strings,
-or a dictionary where both keys and values are strings.
+Magic properties work for buttons and other widgets too, but with differt
+objec types. For example,
+a button will accept a callable that will be called when the button
+is clicked. A complete list of property types is available in the
+`reference guide <reference.html#properties>`_.
 
 GUI actions
 -----------

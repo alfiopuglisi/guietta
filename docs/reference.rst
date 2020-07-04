@@ -163,10 +163,42 @@ Table of default signals:
 +----------------------+----------------------------------+
 |  QCheckBox           |  stateChanged(int)               |
 +----------------------+----------------------------------+
-|  QSlider             |  valueChanged(int)               |
+|  QAbstractSlider     |  valueChanged(int)               |
+|  (QSlider, QDial,    |                                  |
+|  QProgressBar)       |                                  |
 +----------------------+----------------------------------+
 
 Widgets not listed in this table must be connected using the tuple syntax.
+
+Properties
+++++++++++
+
+Table of properties create for each widget type:
+
++----------------------+--------------------+---------------------+
+| Widget               | Read property type | Write property type |
++======================+====================+=====================+    
+| QLabel,              |   str              | str                 |
+| QLineEdit            |                    |                     | 
++----------------------+--------------------+---------------------+
+| QAbstractButton      |                    |                     |
+| (QPushButton,        |                    |                     |
+| QCheckBox,           |                    |                     |
+| QRadioButton)        |  widget instance   | callable            |
++----------------------+--------------------+---------------------+
+| QAbstractSlider      |                    |                     |
+| (QSlider, QDial,     |                    |                     |
+| QProgressBar)        |  int               | int                 |
++----------------------+--------------------+---------------------+
+| QAbstractItemView    |                    |                     |
+| (QListWidget)        |  list of str       | list of str         |
++----------------------+--------------------+---------------------+
+| QComboBox            |  dict{str: any}    | dict{str: any}      |
++----------------------+--------------------+---------------------+
+| Everything else      |  widget instance   | raises an exception |
++----------------------+--------------------+---------------------+
+
+
 
 Exception catching in slots
 +++++++++++++++++++++++++++
