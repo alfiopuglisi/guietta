@@ -436,7 +436,7 @@ class HS(_DeferredCreationWidget):
 
 
 class VS(_DeferredCreationWidget):
-    '''Vertcal slider'''
+    '''Vertical slider'''
 
     def create(self, gui):
         return (QSlider(Qt.Vertical), self._name)
