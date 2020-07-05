@@ -70,6 +70,8 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | R('text')       |   QRadioButton('text')                | 'text'      |
 +-----------------+---------------------------------------+-------------+
+| P('name')       |   QProgressBar()                      | 'name'      |
++-----------------+---------------------------------------+-------------+
 | HS('name')      |   QSlider(Qt::Horizontal)             | 'name'      |
 +-----------------+---------------------------------------+-------------+
 | VS('name')      |   QSlider(Qt::Horizontal)             | 'name'      |
@@ -167,7 +169,8 @@ Table of default signals:
 +----------------------+----------------------------------+
 |  QAbstractSlider     |  valueChanged(int)               |
 |  (QSlider, QDial,    |                                  |
-|  QProgressBar)       |                                  |
+|  QScrollBar)         |                                  |
+|  QProgressBar        |                                  |
 +----------------------+----------------------------------+
 | QListWidget          |  currentTextChanged              |
 +----------------------+----------------------------------+
@@ -194,7 +197,8 @@ Table of properties create for each widget type:
 +----------------------+--------------------+---------------------+
 | QAbstractSlider      |                    |                     |
 | (QSlider, QDial,     |                    |                     |
-| QProgressBar)        |  int               | int                 |
+| QScrollBar)          |  int               | int                 |
+| QProgressBar         |                    |                     |
 +----------------------+--------------------+---------------------+
 | QAbstractItemView    |                    |                     |
 | (QListWidget)        |  list of str       | list of str         |

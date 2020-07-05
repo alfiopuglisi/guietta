@@ -58,6 +58,7 @@ from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
 from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
 from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
 from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+from PySide2.QtWidgets import QProgressBar
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 
@@ -402,7 +403,7 @@ def _fake_property(widget):
     elif isinstance(widget, (QLabel, QLineEdit, SmartQLabel)):
         return _text_property(widget)
 
-    elif isinstance(widget, QAbstractSlider):
+    elif isinstance(widget, (QAbstractSlider, QProgressBar)):
         return _value_property(widget, int)
 
     elif isinstance(widget, QAbstractItemView):
@@ -440,6 +441,16 @@ class VS(_DeferredCreationWidget):
 
     def create(self, gui):
         return (QSlider(Qt.Vertical), self._name)
+
+
+class P(_DeferredCreationWidget):
+    '''Progress bar'''
+
+    def __init__(self, text):
+        self._text = text
+
+    def create(self, gui):
+        return (QProgressBar(), self._text)
 
 
 class _R(_DeferredCreationWidget):

@@ -7,10 +7,10 @@
 
 from guietta import Gui, B, E, L, HS, VS, HSeparator, VSeparator
 from guietta import Yes, No, Ok, Cancel, Quit, _, ___, III
-from guietta import R1, R2, C
+from guietta import R1, R2, C, P
 
-from PySide2.QtWidgets import QDial, QLCDNumber, QTableWidget, QProgressBar
-from PySide2.QtWidgets import QTableWidgetItem, QHeaderView, QButtonGroup
+from PySide2.QtWidgets import QDial, QLCDNumber, QTableWidget
+from PySide2.QtWidgets import QTableWidgetItem, QHeaderView
 
 
 gui = Gui(
@@ -32,7 +32,7 @@ gui = Gui(
   [  (QTableWidget, 'tab1'),  ___      , ___             ,      ___     ],
   [    III     , III , III , III ],
   [    III     , III , III , III ],
-  [  (QProgressBar, 'progbar'),  (QLCDNumber, 'lcd2')   , _   ,  _    ],
+  [P('progbar'), (QLCDNumber, 'lcd2')   , _   ,  _    ],
   [   L('l1'),  L('l2'), L('l3'), L('l4')      ],
 )
 
@@ -64,7 +64,7 @@ while True:
     elif name == 'dial':
         gui.widgets['tab1'].itemAt( 0, 1 ).setText( f'{gui.dial}' )
         gui.lcd2.display( float(gui.dial))
-        gui.progbar.setValue( float(gui.dial))
+        gui.progbar = gui.dial
 
     elif name == None:
         break

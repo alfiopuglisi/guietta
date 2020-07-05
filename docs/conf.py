@@ -33,7 +33,7 @@ class QtWidgets:
     QAbstractSlider = QAbstractButton = QMessageBox = object
     QListWidget = QAbstractItemView = QPlainTextEdit = object
     QHBoxLayout = QComboBox = QSplashScreen = QFileDialog = object
-    QButtonGroup = object
+    QButtonGroup = QProgressBar = object
     class QFrame:
         HLine = VLine = Sunken = None
         def setFrameShadow(self, a): pass
