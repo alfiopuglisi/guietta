@@ -122,8 +122,8 @@ will be displayed using two columns, one item per line, with keys on the left
 column and values on the right one. Anything else is converted to a string
 using str() on the value being assigned.
 
-Magic properties work for buttons and other widgets too, but with differt
-objec types. For example,
+Magic properties work for buttons and other widgets too, but with different
+object types. For example,
 a button will accept a callable that will be called when the button
 is clicked. A complete list of property types is available in the
 `reference guide <reference.html#properties>`_.
@@ -179,7 +179,7 @@ an edit box can trigger an event every single time the text is changed,
 or just when Return is pressed. Guietta assigns to each widget a
 *default event*, which is the one that makes sense most of the time
 (the list of default events for each widget is listed in the
-`reference guide <reference.html>`_).
+`reference guide <reference.html#signals>`_).
 
 It is possible to specify a custom event using the tuple syntax::
 
@@ -268,9 +268,6 @@ While extremely simple and intuitive, this style has a number of caveats:
       but for example a *valueChanged()* signal from a slider would not have
       transferred the new slider value.
     - the *as* clause in the *with* statement cannot be used.
-    - despite all appearances, the *with* code block will not be run in the
-      context where it is defined. This means that anything defined outside
-      (like globally imported modules and functions) will not be available.
     - like the @auto decorator above, it is not guaranteed to work on
       a Python prompt. It works on the standard Python one, but for example
       will not work with some versions of IPython.

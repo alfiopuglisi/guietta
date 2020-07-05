@@ -148,17 +148,19 @@ class ContextMixIn():
 
         code = 'def slot(%s, *args):\n' % gui_name
         code += textwrap.indent(slotsource, ' ')
+        caller_locals = inspect.stack()[1].frame.f_locals
+        caller_globals = inspect.stack()[1].frame.f_globals
 
         # heed the Python docs warning about modifying locals()
-        scope = locals().copy()
-        exec(code, globals(), scope)
+        locals_copy = caller_locals.copy()
+        exec(code, caller_globals, locals_copy)
 
         if hasattr(self, '_widget'):
             widget = self._widget
         else:
             widget = self
 
-        _connect(None, widget, signal_name='default', slot=scope['slot'])
+        _connect(None, widget, signal_name='default', slot=locals_copy['slot'])
 
         return True   # Cancel the exception raised by the first execution
 

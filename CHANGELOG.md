@@ -10,6 +10,8 @@
 ### Changed
   - Fixed bug for images when using the full file path
   - Fixed small bugs in the examples
+  - "with" context manager now can reference imports and functions
+    defined outside it.
 
 
 ## [0.3.3] - 2020-06-18
