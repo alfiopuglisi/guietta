@@ -87,7 +87,9 @@ Here is the complete widget set::
 | (widget, 'name')|   any valid QT widget                 | 'name'      |
 +-----------------+---------------------------------------+-------------+
 
-* Matplotlib will only be imported if the M() widget is used.
+* Matplotlib will only be imported if the M() widget is used. Matplotlib
+  is not installed automatically toegher with guietta. If the M() widget
+  is used, the user must install matplotlib manually.
 
 Buttons support both images and texts at the same time:
 
@@ -182,7 +184,7 @@ Widgets not listed in this table must be connected using the tuple syntax.
 Properties
 ++++++++++
 
-Table of properties create for each widget type:
+Table of properties created for each widget type:
 
 +----------------------+--------------------+---------------------+
 | Widget               | Read property type | Write property type |
