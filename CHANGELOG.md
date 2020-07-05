@@ -3,8 +3,9 @@
 ## [0.3.4] -
 
 ### Added
+  - Pre-defined radio button groups
+  - Progress bar widget
   - Added default signal 'valueChanged' for QDial and QScrollBar
-  - Pre-defined button groups
   
 ### Changed
   - Fixed bug for images when using the full file path
