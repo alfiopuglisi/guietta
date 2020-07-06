@@ -707,7 +707,7 @@ class CB(_DeferredCreationWidget):
             for v in self._list_or_dict:
                 cb.addItem(v, None)
         else:
-            raise TypeError('ComboBox initalizer must be either a sequence '
+            raise TypeError('ComboBox initializer must be either a sequence '
                             'or a mapping')
 
         return (cb, self._name)
@@ -887,7 +887,7 @@ class Empty(Exception):
 class Exceptions(Enum):
     '''Enum type for exceptions handling'''
 
-    # Do not use auto() becase it requires python3.6
+    # Do not use auto() because it requires python3.6
 
     OFF = 1                 # Do not catch exceptions
     SILENT = 2              # Discard all exceptions silently
@@ -1545,7 +1545,7 @@ class Gui:
             - widget            - if widget defines text(), use that as
                                   its name, otherwise use the class name
 
-        - remove special characeters, only leave a-zA-Z0-9
+        - remove special characters, only leave a-zA-Z0-9
         - auto-number duplicate names.
         '''
         if isinstance(element, tuple):
@@ -1698,7 +1698,7 @@ class Gui:
     def get(self, block=True, timeout=None):
         '''Runs the GUI in queue mode
 
-        In queue mode, no callbacks are used. Insted, the user should call
+        In queue mode, no callbacks are used. Instead, the user should call
         gui.get() in a loop to get the events and process them.
         The QT event loop will stop in between calls to gui.get(), so
         event processing should be quick.

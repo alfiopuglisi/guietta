@@ -14,7 +14,7 @@ gui = Gui(
 
 
 # We can remove one of the two widgets in the "with" expression
-# and the slot would be excuted only when the remaining one is triggered.
+# and the slot would be executed only when the remaining one is triggered.
 
 with gui.num1, gui.num2:
     gui.result = user_function(float(gui.num1) + float(gui.num2))
