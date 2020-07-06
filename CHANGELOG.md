@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.4] -
+## [0.3.4] - 2020-07-06
 
 ### Added
   - Pre-defined radio button groups
