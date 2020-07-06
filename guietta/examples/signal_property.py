@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Demostrates how to use Gui properties
+# Demonstrates how to use Gui properties
 # to connect a handler to a widget's default signal
 
 from guietta import _, ___, Gui, Quit, Exceptions

@@ -3,7 +3,8 @@
 from guietta import B, E, _, Gui, Quit
 
 # Use *args to accept multiple signals
-# with different arugments.
+# with different arguments.
+
 def do_eval(gui, *args):
     gui.result = eval(gui.expr)
 

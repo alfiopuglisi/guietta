@@ -154,7 +154,7 @@ using the *events()* method::
 
 Notice how we have kept exactly the same layout for the Gui constructor
 and the events() method. This makes immediately visible that the *recalc*
-event has been assinged to the *Go* button, while other widgets are ignored.
+event has been assigned to the *Go* button, while other widgets are ignored.
 
 An event assigned this way can be any Python callable,
 thus we need to define a *recalc* function before the gui is constructed::
@@ -212,7 +212,7 @@ Guietta's magic properties::
         
     gui.mybutton = handler
 
-Due to how the QT signal/slots mechanism works, it is not possble to read
+	Due to how the QT signal/slots mechanism works, it is not possible to read
 the same property to get the button handler.
 
 Automatic events
