@@ -1390,7 +1390,7 @@ class Gui:
     '''Main GUI object.
 
     The GUI is defined passing to the initializer a set of QT widgets
-    organized in rows of equal length. All other method that expect
+    organized in rows of equal length. All other methods that expect
     lists (like events() or names()) will expect a series of list with
     the same length.
 
@@ -1406,7 +1406,8 @@ class Gui:
     def __init__(self, *lists, images_dir='.',
                                create_properties=True,
                                exceptions=Exceptions.POPUP,
-                               persistence=PERSISTENT):
+                               persistence=PERSISTENT,
+                               title=''):
 
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
@@ -1503,6 +1504,7 @@ class Gui:
                 done.add(element)
 
         self.align_fake_properties()
+        self.title(title)
 
     def align_fake_properties(self):
         '''Make sure that any and all widgets have a property'''
@@ -1770,6 +1772,9 @@ class Gui:
         self._event_queue.put(('timeout', None, None))
         self._app.exit()  # Stop event loop
 
+    def title(self, title):
+        self.window().setWindowTitle(title)
+        
     def execute_in_background(self, func, args=(), callback=None):
         '''
         Executes `func` in a background thread and updates GUI with a callback.
