@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from guietta.guietta import _filter_lol
+from guietta.guietta import Rows
 
 
-class FilterLolTest(unittest.TestCase):
+class MapRowsTest(unittest.TestCase):
 
-    def test_filter_lol(self):
+    def test_map_rows(self):
 
-        lol = [[1, 3, 10], [3.14, 0, -2]]
+        rows = Rows([[1, 3, 10], [3.14, 0, -2]])
 
         def func(x):
             return x * 2
 
-        _filter_lol(lol, func)
+        rows.map_in_place(func)
 
-        assert lol == [[2, 6, 20], [6.28, 0, -4]]
+        assert rows[0,0] == 2
+        assert rows[0,1] == 6
+        assert rows[0,2] == 20
+        assert rows[1,0] == 6.28
+        assert rows[1,1] == 0
+        assert rows[1,2] == -4

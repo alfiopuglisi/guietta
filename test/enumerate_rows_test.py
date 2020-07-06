@@ -2,30 +2,30 @@
 
 import unittest
 from collections import defaultdict
-from guietta.guietta import _enumerate_lol, _, ___, III
+from guietta.guietta import Rows, _, ___, III
 
 
-class EnumerateLolTest(unittest.TestCase):
+class EnumerateRowsTest(unittest.TestCase):
 
-    def test_enumerate_lol(self):
+    def test_enumerate_rows(self):
 
-        lol = [[1, 3, 10], [3.14, 0, -2]]
+        rows = Rows([[1, 3, 10], [3.14, 0, -2]])
 
         counter = 0
 
-        for i, j, element in _enumerate_lol(lol):
-            assert lol[i][j] == element
+        for i, j, element in rows.enumerate():
+            assert rows[i][j] == element
             counter += 1
 
         assert counter == 6
 
     def test_skip_specials_default(self):
 
-        lol = [[1, _, 10], [___, 0, III]]
+        rows = Rows([[1, _, 10], [___, 0, III]])
 
         counter = 0
 
-        for i, j, element in _enumerate_lol(lol):
+        for i, j, element in rows.enumerate():
             assert element is not _
             assert element is not ___
             assert element is not III
@@ -35,13 +35,13 @@ class EnumerateLolTest(unittest.TestCase):
 
     def test_skip_specials_false(self):
 
-        lol = [[1, _, 10], [___, 0, III]]
+        rows = Rows([[1, _, 10], [___, 0, III]])
 
         result = {}
         for i in range(2):
             result[i] = {}
 
-        for i, j, element in _enumerate_lol(lol, skip_specials=False):
+        for i, j, element in  rows.enumerate(skip_specials=False):
             result[i][j] = element
 
         assert result[0][1] is _

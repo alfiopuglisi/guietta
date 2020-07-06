@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from guietta.guietta import _layer_check
+from guietta.guietta import Rows, _check_widget
 
 from PySide2.QtWidgets import QWidget
 
 
-class LayerCheckTest(unittest.TestCase):
+class RowsCheckTest(unittest.TestCase):
 
     def test_that_only_lists_of_qt_widgets_are_accepted(self):
 
@@ -14,10 +14,10 @@ class LayerCheckTest(unittest.TestCase):
 
         for thing in things:
             with self.assertRaises(TypeError):
-                _layer_check(thing)
+                Rows.check(thing)
 
-        list_of_lists = [[QWidget(), QWidget()], [QWidget(), QWidget()]]
-        _layer_check(list_of_lists)    # Does not raise
+        rows = Rows([[QWidget(), QWidget()], [QWidget(), QWidget()]])
+        rows.map_in_place(_check_widget)  # Does not raise
 
     def test_that_rows_with_one_elements_are_expanded(self):
 
@@ -26,9 +26,9 @@ class LayerCheckTest(unittest.TestCase):
         single2 = [QWidget()]
         single3 = [QWidget()]
 
-        _layer_check([widgets, single1])
-        _layer_check([single2, widgets])
-        _layer_check([widgets, single3, widgets])
+        Rows.check([widgets, single1])
+        Rows.check([single2, widgets])
+        Rows.check([widgets, single3, widgets])
 
         assert len(single1) == 5
         assert len(single2) == 5
@@ -42,10 +42,10 @@ class LayerCheckTest(unittest.TestCase):
         row4 = [QWidget()] * 4
 
         with self.assertRaises(ValueError):
-            _layer_check([row1, row2, row3])
+            Rows.check([row1, row2, row3])
 
         with self.assertRaises(ValueError):
-            _layer_check([row3, row4, row1])
+            Rows.check([row3, row4, row1])
 
-        _layer_check([row1, row2])   # Does not raise
-        _layer_check([row3, row4])   # Does not raise
+        Rows.check([row1, row2])   # Does not raise
+        Rows.check([row3, row4])   # Does not raise
