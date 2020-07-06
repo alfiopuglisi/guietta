@@ -29,13 +29,6 @@ Installation
 
  **pip install guietta**
 
-
-Source code
-===========
-
-https://github.com/alfiopuglisi/guietta
-
-
 Screenshots
 ===========
 
@@ -43,6 +36,20 @@ Screenshots
     :width: 300px
 
 Guietta at work in a scientific lab, showing an interactive plot.
+
+Tutorial
+========
+
+Direct link to the tutorial: `tutorial.html <tutorial.html>`_.
+
+See also the rest of the `documentation <index.html#id1>`_ below.
+
+Source code
+===========
+
+https://github.com/alfiopuglisi/guietta
+
+
 
 Troubleshooting
 ===============
