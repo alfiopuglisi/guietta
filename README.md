@@ -23,3 +23,8 @@ If you use conda, please read our page on
 # Documentation
 
 https://guietta.readthedocs.io/en/latest/
+
+# Tests
+
+![](https://github.com/alfiopuglisi/guietta/workflows/lint_python/badge.svg)
+
