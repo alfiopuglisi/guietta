@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.5] - 
+
+### Added
+  - title() method and construction keyword argument
+
+
 ## [0.3.4] - 2020-07-06
 
 ### Added
