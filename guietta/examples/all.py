@@ -9,8 +9,12 @@ from guietta import Gui, B, E, L, HS, VS, HSeparator, VSeparator
 from guietta import Yes, No, Ok, Cancel, Quit, _, ___, III
 from guietta import R1, R2, C, P
 
-from PySide2.QtWidgets import QDial, QLCDNumber, QTableWidget
-from PySide2.QtWidgets import QTableWidgetItem, QHeaderView
+try:
+    from PySide2.QtWidgets import QDial, QLCDNumber, QTableWidget
+    from PySide2.QtWidgets import QTableWidgetItem, QHeaderView
+except ImportError:
+    from PyQt5.QtWidgets import QDial, QLCDNumber, QTableWidget
+    from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 
 
 gui = Gui(
