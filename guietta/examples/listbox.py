@@ -25,8 +25,7 @@ gui.events(
     [     test   ],
    )
 
-from PySide2.QtWidgets import  QAbstractItemView
-gui.widgets['listbox'].setSelectionMode(QAbstractItemView.ExtendedSelection)
+gui.widgets['listbox'].setSelectionMode(gui.widgets['listbox'].ExtendedSelection)
 
 gui.listbox = ['a', 'b', 'c', 'd']
 

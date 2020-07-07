@@ -52,15 +52,30 @@ from types import SimpleNamespace
 from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
-from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-from PySide2.QtWidgets import QProgressBar
-from PySide2.QtGui import QPixmap, QIcon
-from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+try:
+    from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+    from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+    from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+    from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+    from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+    from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+    from PySide2.QtWidgets import QProgressBar
+    from PySide2.QtGui import QPixmap, QIcon
+    from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+except ImportError:
+    try:
+        from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+        from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+        from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+        from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+        from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+        from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+        from PyQt5.QtWidgets import QProgressBar
+        from PyQt5.QtGui import QPixmap, QIcon
+        from PyQt5.QtCore import Qt, QTimer, QEvent
+        from PyQt5.QtCore import pyqtSignal as Signal
+    except ImportError:
+        raise Exception('At least one of PySide2 or PyQt5 must be installed')
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
