@@ -10,6 +10,17 @@ And here it is:
 
 ![Example GUI](http://guietta.com/_images/example.png)
 
+Also featuring:
+ * matplotlib integration, for easy event-driven plots
+ * easily display columns of data in labels using lists and dicts
+ * multiple windows
+ * customizable behaviour in case of exceptions
+ * queue-like mode (a la PySimpleGUI)
+ * integrate any QT widget seamlessly, even your custom ones (as long as
+   it derives from QWidget, it is OK)
+ * easy background processing for long-running operations
+ * ordinary QT signals/slots, accepting any Python callable, if you really
+   want to use them
 
 # Installation
 
