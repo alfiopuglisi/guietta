@@ -9,6 +9,8 @@ gui = Gui(
 
 )
 
+gui.widgets['progress'].setFormat('%p% of files')
+
 for counter in range(100):
     try:
         name, event = gui.get(timeout=0.1)
