@@ -34,3 +34,5 @@ hopefully an error message, which in my case was::
 Therefore I installed libxcb-xinerama0::
 
    sudo apt install libxcb-xinerama0
+
+This problem and successful resoluton was also reported for Ubuntu 20.04
