@@ -605,5 +605,41 @@ and run the GUI::
 Notice how we first call the callback ourselves, giving it a default
 value, in order to have a plot ready when the GUI is displayed.
 
+Pyqtgraph
+---------
+
+*pyqtgraph* is a plotting module with less features than matplotlib, but
+much faster. It is ideal if the graph must be updated frequently. Guietta
+wraps it into its *PG()* widget::
+
+    import numpy as np
+    from guietta import Gui, PG, ___, III, _, VS
+    
+    gui = Gui(
+      [  PG('plot'),  ___, ___, VS('slider') ],
+      [     III     , III, III,     III      ],
+      [     III     , III, III,     III      ],
+      [     III     , III, III,  '^^^ Move the slider'  ],
+     )
+
+Replotting in pyqtgraph is much simpler than in matplotlib: we just have
+to call the widget's *plot()* method, setting *clear=True* to ensure that
+the previous plot is erased::
+
+    with gui.slider:
+        t = np.linspace(0, 1+gui.slider/10, 500)
+        gui.plot.plot(t, np.tan(t), clear=True)
+
+Now we initialize the plot with a default one, and run the gui::
+
+    gui.slider = 1
+    gui.run()
+
+If something more complex is needed, remember that pyqtgraph are full-featured
+QT widgets, so they can be instantiated and dropped into Guietta without
+the need to use the PG() wrapper.
+
+.. note: minimum version for pyqtgrap is 0.11.0. This is the first version
+         to support PySide2, used by Guietta.
 
 Next topic: the `reference guide <reference.html>`_.

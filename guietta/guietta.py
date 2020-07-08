@@ -949,6 +949,9 @@ class MatplotlibWidget:
     '''Dummy definition to avoid importing matplotlib when it is not used.'''
     pass
 
+class PyQtGraphPlotWidget:
+    '''Dummy definition to avoid importing pyqtgraph when it is not used.'''
+    pass
 
 @contextlib.contextmanager
 def Ax(widget):
@@ -1010,7 +1013,31 @@ class M(_DeferredCreationWidget):
         widget = MatplotlibWidget(self._width, self._height, self._dpi)
         return (widget, self._name)
 
-        
+
+class PG(_DeferredCreationWidget):
+    '''A pyqtgraph PlotWidget'''
+
+    def __init__(self, name):
+        self._name = name
+
+    def create(self, gui):
+        if globals()['PyQtGraphPlotWidget'].__name__ == 'PyQtGraphPlotWidget':
+
+            import pyqtgraph
+            if pyqtgraph.__version__ < '0.11.0':
+                raise Exception('Minimum version for pyqtgraph is 0.11.0,'
+                                'you have '+pyqtgraph.__version__)
+
+            class RealPyQtGraphPlotWidget(pyqtgraph.PlotWidget):
+                def __init__(self):
+                    super().__init__()
+
+            globals()['PyQtGraphPlotWidget'] = RealPyQtGraphPlotWidget
+
+        widget = PyQtGraphPlotWidget()
+        return (widget, self._name)
+      
+
 #####################
 # Stdout redirection
 

@@ -82,14 +82,17 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | M('name')       |   Matplotlib FigureCanvas*            |             |
 +-----------------+---------------------------------------+-------------+
+| PG('name')      |   pyqtgraph PlotWidget*               |             |
++-----------------+---------------------------------------+-------------+
 | widget          |   any valid QT widget                 | none        |
 +-----------------+---------------------------------------+-------------+
 | (widget, 'name')|   any valid QT widget                 | 'name'      |
 +-----------------+---------------------------------------+-------------+
 
-* Matplotlib will only be imported if the M() widget is used. Matplotlib
-  is not installed automatically toegher with guietta. If the M() widget
-  is used, the user must install matplotlib manually.
+* Matplotlib or pyqtraph will only be imported if the M() or PG() widgets
+  are used. Matplotlib and pyqtgraph are not is not installed automatically
+  together with guietta. If the M() widget  is used, the user must install
+  matplotlib manually, same for PG() and pyqtgraph.
 
 Buttons support both images and texts at the same time:
 

@@ -13,7 +13,7 @@ And here it is:
 
 
 Also featuring:
- - matplotlib integration, for easy event-driven plots
+ - matplotlib and pyqtgraph integration, for easy event-driven plots
  - easily display columns of data in labels using lists and dicts
  - multiple windows
  - customizable behaviour in case of exceptions
