@@ -4,7 +4,11 @@
 
 ### Added
   - title() method and construction keyword argument
-
+  - pyqtgraph integration
+  
+### Changed
+  - QComboBox default signal is now 'currentTextChanged' for better
+    backward compatibility with older QT versions.
 
 ## [0.3.4] - 2020-07-06
 
