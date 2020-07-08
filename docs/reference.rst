@@ -235,3 +235,9 @@ keyword parameter of the GUI constructor, which accepts the following enums:
 |  Exceptions.SILENT              | nothing, exception is "swallowed"  |
 +---------------------------------+------------------------------------+
 
+Gui class
+---------
+
+.. autoclass:: guietta.Gui
+   :members:
+

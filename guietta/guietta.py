@@ -1429,7 +1429,7 @@ def _connect(gui_obj, widget, signal_name, slot):
 
 
 class Gui:
-    '''Main GUI object.
+    '''Main GUI class.
 
     The GUI is defined passing to the initializer a set of QT widgets
     organized in rows of equal length. All other methods that expect
@@ -1611,8 +1611,15 @@ class Gui:
         return widget, name
 
     def row_stretch(self, *lists):
-        '''Defines the row stretches'''
+        '''Defines the row stretches
+        
+        Arguments are lists as in the initializer. Since typically all
+        rows have the same stretch, it is allowed to define just one or only
+        a few rows in this method.
 
+        Every element in the lists must be a number, that will be passed to the
+        setRowStretch() QT function, or _ if no particular stretch is desired.
+        '''        
         rows = Rows(lists)
         rows.check_same(self._rows, allow_less_rows=True)
 
@@ -1620,8 +1627,16 @@ class Gui:
             self._layout.setRowStretch(i, stretch)
 
     def column_stretch(self, *lists):
-        '''Defines the column stretches'''
+        '''Defines the column stretches
 
+        Arguments are lists as in the initializer. Since typically all
+        rows have the same stretch, it is allowed to define just one or only
+        a few rows in this method.
+
+        Every element must be a number, that will be passed to the
+        setColumnStretch() QT function, or _ if no particular stretch
+        is desired.
+        '''
         rows = Rows(lists)
         rows.check_same(self._rows, allow_less_rows=True)
 
@@ -1629,10 +1644,13 @@ class Gui:
             self._layout.setColumnStretch(j, stretch)
 
     def events(self, *lists):
-        '''Defines the GUI events
+        '''Defines the GUI events.
 
-        The argument must be a layout with the same shape as the
-        initializer. Every element is a tuple with:
+        Arguments are lists as in the initializer. It is allowed to define
+        just one or only a few rows in this method, if for example
+        the last rows do not contain widgets with associated events.
+
+        Every element is a tuple with:
 
             ('signal_name', slot)
 
@@ -1658,11 +1676,15 @@ class Gui:
             _connect(self, item, signal_name, slot)
 
     def rename(self, *lists):
-        '''Overrides the default widget names
+        '''Overrides the default widget names.
 
-        The argument must be a layout with the same shape as the
-        initializer. Every element is a string with the new name
-        for the widget in that position.
+        Arguments are lists as in the initializer. It is allowed to define
+        just one or only a few rows in this method, if for example
+        the last rows do not contain widgets that must be renamed.
+
+        Every element is a string with the new name
+        for the widget in that position. Use _ for widgets that do not
+        need to be renamed.
         '''
         rows = Rows(lists)
         rows.check_same(self._rows, allow_less_rows=True)
@@ -1685,11 +1707,14 @@ class Gui:
         return self._layout.itemAtPosition(name[0], name[1]).widget()
 
     def layout(self):
-        '''Returns the Gui layout, containing all the widgets'''
+        '''Returns the GUI layout, containing all the widgets'''
         return self._layout
 
     def window(self):
-        '''Builds a QT window containing all the Gui widgets and returns it'''
+        '''
+        Returns the window containing the GUI (an instance of QWidget).
+        If the window had not been built before, it will be now.
+        '''
         if self._window is None:
             self._window = QWidget()
             self._window.setLayout(self._layout)
@@ -1730,7 +1755,7 @@ class Gui:
         self.window().show()
 
     def close(self, dummy=None):    # Default argument for clicked(bool)
-        '''Close the window'''
+        '''Closes the window'''
         if self._window:
             self._window.close()
 
@@ -1815,6 +1840,7 @@ class Gui:
         self._app.exit()  # Stop event loop
 
     def title(self, title):
+        '''Sets the window title'''
         self.window().setWindowTitle(title)
         
     def execute_in_background(self, func, args=(), callback=None):
@@ -1847,7 +1873,10 @@ class Gui:
         self.widgets[to].setAcceptDrops(True)
 
     def get_selections(self, name):
-
+        '''
+        Returns the selected items in widget *name*.
+        Raises TypeError if the widget does not support selection.
+        '''
         widget = self.widgets[name]
 
         if hasattr(widget, 'selectedItems'):
