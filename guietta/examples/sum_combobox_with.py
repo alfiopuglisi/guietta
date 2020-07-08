@@ -27,14 +27,13 @@ with gui.Get:
     print(gui.op)
 
 with gui.Change:
-    print('change')
-    opdict = {'^' : '__pow__',
-              '==': '__eq__',
-              '>' : '__gt__',
-              '//': '__floordiv__'}
+    if gui.is_running:
+        opdict = {'^' : '__pow__',
+                  '==': '__eq__',
+                  '>' : '__gt__',
+                  '//': '__floordiv__'}
 
-
-    gui.op = opdict
+        gui.op = opdict
 
 
 gui.run()

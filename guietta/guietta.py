@@ -873,7 +873,7 @@ _default_signals = {QPushButton: 'clicked',
                     QRadioButton: 'toggled',
                     QAbstractSlider: 'valueChanged',
                     QListWidget: 'currentTextChanged',
-                    QComboBox: 'textActivated'}
+                    QComboBox: 'currentTextChanged'}
 
 
 def _default_signal_lookup(widget):
