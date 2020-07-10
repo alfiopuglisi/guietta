@@ -60,7 +60,7 @@ try:
     from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
     from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
     from PySide2.QtWidgets import QProgressBar
-    from PySide2.QtGui import QPixmap, QIcon
+    from PySide2.QtGui import QPixmap, QIcon, QFont
     from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 except ImportError:
     try:
@@ -71,7 +71,7 @@ except ImportError:
         from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
         from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
         from PyQt5.QtWidgets import QProgressBar
-        from PyQt5.QtGui import QPixmap, QIcon
+        from PyQt5.QtGui import QPixmap, QIcon, QFont
         from PyQt5.QtCore import Qt, QTimer, QEvent
         from PyQt5.QtCore import pyqtSignal as Signal
     except ImportError:
@@ -1151,6 +1151,38 @@ def _process_slots(x):
     else:
         raise ValueError('Element %s is not a valid slot assignment' % x)
 
+def _process_font(x):
+    '''Normalize font assignments.
+
+    *x* must be either a QFont instance, a string with a font
+    family name (.e.g 'Helvetica'), or a sequence with the QFont
+    constructor elements: family string, point size, weight, and italic,
+    int that order. All except the family string are optional, point size
+    and weight ar integers, and italic is a boolean True/False. Use -1
+    for arguments that must be left at their default value while specifying
+    a subsequent argument. All these specifications are valid:
+
+        - QFont('helvetica', pointSize=12)
+        - 'helvetica'
+        - ['Arial', -1, -1, False]
+        - ('helvetica', 12, 1, True)
+    '''
+    if isinstance(x, QFont):
+        return x
+
+    if x in _specials:
+        return x
+
+    elif isinstance(x, str):
+        return QFont(x)
+
+    elif _sequence(x):
+        try:
+            return QFont(*x)
+        except:
+            raise ValueError('%s rejected by QFont constructor' % x)
+    else:
+        raise TypeError('Element %s is not a valid font specification' % x)
 
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
@@ -1449,7 +1481,8 @@ class Gui:
                                create_properties=True,
                                exceptions=Exceptions.POPUP,
                                persistence=PERSISTENT,
-                               title=''):
+                               title='',
+                               font=None):
 
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
@@ -1465,6 +1498,7 @@ class Gui:
         self._counter = defaultdict(int)  # widgets counter
         self._window = None
         self._app = QApplication.instance()
+        self._font = font
 
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
@@ -1675,6 +1709,35 @@ class Gui:
             signal_name, slot = pair
             _connect(self, item, signal_name, slot)
 
+    def fonts(self, *lists):
+        '''Defines the fonts used for each GUI widget.
+
+        Arguments are lists as in the initializer. It is allowed to define
+        just one or only a few rows in this method, if for example
+        the last rows do not contain widgets whose fonts need not
+        to be modified.
+
+        Every element is either a QFont instance, a string with a font
+        family name (.e.g 'Helvetica'), or a tuple with the QFont
+        constructor elements: family string, point size, weight, and italic,
+        int that order. All except the family string are optional, point size
+        and weight ar integers, and italic is a boolean True/False. All these
+        specifications are valid:
+
+            - QFont('helvetica', pointSize=12)
+            - 'helvetica'
+            - ('helvetica', 12, 1, True)
+
+        Use _ for widgets that do not need their fonts to be changed.
+        '''
+        rows = Rows(lists)
+        rows.check_same(self._rows, allow_less_rows=True)
+
+        rows.map_in_place(_process_font)
+
+        for i, j, font_spec in rows.enumerate():
+            self[i,j].setFont(font_spec)
+
     def rename(self, *lists):
         '''Overrides the default widget names.
 
@@ -1719,7 +1782,12 @@ class Gui:
             self._window = QWidget()
             self._window.setLayout(self._layout)
             self._window.closeEvent = self._close_handler
+            if self._font is not None:
+                self._window.setFont(self._font)
         return self._window
+
+    def font(self):
+        return self.window().font()
 
     def _close_handler(self, event):
         _remove_from_persistence_list(self)
