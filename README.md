@@ -48,5 +48,9 @@ https://guietta.readthedocs.io/en/latest/
 
 # Tests
 
+[![Documentation Status](https://readthedocs.org/projects/guietta/badge/?version=stable)](https://guietta.readthedocs.io/en/stable/?badge=stable)
+
+![](https://github.com/alfiopuglisi/guietta/workflows/pytest/badge.svg)
+
 ![](https://github.com/alfiopuglisi/guietta/workflows/lint_python/badge.svg)
 
