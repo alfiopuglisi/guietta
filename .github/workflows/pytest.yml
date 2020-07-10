@@ -1,4 +1,4 @@
-name: lint_python
+name: pytest
 on:
   pull_request:
   push:
