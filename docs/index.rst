@@ -72,4 +72,5 @@ Documentation
    tutorial
    reference
    internals
+   changelog_link
 

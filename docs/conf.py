@@ -59,10 +59,11 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.coverage',
               'sphinx.ext.napoleon',
-              'sphinx.ext.napoleon',
               'sphinx.ext.intersphinx',
-              'sphinx_rtd_theme',
+              'sphinx_rtd_theme',        # ReadTheDocs theme
+              'm2r',                     # mdinclude directive
               ]
+
 intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
