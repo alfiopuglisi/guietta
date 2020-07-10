@@ -1406,6 +1406,8 @@ def splash(text,
            image=None):
     '''Display and return a splash screen.
 
+    This function displays a splashscreen and returns a QSplashScreen instance.
+
     The splashscreen must be closed with close() or finish(gui.window()).
     Alternatively, it will close when the user clicks on it.
     '''

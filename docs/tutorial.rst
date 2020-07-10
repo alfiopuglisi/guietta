@@ -490,6 +490,8 @@ For example::
 That code creates six radio buttons, belonging to three different
 exclusive groups arranged vertically.
 
+Pre-defined radio buttons were introduced in version 0.3.4.
+
 Special layouts
 ---------------
 
@@ -641,5 +643,15 @@ the need to use the PG() wrapper.
 
 .. note: minimum version for pyqtgrap is 0.11.0. This is the first version
          to support PySide2, used by Guietta.
+
+Splash screens
+--------------
+
+Guietta supports extremely basic splash screens, with the `guietta.splash`
+function:
+
+.. autofunction:: guietta.splash
+
+The splash function was introducted in version 0.3.1.
 
 Next topic: the `reference guide <reference.html>`_.
