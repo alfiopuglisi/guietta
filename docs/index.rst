@@ -41,6 +41,20 @@ Installation
 ============
 
  **pip install guietta**
+ 
+Install on older platforms
+++++++++++++++++++++++++++
+
+Guietta uses the `PySide2 <https://pypi.org/project/PySide2/>`_ QT5 binding
+by default, and some systems
+(older Macs, Raspberry PI) do not have it available. Guietta can fallback
+to the PyQt5 binding if available, but does not specify it as an automatic
+dependency. If you get an
+installation error about PySide2, try to use PyQt5 instead using the
+following::
+
+    pip install guietta --no-deps
+    pip install pyqt5
 
 Screenshots
 ===========
