@@ -490,6 +490,10 @@ For example::
 That code creates six radio buttons, belonging to three different
 exclusive groups arranged vertically.
 
+The `radio buttons example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/radio.py>`_ shows how
+to connect radio buttons to events and how to check if a radio button
+is checked or not.
+
 Pre-defined radio buttons were introduced in version 0.3.4.
 
 Special layouts
@@ -641,8 +645,10 @@ If something more complex is needed, remember that pyqtgraph are full-featured
 QT widgets, so they can be instantiated and dropped into Guietta without
 the need to use the PG() wrapper.
 
-.. note: minimum version for pyqtgrap is 0.11.0. This is the first version
+.. note: minimum version for pyqtgraph is 0.11.0. This is the first version
          to support PySide2, used by Guietta.
+
+Support for pyqtgraph was introducted in version 0.3.5.
 
 Splash screens
 --------------
@@ -653,5 +659,20 @@ function:
 .. autofunction:: guietta.splash
 
 The splash function was introducted in version 0.3.1.
+
+Packaging your application
+-----------------------------
+
+Guietta runs perfectly fine if you have a Python interpreter, but sometimes
+you want to package a self-contained program which is able to run without
+dependencies. Guietta does not provide anything specific, but there are
+several programs that can do this for generic Python applications. One
+such program is
+`PyInstaller <https://doc.qt.io/qtforpython/deployment-pyinstaller.html>`_.
+
+Please note that PyInstaller is an independent project and we cannot
+give any guarantee that it will work, nor provide any support.
+
+
 
 Next topic: the `reference guide <reference.html>`_.
