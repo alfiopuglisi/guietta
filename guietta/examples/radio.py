@@ -27,6 +27,8 @@ gui.events(
 
 with gui.rad1, gui.rad2:
     print('First button group')
+    print('rad1 isChecked = ', gui.rad1.isChecked())
+    print('rad2 isChecked = ', gui.rad2.isChecked())
     
 gui.rad3 = msg
 gui.rad4 = msg
