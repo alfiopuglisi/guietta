@@ -53,15 +53,15 @@ from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
 try:
-    from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-    from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-    from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-    from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-    from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-    from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-    from PySide2.QtWidgets import QProgressBar
-    from PySide2.QtGui import QPixmap, QIcon, QFont
-    from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+    from qtpy.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+    from qtpy.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+    from qtpy.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+    from qtpy.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+    from qtpy.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+    from qtpy.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+    from qtpy.QtWidgets import QProgressBar
+    from qtpy.QtGui import QPixmap, QIcon, QFont
+    from qtpy.QtCore import Qt, QTimer, Signal, QEvent
 except ImportError:
     try:
         from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider

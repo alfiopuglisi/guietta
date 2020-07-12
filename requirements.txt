@@ -1,1 +1,1 @@
-PySide2
+qtpy

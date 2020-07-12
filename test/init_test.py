@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import Gui, _
 
-from PySide2.QtWidgets import QWidget
+from qtpy.QtWidgets import QWidget
 
 
 class InitTest(unittest.TestCase):
