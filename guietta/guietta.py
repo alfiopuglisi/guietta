@@ -1926,8 +1926,9 @@ class Gui:
 
         if not callable(func):
             raise TypeError('func must be a callable')
-        if not callable(callback):
-            raise TypeError('callback must be a callable')
+        if callback is not None:
+            if not callable(callback):
+                raise TypeError('callback must be a callable')
 
         app = QApplication.instance()
         app.customEvent = _customEvent
