@@ -1,5 +1,15 @@
 # Changelog
 
+##
+
+## Added
+  -font() method and construction keyword argument
+  
+### Changed
+  - callback in background processing is now optional
+  - documentation on readthedocs is finally properly versioned
+
+
 ## [0.3.5] - 2020-07-10
 
 ### Added

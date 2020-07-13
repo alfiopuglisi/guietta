@@ -165,7 +165,7 @@ thus we need to define a *recalc* function before the gui is constructed::
 The first argument to an event function is always the *gui* instance that
 generated the event. Other arguments may be added depending on the QT signal
 that generated the event. Since we are not interested in them, we put a
-generic *args there.
+generic \*args there.
 
 The recalc function is updating the Gui using the magic properties
 described in the previous chapter. Since the properties always return strings,
@@ -212,7 +212,7 @@ Guietta's magic properties::
         
     gui.mybutton = handler
 
-	Due to how the QT signal/slots mechanism works, it is not possible to read
+Due to how the QT signal/slots mechanism works, it is not possible to read
 the same property to get the button handler.
 
 Automatic events
@@ -659,6 +659,16 @@ function:
 .. autofunction:: guietta.splash
 
 The splash function was introducted in version 0.3.1.
+
+Background processing
+---------------------
+
+Sometimes a handler function needs to run for a long time, and during
+that time the GUI would be frozen. In order to avoid this, the Gui class
+allows to span a function into a background thread. Once the function
+is done, an optional callback in the main thread will be triggered.
+
+.. autofunction:: guietta.Gui.execute_in_background
 
 Packaging your application
 -----------------------------
