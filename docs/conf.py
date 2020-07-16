@@ -47,7 +47,7 @@ class QtWidgets:
             return 1    # With this, the main file will not trty
                         # to create a new one.
 
-sys.modules['PySide2.QtWidgets'] = QtWidgets
+sys.modules['qtpy.QtWidgets'] = QtWidgets
 
 sys.path.insert(0, os.path.abspath('..'))
 from guietta.__version__ import __version__

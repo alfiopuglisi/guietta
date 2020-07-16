@@ -73,7 +73,7 @@ setup(name=NAME,
       packages=['guietta',
                 'guietta.examples',
                 ],
-      install_requires=['PySide2'],
+      install_requires=['qtpy'],
       test_suite='test',
       cmdclass={'upload': UploadCommand},
       )

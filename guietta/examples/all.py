@@ -10,8 +10,8 @@ from guietta import Yes, No, Ok, Cancel, Quit, _, ___, III
 from guietta import R1, R2, C, P
 
 try:
-    from PySide2.QtWidgets import QDial, QLCDNumber, QTableWidget
-    from PySide2.QtWidgets import QTableWidgetItem, QHeaderView
+    from qtpy.QtWidgets import QDial, QLCDNumber, QTableWidget
+    from qtpy.QtWidgets import QTableWidgetItem, QHeaderView
 except ImportError:
     from PyQt5.QtWidgets import QDial, QLCDNumber, QTableWidget
     from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
