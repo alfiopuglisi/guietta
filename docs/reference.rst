@@ -185,7 +185,7 @@ Table of default signals:
 Widgets not listed in this table must be connected using the tuple syntax.
 
 Properties
-++++++++++
+----------
 
 Table of properties created for each widget type:
 
@@ -216,7 +216,7 @@ Table of properties created for each widget type:
 
 
 Exception catching in slots
-+++++++++++++++++++++++++++
+---------------------------
 
 When a slot is called, they will be enclosed in a "try - except Exception"
 block. What happens in the except clause depends on the "exceptions"
@@ -235,9 +235,34 @@ keyword parameter of the GUI constructor, which accepts the following enums:
 |  Exceptions.SILENT              | nothing, exception is "swallowed"  |
 +---------------------------------+------------------------------------+
 
-Gui class
----------
+
+QT symbols in Guietta
+------------------------
+
+List of QT symbols defined in guietta. These symbols can be imported like
+`from guietta import x` instead of importing from PySde2::
+
+    from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+    from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+    from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+    from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+    from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+    from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+    from PySide2.QtWidgets import QProgressBar
+    from PySide2.QtGui import QPixmap, QIcon, QFont
+    from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+    
+Gui class reference
+-------------------
 
 .. autoclass:: guietta.Gui
    :members:
+
+
+Module-level functions reference
+--------------------------------
+
+.. autofunction:: guietta.splash
+.. autofunction:: guietta.Ax
+
 

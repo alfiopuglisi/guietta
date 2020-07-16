@@ -959,10 +959,9 @@ def Ax(widget):
     Context manager to help drawing on Matplotlib widgets.
 
     Takes care of clearing and redrawing the canvas before and after
-    the inner code block is executed.
+    the inner code block is executed::
 
-    usage:
-        with MatplotlibAx(gui.plot) as ax:
+        with Ax(gui.plot) as ax:
             ax.plot(...)
     '''
     if not isinstance(widget, MatplotlibWidget):

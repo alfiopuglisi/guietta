@@ -670,6 +670,17 @@ is done, an optional callback in the main thread will be triggered.
 
 .. autofunction:: guietta.Gui.execute_in_background
 
+Using other QT classes
+----------------------
+
+Guietta makes available several other useful QT classes (like *QFileDialog*)
+without the need to import directly from PySide2::
+
+    from guietta import QFileDialog
+    
+a complete list is available in the
+`reference guide <reference.html#qt-symbols-in-guietta>`_.
+
 Packaging your application
 -----------------------------
 

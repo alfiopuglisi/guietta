@@ -19,6 +19,7 @@
 ### Changed
   - QComboBox default signal is now 'currentTextChanged' for better
     backward compatibility with older QT versions.
+  - Fallback to import from PyQt5 instead of PySide2 if the latter fails.
 
 ## [0.3.4] - 2020-07-06
 
