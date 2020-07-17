@@ -49,6 +49,7 @@ import functools
 import contextlib
 from enum import Enum
 from types import SimpleNamespace
+from functools import wraps
 from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
@@ -274,6 +275,25 @@ class _ContextDict(dict, ContextMixIn):
         self._widget = widget
 
 
+def _alsoAcceptAnotherGui(widget):
+    '''Decorator for the set() function of a fake property.
+
+    Adds the possibility of receiving a Gui instance as the value,
+    replacing the widget with the Gui layout
+    '''
+    def decorator(f):
+        @wraps(f)
+        def wrapper(value):
+            if isinstance(value, Gui):
+                widget._gui.layout().replaceWidget(widget, value.window())
+                widget.hide()
+            else:
+                f(value)
+        return wrapper
+    return decorator
+
+
+
 def _signal_property(widget):
     '''Property that handles the widget's default signal
 
@@ -283,6 +303,7 @@ def _signal_property(widget):
     def getx():
         return widget
 
+    @_alsoAcceptAnotherGui(widget)
     def setx(value):
         _connect(None, widget, signal_name='default', slot=value)
 
@@ -296,6 +317,7 @@ def _text_property(widget):
         text = widget.text()
         return _ContextStr(widget, text)
 
+    @_alsoAcceptAnotherGui(widget)
     def set_text(text):
         if isinstance(widget, SmartQLabel):
             widget.setText(text)
@@ -315,6 +337,7 @@ def _value_property(widget, typ):
         else:
             return value
 
+    @_alsoAcceptAnotherGui(widget)
     def set_value(value):
         widget.setValue(typ(value))
 
@@ -327,6 +350,7 @@ def _readonly_property(widget):
     def getx():
         return widget
 
+    @_alsoAcceptAnotherGui(widget)
     def setx(x):
         raise AttributeError('This property is read-only')
 
@@ -340,6 +364,7 @@ def _items_property(widget):
         items = map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
         return _ContextList(widget, items)
 
+    @_alsoAcceptAnotherGui(widget)
     def set_items(lst):
         widget.clear()
         widget.addItems(list(map(str, lst)))  # use list() to support
@@ -356,6 +381,7 @@ def _combobox_property(widget):
         data = [widget.itemData(i) for i in range(widget.count())]
         return _ContextDict(widget, zip(texts, data))
 
+    @_alsoAcceptAnotherGui(widget)
     def set_items(dct):
         widget.clear()
         for k, v in dct.items():

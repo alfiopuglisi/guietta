@@ -4,7 +4,8 @@
 ## [0.3.6] - 
 
 ### Added
-  -font() method and construction keyword argument
+  - hierarchical layouts using property assignments
+  - font() method and construction keyword argument
   
 ### Changed
   - callback in background processing is now optional

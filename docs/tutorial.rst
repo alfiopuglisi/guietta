@@ -128,6 +128,9 @@ a button will accept a callable that will be called when the button
 is clicked. A complete list of property types is available in the
 `reference guide <reference.html#properties>`_.
 
+A special case where magic properties are also used are dynamical layouts,
+described in more detail `here <#hierarchical-guis>`_.
+
 GUI actions
 -----------
 
@@ -268,6 +271,7 @@ While extremely simple and intuitive, this style has a number of caveats:
       but for example a *valueChanged()* signal from a slider would not have
       transferred the new slider value.
     - the *as* clause in the *with* statement cannot be used.
+    - nested *with* statements will not work
     - like the @auto decorator above, it is not guaranteed to work on
       a Python prompt. It works on the standard Python one, but for example
       will not work with some versions of IPython.
@@ -680,6 +684,23 @@ without the need to import directly from PySide2::
     
 a complete list is available in the
 `reference guide <reference.html#qt-symbols-in-guietta>`_.
+
+Hierarchical GUIs
+-----------------
+
+Sometimes you want to insert a Gui inside another one, for example
+in a program that builds its interface dynamically from basic GUI building
+blocks. Guietta supports it as a special case of its magic properties::
+
+   gui.label = another_gui
+   
+if `gui` and `another_gui` are two guietta.Gui instances, the *gui.label*
+widget (which could be any kind of widget) will be removed, and in its place
+the entire *another_gui* layout will appear, complete with all its widgets
+
+The `sub_layout example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/sub_layout.py>`_
+shows this trick in action.
+
 
 Packaging your application
 -----------------------------
