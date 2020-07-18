@@ -376,6 +376,34 @@ def _readonly_property(widget):
     return _InstanceProperty(getx, setx)
 
 
+def _matplotlib_property(widget):
+    '''Property for matplotlib widgets'''
+
+    def getx():
+        return widget
+
+    @_alsoAcceptAnotherGui(widget)
+    def setx(x):
+        if isinstance(x, str):
+            with Ax(widget) as ax:
+                ax.set_title(x)
+
+        import numpy as np
+        try:
+            arr = np.array(x)
+        except:
+            raise TypeError('Matplotlib widgets need an array-like value')
+
+        with Ax(widget) as ax:
+            if len(arr.shape) == 1:
+                ax.plot(arr)
+            elif len(arr.shape) == 2:
+                ax.imshow(arr)
+            else:
+                raise ValueError('Only 1d or 2d values are supported')
+
+    return _InstanceProperty(getx, setx)
+
 def _items_property(widget):
     '''Property for widgets with string lists'''
 
@@ -476,6 +504,9 @@ def _fake_property(widget):
 
     elif isinstance(widget, QComboBox):
         return _combobox_property(widget)
+
+    elif isinstance(widget, MatplotlibWidget):
+        return _matplotlib_property(widget)
 
     else:
         return _readonly_property(widget)
