@@ -7,6 +7,7 @@
   - support for group boxes
   - hierarchical layouts using property assignments
   - font() method and construction keyword argument
+  - magic property for matplotlib widgets
   
 ### Changed
   - callback in background processing is now optional

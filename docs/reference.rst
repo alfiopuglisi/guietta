@@ -213,6 +213,8 @@ Table of properties created for each widget type:
 +----------------------+--------------------+---------------------+
 | QComboBox            |  dict{str: any}    | dict{str: any}      |
 +----------------------+--------------------+---------------------+
+| Matplotlib widgets   |  widget instance   | 1d and 2d array-like|
++----------------------+--------------------+---------------------+
 | Everything else      |  widget instance   | raises an exception |
 +----------------------+--------------------+---------------------+
 

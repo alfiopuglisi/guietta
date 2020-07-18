@@ -558,7 +558,22 @@ If a static plot was wanted, we could now directly draw into it. But
 since we like flashy things, we will make a plot that updates based
 on the slider position.
 
-We need to define a callback to redraw the plot::
+The M() widget has a magic property to refresh the plot: if you assign
+it a numpy array, it will just replot itself. If the array is 2d, it will
+use imshow(). Here is a simple callback to redraw the plot::
+
+    import numpy as np
+    
+    def replot(gui, value):
+        t = np.linspace(0, 1+value/10, 500)
+        gui.plot = np.tan(t)
+
+The callback, as usual, has the gui as its first argument. Since we intend
+to connect it to the slider, it also has a *value* argument, that will be
+the slider position. Guietta's sliders are basic QT sliders with a value
+that can go from 0 to 99 included.
+
+If more control is needed, one could manually draw onto the widget::
 
     import numpy as np
     
@@ -571,10 +586,6 @@ We need to define a callback to redraw the plot::
         ax.plot(t, np.tan(t), ".-")
         ax.figure.canvas.draw()
 
-The callback, as usual, has the gui as its first argument. Since we intend
-to connect it to the slider, it also has a *value* argument, that will be
-the slider position. Guietta's sliders are basic QT sliders with a value
-that can go from 0 to 99 included.
 
 The callback can find the axis to draw on using "gui.<widgetname>.ax".
 It then proceeds to clear the axis and use normal Matplotlib commands.

@@ -384,10 +384,6 @@ def _matplotlib_property(widget):
 
     @_alsoAcceptAnotherGui(widget)
     def setx(x):
-        if isinstance(x, str):
-            with Ax(widget) as ax:
-                ax.set_title(x)
-
         import numpy as np
         try:
             arr = np.array(x)
