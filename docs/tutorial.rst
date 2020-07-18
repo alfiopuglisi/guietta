@@ -701,6 +701,18 @@ the entire *another_gui* layout will appear, complete with all its widgets
 The `sub_layout example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/sub_layout.py>`_
 shows this trick in action.
 
+Groupboxes
+++++++++++
+
+Sub-layouts are commonly associated with group boxes, that draw a rectangle
+with a title around a window section. Guietta supports the QGroupBox widget
+with its *G* widget, which can be assigned directly another Gui instance::
+
+    gui = Gui( [ G('my group') ] )
+
+    gui.mygroup = another_gui
+
+See also the `groupbox example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/groupbox.py>`_
 
 Packaging your application
 -----------------------------

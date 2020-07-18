@@ -72,6 +72,8 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | P('name')       |   QProgressBar()                      | 'name'      |
 +-----------------+---------------------------------------+-------------+
+| G('title')      |   QGroupBox('title')                  | 'title'     |
++-----------------+---------------------------------------+-------------+
 | HS('name')      |   QSlider(Qt::Horizontal)             | 'name'      |
 +-----------------+---------------------------------------+-------------+
 | VS('name')      |   QSlider(Qt::Horizontal)             | 'name'      |
@@ -192,8 +194,9 @@ Table of properties created for each widget type:
 +----------------------+--------------------+---------------------+
 | Widget               | Read property type | Write property type |
 +======================+====================+=====================+    
-| QLabel,              |   str              | str                 |
+| QLabel,              |  str               | str                 |
 | QLineEdit            |                    |                     | 
+| QGroupBox            |                    |                     | 
 +----------------------+--------------------+---------------------+
 | QAbstractButton      |                    |                     |
 | (QPushButton,        |                    |                     |
@@ -213,6 +216,11 @@ Table of properties created for each widget type:
 | Everything else      |  widget instance   | raises an exception |
 +----------------------+--------------------+---------------------+
 
+All write properties accept a *guietta.Gui* instance. For all widgets except
+QGroupBox, such a write will cause the widget to be replaced by the new Gui's
+main QWidget, while the original widget will be hidden using *hide()*. For
+QGroupBox, its *setLayout()* method will be called using the new Gui layout
+as the argument.
 
 
 Exception catching in slots
@@ -248,7 +256,7 @@ List of QT symbols defined in guietta. These symbols can be imported like
     from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
     from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
     from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-    from PySide2.QtWidgets import QProgressBar
+    from PySide2.QtWidgets import QProgressBar, QGroupBox
     from PySide2.QtGui import QPixmap, QIcon, QFont
     from PySide2.QtCore import Qt, QTimer, Signal, QEvent
     

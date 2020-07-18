@@ -4,6 +4,7 @@
 ## [0.3.6] - 
 
 ### Added
+  - support for group boxes
   - hierarchical layouts using property assignments
   - font() method and construction keyword argument
   

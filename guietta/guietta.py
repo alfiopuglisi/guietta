@@ -60,7 +60,7 @@ try:
     from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
     from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
     from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-    from PySide2.QtWidgets import QProgressBar
+    from PySide2.QtWidgets import QProgressBar, QGroupBox
     from PySide2.QtGui import QPixmap, QIcon, QFont
     from PySide2.QtCore import Qt, QTimer, Signal, QEvent
 except ImportError:
@@ -71,7 +71,7 @@ except ImportError:
         from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
         from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
         from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-        from PyQt5.QtWidgets import QProgressBar
+        from PyQt5.QtWidgets import QProgressBar, QGroupBox
         from PyQt5.QtGui import QPixmap, QIcon, QFont
         from PyQt5.QtCore import Qt, QTimer, QEvent
         from PyQt5.QtCore import pyqtSignal as Signal
@@ -90,6 +90,7 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 E = QLineEdit
 C = QCheckBox
 R = QRadioButton
+G = QGroupBox
 
 
 class III:
@@ -285,8 +286,11 @@ def _alsoAcceptAnotherGui(widget):
         @wraps(f)
         def wrapper(value):
             if isinstance(value, Gui):
-                widget._gui.layout().replaceWidget(widget, value.window())
-                widget.hide()
+                if isinstance(widget, QGroupBox):
+                    widget.setLayout(value.layout())
+                else:
+                    widget._gui.layout().replaceWidget(widget, value.window())
+                    widget.hide()
             else:
                 f(value)
         return wrapper
@@ -325,6 +329,21 @@ def _text_property(widget):
             widget.setText(str(text))
 
     return _InstanceProperty(get_text, set_text)
+
+
+def _title_property(widget):
+    '''Property for widgets with a title (QGroupBox)'''
+
+    def get_title():
+        title = widget.title()
+        return _ContextStr(widget, title)
+
+    @_alsoAcceptAnotherGui(widget)
+    def set_title(title):
+        print('set_title')
+        widget.setTitle(str(title))
+
+    return _InstanceProperty(get_title, set_title)
 
 
 def _value_property(widget, typ):
@@ -445,6 +464,9 @@ def _fake_property(widget):
 
     elif isinstance(widget, (QLabel, QLineEdit, SmartQLabel)):
         return _text_property(widget)
+
+    elif isinstance(widget, QGroupBox):
+        return _title_property(widget)
 
     elif isinstance(widget, (QAbstractSlider, QProgressBar)):
         return _value_property(widget, int)
@@ -1647,8 +1669,9 @@ class Gui:
         Several possibilities:
             - (widget, 'name')  - type checks should have already been
                                   performed before, hopefully
-            - widget            - if widget defines text(), use that as
-                                  its name, otherwise use the class name
+            - widget            - if widget defines text() or title(), use
+                                  that as the name, otherwise
+                                  use the class name
 
         - remove special characters, only leave a-zA-Z0-9
         - auto-number duplicate names.
@@ -1659,6 +1682,8 @@ class Gui:
             widget = element
             if hasattr(widget, 'text'):
                 name = widget.text()
+            elif hasattr(widget, 'title'):
+                name = widget.title()
             else:
                 name = widget.__class__.__name__
 
