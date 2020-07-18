@@ -948,6 +948,7 @@ _default_signals = {QPushButton: 'clicked',
                     QRadioButton: 'toggled',
                     QAbstractSlider: 'valueChanged',
                     QListWidget: 'currentTextChanged',
+                    QGroupBox: 'clicked',
                     QComboBox: 'currentTextChanged'}
 
 
