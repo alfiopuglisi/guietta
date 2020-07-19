@@ -1054,12 +1054,13 @@ def Ax(widget):
 class M(_DeferredCreationWidget):
     '''A Matplotlib Canvas widget'''
 
-    def __init__(self, name, width=5, height=3, dpi=100):
+    def __init__(self, name, width=5, height=3, dpi=100, subplots=(1,1)):
 
         self._name = name
         self._width = width
         self._height = height
         self._dpi = dpi
+        self._subplots = subplots
 
     def create(self, gui):
         if globals()['MatplotlibWidget'].__name__ == 'MatplotlibWidget':
@@ -1071,9 +1072,9 @@ class M(_DeferredCreationWidget):
 
                 clicked = Signal(float, float)
 
-                def __init__(self, width, height, dpi):
+                def __init__(self, width, height, dpi, subplots):
                     figure = Figure(figsize=(width, height), dpi=dpi)
-                    self.ax = figure.add_subplot(111)
+                    self.ax = figure.subplots(*subplots)
                     super().__init__(figure)
                     figure.canvas.mpl_connect('button_press_event',
                                               self._on_button_press)
@@ -1085,7 +1086,7 @@ class M(_DeferredCreationWidget):
             _default_signals[RealMatplotlibWidget] = 'clicked'
 
 
-        widget = MatplotlibWidget(self._width, self._height, self._dpi)
+        widget = MatplotlibWidget(self._width, self._height, self._dpi, self._subplots)
         return (widget, self._name)
 
 
