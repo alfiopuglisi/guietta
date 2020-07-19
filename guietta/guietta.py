@@ -177,7 +177,7 @@ class ContextMixIn():
         else:
             widget = self
 
-        _connect(None, widget, signal_name='default', slot=locals_copy['slot'])
+        connect(widget, signal_name='default', slot=locals_copy['slot'])
 
         return True   # Cancel the exception raised by the first execution
 
@@ -309,7 +309,7 @@ def _signal_property(widget):
 
     @_alsoAcceptAnotherGui(widget)
     def setx(value):
-        _connect(None, widget, signal_name='default', slot=value)
+        connect(widget, signal_name='default', slot=value)
 
     return _InstanceProperty(getx, setx)
 
@@ -1503,15 +1503,13 @@ def splash(text,
     return splash
 
 
-def _connect(gui_obj, widget, signal_name, slot):
+def connect(widget, signal_name, slot):
 
-    # If called without a gui_obj, look it up using the widget attributes.
-    if gui_obj is None:
-        if hasattr(widget, '_gui'):
-            gui_obj = widget._gui
-        else:
-            raise TypeError('Widget %s does not seem to belong to any '
-                            'Gui object' % widget.__class__.__name__)
+    if hasattr(widget, '_gui'):
+        gui = widget._gui
+    else:
+        raise TypeError('Widget %s does not seem to belong to any '
+                        'Gui object' % widget.__class__.__name__)
 
     if signal_name == 'default':
         try:
@@ -1527,14 +1525,14 @@ def _connect(gui_obj, widget, signal_name, slot):
 
     # Custom signal with default handler for get()
     if slot is None:
-        slot = functools.partial(gui_obj._event_handler, signal, widget)
+        slot = functools.partial(gui._event_handler, signal, widget)
 
-    if _bound_method(slot, to_whom=gui_obj):
+    if _bound_method(slot, to_whom=gui):
         use_slot = slot
     else:
-        use_slot = functools.partial(slot, gui_obj)
+        use_slot = functools.partial(slot, gui)
 
-    signal.connect(_exception_wrapper(use_slot, gui_obj._exception_mode))
+    signal.connect(_exception_wrapper(use_slot, gui._exception_mode))
 
 
 class Gui:
@@ -1787,7 +1785,7 @@ class Gui:
         for i, j, pair in rows.enumerate():
             item = self[i,j]
             signal_name, slot = pair
-            _connect(self, item, signal_name, slot)
+            connect(item, signal_name, slot)
 
     def fonts(self, *lists):
         '''Defines the fonts used for each GUI widget.
@@ -2060,7 +2058,7 @@ class Gui:
             if widget_name in self.widgets:
                 try:
                     widget = self.widgets[widget_name]
-                    _connect(self, widget, 'default', func)
+                    connect(widget, 'default', func)
 
                 except ValueError:
                     # No default signal defined

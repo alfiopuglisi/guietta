@@ -2,7 +2,6 @@
 
 from .guietta import *
 from .guietta import _, ___
-from .guietta import _connect
 
 from .__version__ import __version__
 
