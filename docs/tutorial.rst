@@ -359,7 +359,7 @@ the result will be::
 
 This is how we discover that the user has closed the window.
 
- .. Note:: if you have clicked multiple times on the *Go* button
+ .. note:: if you have clicked multiple times on the *Go* button
            in between
            the *get()* calls, you will have to call ``gui.get()`` 
            the same number of times before getting ``(None, None)``,
@@ -625,6 +625,21 @@ and run the GUI::
 
 Notice how we first call the callback ourselves, giving it a default
 value, in order to have a plot ready when the GUI is displayed.
+
+Multiple plots
+++++++++++++++
+
+The M() widget has an optional *subplots* keyword::
+
+    M('myplot', subplots=(2,3))
+
+this will create a widget with 6 subplots organized in two rows.
+The *guietta.myplot.ax* member will be the return value from the
+subplots call, so it will be two lists with three ax objects each.
+
+.. Note:: if the subplots keyword is set to any value different
+          from its default, the Ax context manager cannot be used.
+
 
 Pyqtgraph
 ---------
