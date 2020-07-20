@@ -384,6 +384,9 @@ def _matplotlib_property(widget):
 
     @_alsoAcceptAnotherGui(widget)
     def setx(x):
+        if x is None:
+            return
+
         import numpy as np
         try:
             arr = np.array(x)
