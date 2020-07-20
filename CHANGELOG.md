@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.8] - 2020-07-20
+
+### Changed
+  - Workaround for bugs for some version of the "inspect" module.
+
+
+## [0.3.7] - 2020-07-20
+
+### Changed
+  - Compatibility with old Matplotlib versions (<2.1)
+
 
 ## [0.3.6] - 2020-07-20
 
