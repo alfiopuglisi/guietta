@@ -274,5 +274,6 @@ Module-level functions reference
 
 .. autofunction:: guietta.splash
 .. autofunction:: guietta.Ax
+.. autofunction:: guietta.M
 
 

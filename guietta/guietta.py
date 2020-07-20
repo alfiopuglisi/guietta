@@ -1048,19 +1048,28 @@ def Ax(widget):
 
     yield ax
 
+    for k,v in widget.kwargs.items():
+        getattr(widget.ax, k).__call__(v)
     ax.figure.canvas.draw()
 
 
 class M(_DeferredCreationWidget):
-    '''A Matplotlib Canvas widget'''
+    '''A Matplotlib Canvas widget
 
-    def __init__(self, name, width=5, height=3, dpi=100, subplots=(1,1)):
+    The **kwargs accepts additional keywords that will become function
+    calls every time the Ax decorator is used. For example, adding the
+    argument `set_ylabel='foo'`, will result in this function call:
+    `ax.set_ylabel('foo')`
+    '''
+    def __init__(self, name, width=5, height=3, dpi=100,
+                       subplots=(1,1), **kwargs):
 
         self._name = name
         self._width = width
         self._height = height
         self._dpi = dpi
         self._subplots = subplots
+        self._kwargs = kwargs
 
     def create(self, gui):
         if globals()['MatplotlibWidget'].__name__ == 'MatplotlibWidget':
@@ -1072,9 +1081,10 @@ class M(_DeferredCreationWidget):
 
                 clicked = Signal(float, float)
 
-                def __init__(self, width, height, dpi, subplots):
+                def __init__(self, width, height, dpi, subplots, **kwargs):
                     figure = Figure(figsize=(width, height), dpi=dpi)
                     self.ax = figure.subplots(*subplots)
+                    self.kwargs = kwargs
                     super().__init__(figure)
                     figure.canvas.mpl_connect('button_press_event',
                                               self._on_button_press)
@@ -1086,7 +1096,8 @@ class M(_DeferredCreationWidget):
             _default_signals[RealMatplotlibWidget] = 'clicked'
 
 
-        widget = MatplotlibWidget(self._width, self._height, self._dpi, self._subplots)
+        widget = MatplotlibWidget(self._width, self._height, self._dpi,
+                                  self._subplots, **self._kwargs)
         return (widget, self._name)
 
 
