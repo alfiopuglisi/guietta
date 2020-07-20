@@ -147,8 +147,10 @@ class ContextMixIn():
                     break
                 idx -= 1
         else:
-            lines, first = inspect.getsourcelines(self._start.frame)
-            withlines = lines[self._start.lineno + first -1 : end.lineno + first]
+            # Do not use inspect.getsourcelines because it appears
+            # to fail on some systems
+            lines = open(self._start.filename).readlines()
+            withlines = lines[self._start.lineno - 1 : end.lineno]
 
         withsource = textwrap.dedent(''.join(withlines))
 
