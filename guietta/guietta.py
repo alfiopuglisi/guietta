@@ -1086,7 +1086,14 @@ class M(_DeferredCreationWidget):
 
                 def __init__(self, width, height, dpi, subplots, **kwargs):
                     figure = Figure(figsize=(width, height), dpi=dpi)
-                    self.ax = figure.subplots(*subplots)
+                    # DO not use add_subplots(), for compatibility with
+                    # old versions of maplotlib (<2.1)
+                    if subplots == (1,1):
+                        self.ax = figure.add_subplot(1,1,1)
+                    else:
+                        self.ax = []
+                        for x in range(subplots[0]*subplots[1]):
+                            self.ax.append(figure.add_subplot(subplots[0], subplots[1], x+1))
                     self.kwargs = kwargs
                     super().__init__(figure)
                     figure.canvas.mpl_connect('button_press_event',
