@@ -5,9 +5,10 @@
 
 ### Added
   - support for group boxes
-  - hierarchical layouts using property assignments
+  - hierarchical layouts ("child" Gui instances) using property assignments
   - font() method and construction keyword argument
-  - magic property for matplotlib widgets
+  - matplotlib widgets: added magic properties, subplots, arbitrary
+    calls upon redrawing.
   
 ### Changed
   - callback in background processing is now optional
