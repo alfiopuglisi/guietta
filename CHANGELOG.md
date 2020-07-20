@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [0.3.6] - 
+## [0.3.6] - 2020-07-20
 
 ### Added
   - support for group boxes
