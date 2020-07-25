@@ -89,7 +89,11 @@ derived from the constructor: any text-based widget has a name that corresponds
 to the initial widget text. Special characters in the text are removed
 in order to be sure that the resulting name is a valid Python identifier.
 In practice, this means that letters a-Z, A-Z, numbers 0-9 and underscores
-are kept, and everything else is removed.
+are kept, preserving case, and everything else is removed, including spaces::
+
+   gui = Gui('This is button 2!')
+   
+   gui.Thisisbutton2 = 'new text'
 
 The GUI shown in the previous chapter will have five widgets: 
 "Enternumber", "num", "Go", "Result", and "result". If a name is a duplicate,
@@ -262,15 +266,28 @@ The "with *magic property*" statement will save the code block and execute
 it when the corresponding widget, in this case the *Go* button, fires its
 default event.
 
-Multiple *with* blocks can be defined, and multiple properties can be
-listed in a single with block, without limits.
+The *as* clause refers to the same widget, which is useful if the *with* block
+needs to refer to the widget itself::
+
+    with gui.widgetWithVeryLongName as w:
+       gui.result = w.text()
+
+Multiple *with* blocks can be defined, and multiple widgets can be
+listed in a single with block, without limits::
+
+    with gui.a, gui.b:
+       gui.result = float(gui.a) + float(gui.b)
+
+
+If multiple widgets are listed, the *as* clause, if present,
+will refer to the last widget in the list.
+       
 
 While extremely simple and intuitive, this style has a number of caveats:
 
     - signal arguments are not supported. The example above was a mouse click,
       but for example a *valueChanged()* signal from a slider would not have
       transferred the new slider value.
-    - the *as* clause in the *with* statement cannot be used.
     - nested *with* statements will not work
     - like the @auto decorator above, it is not guaranteed to work on
       a Python prompt. It works on the standard Python one, but for example
@@ -497,6 +514,9 @@ exclusive groups arranged vertically.
 The `radio buttons example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/radio.py>`_ shows how
 to connect radio buttons to events and how to check if a radio button
 is checked or not.
+
+Radio button text will be modified with the same rules for every other widgets,
+see `Guietta's magic properties <tutorial.html#guietta-s-magic-properties>`_.
 
 Pre-defined radio buttons were introduced in version 0.3.4.
 
