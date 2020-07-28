@@ -1,9 +1,17 @@
 # Changelog
 
+
+## [0.3.9] - 
+
+### Added
+  - PGI() widget for pyqtgraph images.
+  - pyqtgraph widgets: added magic properties for plots and images.
+
+
 ## [0.3.8] - 2020-07-20
 
 ### Changed
-  - Workaround for bugs for some version of the "inspect" module.
+  - Workaround for bugs in some version of the "inspect" module.
 
 
 ## [0.3.7] - 2020-07-20

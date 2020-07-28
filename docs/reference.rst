@@ -86,12 +86,14 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | PG('name')      |   pyqtgraph PlotWidget*               |             |
 +-----------------+---------------------------------------+-------------+
+| PGI('name')     |   pyqtgraph ImageView*                |             |
++-----------------+---------------------------------------+-------------+
 | widget          |   any valid QT widget                 | none        |
 +-----------------+---------------------------------------+-------------+
 | (widget, 'name')|   any valid QT widget                 | 'name'      |
 +-----------------+---------------------------------------+-------------+
 
-* Matplotlib or pyqtraph will only be imported if the M() or PG() widgets
+* Matplotlib or pyqtraph will only be imported if the M(), PG() or PGI() widgets
   are used. Matplotlib and pyqtgraph are not is not installed automatically
   together with guietta. If the M() widget  is used, the user must install
   matplotlib manually, same for PG() and pyqtgraph.

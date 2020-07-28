@@ -405,6 +405,57 @@ def _matplotlib_property(widget):
 
     return _InstanceProperty(getx, setx)
 
+
+def _pyqtgraph_plot_property(widget):
+    '''Property for pyqtgraph plot widgets'''
+
+    def getx():
+        return widget
+
+    @_alsoAcceptAnotherGui(widget)
+    def setx(x):
+        if x is None:
+            return
+
+        import numpy as np
+        try:
+            arr = np.array(x)
+        except:
+            raise TypeError('Pyqtgraph widgets need an array-like value')
+
+        if len(arr.shape) == 1:
+            widget.plot(arr, clear=True)
+        else:
+            raise ValueError('Only 1d values are supported')
+
+    return _InstanceProperty(getx, setx)
+
+
+def _pyqtgraph_image_property(widget):
+    '''Property for pyqtgraph image widgets'''
+
+    def getx():
+        return widget
+
+    @_alsoAcceptAnotherGui(widget)
+    def setx(x):
+        if x is None:
+            return
+
+        import numpy as np
+        try:
+            arr = np.array(x)
+        except:
+            raise TypeError('Pyqtgraph widgets need an array-like value')
+
+        if len(arr.shape) == 2:
+            widget.setImage(arr)
+        else:
+            raise ValueError('Only 2d values are supported')
+
+    return _InstanceProperty(getx, setx)
+
+
 def _items_property(widget):
     '''Property for widgets with string lists'''
 
@@ -508,6 +559,12 @@ def _fake_property(widget):
 
     elif isinstance(widget, MatplotlibWidget):
         return _matplotlib_property(widget)
+
+    elif isinstance(widget, PyQtGraphPlotWidget):
+        return _pyqtgraph_plot_property(widget)
+
+    elif isinstance(widget, PyQtGraphImageView):
+        return _pyqtgraph_image_property(widget)
 
     else:
         return _readonly_property(widget)
@@ -1034,6 +1091,10 @@ class PyQtGraphPlotWidget:
     '''Dummy definition to avoid importing pyqtgraph when it is not used.'''
     pass
 
+class PyQtGraphImageView:
+    '''Dummy definition to avoid importing pyqtgraph when it is not used.'''
+    pass
+
 @contextlib.contextmanager
 def Ax(widget):
     '''
@@ -1136,6 +1197,30 @@ class PG(_DeferredCreationWidget):
         widget = PyQtGraphPlotWidget()
         return (widget, self._name)
       
+
+class PGI(_DeferredCreationWidget):
+    '''A pyqtgraph ImageView'''
+
+    def __init__(self, name):
+        self._name = name
+
+    def create(self, gui):
+        if globals()['PyQtGraphImageView'].__name__ == 'PyQtGraphImageView':
+
+            import pyqtgraph
+            if pyqtgraph.__version__ < '0.11.0':
+                raise Exception('Minimum version for pyqtgraph is 0.11.0,'
+                                'you have '+pyqtgraph.__version__)
+
+            class RealPyQtGraphImageView(pyqtgraph.ImageView):
+                def __init__(self):
+                    super().__init__()
+
+            globals()['PyQtGraphImageView'] = RealPyQtGraphImageView
+
+        widget = PyQtGraphImageView()
+        return (widget, self._name)
+
 
 #####################
 # Stdout redirection

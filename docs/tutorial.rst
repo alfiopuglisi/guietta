@@ -672,7 +672,7 @@ wraps it into its *PG()* widget::
     from guietta import Gui, PG, ___, III, _, VS
     
     gui = Gui(
-      [  PG('plot'),  ___, ___, VS('slider') ],
+      [  PG('myplot'),  ___, ___, VS('slider') ],
       [     III     , III, III,     III      ],
       [     III     , III, III,     III      ],
       [     III     , III, III,  '^^^ Move the slider'  ],
@@ -684,12 +684,17 @@ the previous plot is erased::
 
     with gui.slider:
         t = np.linspace(0, 1+gui.slider/10, 500)
-        gui.plot.plot(t, np.tan(t), clear=True)
+        gui.myplot.plot(t, np.tan(t), clear=True)
 
 Now we initialize the plot with a default one, and run the gui::
 
     gui.slider = 1
     gui.run()
+
+It is also possible to use the PG widget's magic property, which accepts
+1d numpy arrays::
+
+    gui.myplot = np.arange(100)
 
 If something more complex is needed, remember that pyqtgraph are full-featured
 QT widgets, so they can be instantiated and dropped into Guietta without
@@ -699,6 +704,18 @@ the need to use the PG() wrapper.
          to support PySide2, used by Guietta.
 
 Support for pyqtgraph was introducted in version 0.3.5.
+
+Images
+++++++
+
+For displaying images, the *PGI()* widgets provides a *pyqtgraph.ImageView*
+widget. 2d numpy arrays can be assigned to its property::
+
+   gui = Gui([PGI('myimage')])
+   gui.myimage = np.arange(100).reshape((10,10))
+
+Support for pyqtgraph images was introducted in version 0.3.9.
+
 
 Splash screens
 --------------
