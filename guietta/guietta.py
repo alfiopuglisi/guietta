@@ -425,6 +425,8 @@ def _pyqtgraph_plot_property(widget):
 
         if len(arr.shape) == 1:
             widget.plot(arr, clear=True)
+            for k,v in widget.kwargs.items():
+                getattr(widget, k).__call__(v)
         else:
             raise ValueError('Only 1d values are supported')
 
@@ -450,6 +452,8 @@ def _pyqtgraph_image_property(widget):
 
         if len(arr.shape) == 2:
             widget.setImage(arr)
+            for k,v in widget.kwargs.items():
+                getattr(widget, k).__call__(v)
             widget.getHistogramWidget().hide()
         else:
             raise ValueError('Only 2d values are supported')
@@ -1178,8 +1182,9 @@ class M(_DeferredCreationWidget):
 class PG(_DeferredCreationWidget):
     '''A pyqtgraph PlotWidget'''
 
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         self._name = name
+        self._kwargs = kwargs
 
     def create(self, gui):
         if globals()['PyQtGraphPlotWidget'].__name__ == 'PyQtGraphPlotWidget':
@@ -1190,20 +1195,22 @@ class PG(_DeferredCreationWidget):
                                 'you have '+pyqtgraph.__version__)
 
             class RealPyQtGraphPlotWidget(pyqtgraph.PlotWidget):
-                def __init__(self):
+                def __init__(self, **kwargs):
                     super().__init__()
+                    self.kwargs = kwargs
 
             globals()['PyQtGraphPlotWidget'] = RealPyQtGraphPlotWidget
 
-        widget = PyQtGraphPlotWidget()
+        widget = PyQtGraphPlotWidget(**self._kwargs)
         return (widget, self._name)
       
 
 class PGI(_DeferredCreationWidget):
     '''A pyqtgraph ImageView'''
 
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         self._name = name
+        self._kwargs = kwargs
 
     def create(self, gui):
         if globals()['PyQtGraphImageView'].__name__ == 'PyQtGraphImageView':
@@ -1214,12 +1221,13 @@ class PGI(_DeferredCreationWidget):
                                 'you have '+pyqtgraph.__version__)
 
             class RealPyQtGraphImageView(pyqtgraph.ImageView):
-                def __init__(self):
+                def __init__(self, **kwargs):
                     super().__init__()
+                    self.kwargs = kwargs
 
             globals()['PyQtGraphImageView'] = RealPyQtGraphImageView
 
-        widget = PyQtGraphImageView()
+        widget = PyQtGraphImageView(**self._kwargs)
         return (widget, self._name)
 
 
