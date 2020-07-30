@@ -450,6 +450,7 @@ def _pyqtgraph_image_property(widget):
 
         if len(arr.shape) == 2:
             widget.setImage(arr)
+            widget.getHistogramWidget().hide()
         else:
             raise ValueError('Only 2d values are supported')
 
