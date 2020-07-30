@@ -245,7 +245,7 @@ class _Analyzer(ast.NodeVisitor):
 # We cannot use real properties because they are defined on the class
 # and would be shared by different GUIs!
 
-_InstanceProperty = namedtuple('InstanceProperty', 'get set')
+GuiettaProperty = namedtuple('GuiettaProperty', 'get set')
 
 
 class _ContextStr(str, ContextMixIn):
@@ -279,7 +279,7 @@ class _ContextDict(dict, ContextMixIn):
 
 
 def _alsoAcceptAnotherGui(widget):
-    '''Decorator for the set() function of a fake property.
+    '''Decorator for the set() function of a guietta property.
 
     Adds the possibility of receiving a Gui instance as the value,
     replacing the widget with the Gui layout
@@ -313,7 +313,7 @@ def _signal_property(widget):
     def setx(value):
         connect(widget, signal_name='default', slot=value)
 
-    return _InstanceProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _text_property(widget):
@@ -330,7 +330,7 @@ def _text_property(widget):
         else:
             widget.setText(str(text))
 
-    return _InstanceProperty(get_text, set_text)
+    return GuiettaProperty(get_text, set_text)
 
 
 def _title_property(widget):
@@ -345,7 +345,7 @@ def _title_property(widget):
         print('set_title')
         widget.setTitle(str(title))
 
-    return _InstanceProperty(get_title, set_title)
+    return GuiettaProperty(get_title, set_title)
 
 
 def _value_property(widget, typ):
@@ -362,7 +362,7 @@ def _value_property(widget, typ):
     def set_value(value):
         widget.setValue(typ(value))
 
-    return _InstanceProperty(get_value, set_value)
+    return GuiettaProperty(get_value, set_value)
 
 
 def _readonly_property(widget):
@@ -375,7 +375,7 @@ def _readonly_property(widget):
     def setx(x):
         raise AttributeError('This property is read-only')
 
-    return _InstanceProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _matplotlib_property(widget):
@@ -403,7 +403,7 @@ def _matplotlib_property(widget):
             else:
                 raise ValueError('Only 1d or 2d values are supported')
 
-    return _InstanceProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _pyqtgraph_plot_property(widget):
@@ -428,7 +428,7 @@ def _pyqtgraph_plot_property(widget):
         else:
             raise ValueError('Only 1d values are supported')
 
-    return _InstanceProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _pyqtgraph_image_property(widget):
@@ -453,7 +453,7 @@ def _pyqtgraph_image_property(widget):
         else:
             raise ValueError('Only 2d values are supported')
 
-    return _InstanceProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _items_property(widget):
@@ -469,7 +469,7 @@ def _items_property(widget):
         widget.addItems(list(map(str, lst)))  # use list() to support
                                               # PySide v5.9
 
-    return _InstanceProperty(get_items, set_items)
+    return GuiettaProperty(get_items, set_items)
 
 
 def _combobox_property(widget):
@@ -486,7 +486,7 @@ def _combobox_property(widget):
         for k, v in dct.items():
             widget.addItem(k, v)
 
-    return _InstanceProperty(get_items, set_items)
+    return GuiettaProperty(get_items, set_items)
 
 
 #########
@@ -536,7 +536,7 @@ class SmartQLabel(QWidget):
         return self._orig_value
 
 
-def _fake_property(widget):
+def _guietta_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
     if isinstance(widget, QAbstractButton):
@@ -1670,7 +1670,7 @@ class Gui:
 
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
-        self.__dict__['_fake_properties'] = {}
+        self.__dict__['_guietta_properties'] = {}
 
         self.userdata = SimpleNamespace()
 
@@ -1765,16 +1765,20 @@ class Gui:
 
                 done.add(element)
 
-        self.align_fake_properties()
+        self.align_guietta_properties()
         self.title(title)
 
-    def align_fake_properties(self):
+    def align_guietta_properties(self):
         '''Make sure that any and all widgets have a property'''
 
-        self._fake_properties.clear()
+        self._guietta_properties.clear()
         if self._create_properties:
             for name, widget in self._widgets.items():
-                self._fake_properties[name] = _fake_property(widget)
+                if hasattr(widget, '__guietta_property__'):
+                    prop = widget.__guietta_property__()
+                else:
+                    prop = _guietta_property(widget)
+                self._guietta_properties[name] = prop
 
     @property
     def widgets(self):
@@ -1782,19 +1786,19 @@ class Gui:
         return self._widgets
 
     def __getattr__(self, name):
-        '''Use fake_properties to emulate properties on this instance'''
+        '''Use guietta_properties to emulate properties on this instance'''
 
-        if name in self.__dict__['_fake_properties']:
-            return self.__dict__['_fake_properties'][name].get()
+        if name in self.__dict__['_guietta_properties']:
+            return self.__dict__['_guietta_properties'][name].get()
 
         # Default behaviour
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        '''Use fake_properties to emulate properties on this instance'''
+        '''Use guietta_properties to emulate properties on this instance'''
 
-        if name in self.__dict__['_fake_properties']:
-            self.__dict__['_fake_properties'][name].set(value)
+        if name in self.__dict__['_guietta_properties']:
+            self.__dict__['_guietta_properties'][name].set(value)
             return
 
         # Default behaviour
@@ -1952,7 +1956,7 @@ class Gui:
             self._widgets[new_name] = self._widgets[old_name]
             del self._widgets[old_name]
 
-        self.align_fake_properties()
+        self.align_guietta_properties()
 
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
