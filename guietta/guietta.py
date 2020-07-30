@@ -1751,6 +1751,8 @@ class Gui:
                         colspan += 1
 
                 widget, name = self._get_widget_and_name(element)
+                if hasattr(widget, '_gui'):
+                    raise Exception("Widget %s already has a '_gui' attribute" % name)
                 widget._gui = self
                 ContextMixIn.convert_object(widget)
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
