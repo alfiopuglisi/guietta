@@ -135,6 +135,37 @@ is clicked. A complete list of property types is available in the
 A special case where magic properties are also used are dynamical layouts,
 described in more detail `here <#hierarchical-guis>`_.
 
+Define magic properties for custom widgets
+++++++++++++++++++++++++++++++++++++++++++
+
+Guietta's properties work on any widget that respects the following
+protocol:
+
+1. defines a *__guietta_property__()* method
+#. that returns a tuple with two callables: *get()* and *set(value)*.
+
+Note that get() and set() are just conventional names,
+actual functions can have a different name. The get function must
+take no arguments and return the value. The set function must
+take exactly one positional value, and the return value (if any)
+is ignored.
+
+The following example shows a widget where the property is a
+number shown as text::
+
+    class MyLabel(QLabel):
+        def __init__(self):
+            super().___init__('0')
+
+        def __guietta_property__(self):
+            def get_number():
+                return float(self.getText())
+            def set_number(num):
+                self.setText('%5.3f' % num)
+                            
+            return (get_number, set_number)
+
+
 GUI actions
 -----------
 

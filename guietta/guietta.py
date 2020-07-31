@@ -245,7 +245,7 @@ class _Analyzer(ast.NodeVisitor):
 # We cannot use real properties because they are defined on the class
 # and would be shared by different GUIs!
 
-GuiettaProperty = namedtuple('GuiettaProperty', 'get set')
+_GuiettaProperty = namedtuple('GuiettaProperty', 'get set')
 
 
 class _ContextStr(str, ContextMixIn):
@@ -313,7 +313,7 @@ def _signal_property(widget):
     def setx(value):
         connect(widget, signal_name='default', slot=value)
 
-    return GuiettaProperty(getx, setx)
+    return _GuiettaProperty(getx, setx)
 
 
 def _text_property(widget):
@@ -330,7 +330,7 @@ def _text_property(widget):
         else:
             widget.setText(str(text))
 
-    return GuiettaProperty(get_text, set_text)
+    return _GuiettaProperty(get_text, set_text)
 
 
 def _title_property(widget):
@@ -345,7 +345,7 @@ def _title_property(widget):
         print('set_title')
         widget.setTitle(str(title))
 
-    return GuiettaProperty(get_title, set_title)
+    return _GuiettaProperty(get_title, set_title)
 
 
 def _value_property(widget, typ):
@@ -362,7 +362,7 @@ def _value_property(widget, typ):
     def set_value(value):
         widget.setValue(typ(value))
 
-    return GuiettaProperty(get_value, set_value)
+    return _GuiettaProperty(get_value, set_value)
 
 
 def _readonly_property(widget):
@@ -375,90 +375,7 @@ def _readonly_property(widget):
     def setx(x):
         raise AttributeError('This property is read-only')
 
-    return GuiettaProperty(getx, setx)
-
-
-def _matplotlib_property(widget):
-    '''Property for matplotlib widgets'''
-
-    def getx():
-        return widget
-
-    @_alsoAcceptAnotherGui(widget)
-    def setx(x):
-        if x is None:
-            return
-
-        import numpy as np
-        try:
-            arr = np.array(x)
-        except:
-            raise TypeError('Matplotlib widgets need an array-like value')
-
-        with Ax(widget) as ax:
-            if len(arr.shape) == 1:
-                ax.plot(arr)
-            elif len(arr.shape) == 2:
-                ax.imshow(arr)
-            else:
-                raise ValueError('Only 1d or 2d values are supported')
-
-    return GuiettaProperty(getx, setx)
-
-
-def _pyqtgraph_plot_property(widget):
-    '''Property for pyqtgraph plot widgets'''
-
-    def getx():
-        return widget
-
-    @_alsoAcceptAnotherGui(widget)
-    def setx(x):
-        if x is None:
-            return
-
-        import numpy as np
-        try:
-            arr = np.array(x)
-        except:
-            raise TypeError('Pyqtgraph widgets need an array-like value')
-
-        if len(arr.shape) == 1:
-            widget.plot(arr, clear=True)
-            for k,v in widget.kwargs.items():
-                getattr(widget, k).__call__(v)
-        else:
-            raise ValueError('Only 1d values are supported')
-
-    return GuiettaProperty(getx, setx)
-
-
-def _pyqtgraph_image_property(widget):
-    '''Property for pyqtgraph image widgets'''
-
-    def getx():
-        return widget
-
-    @_alsoAcceptAnotherGui(widget)
-    def setx(x):
-        if x is None:
-            return
-
-        import numpy as np
-        try:
-            arr = np.array(x)
-        except:
-            raise TypeError('Pyqtgraph widgets need an array-like value')
-
-        if len(arr.shape) == 2:
-            widget.setImage(arr)
-            for k,v in widget.kwargs.items():
-                getattr(widget, k).__call__(v)
-            widget.getHistogramWidget().hide()
-        else:
-            raise ValueError('Only 2d values are supported')
-
-    return GuiettaProperty(getx, setx)
+    return _GuiettaProperty(getx, setx)
 
 
 def _items_property(widget):
@@ -474,7 +391,7 @@ def _items_property(widget):
         widget.addItems(list(map(str, lst)))  # use list() to support
                                               # PySide v5.9
 
-    return GuiettaProperty(get_items, set_items)
+    return _GuiettaProperty(get_items, set_items)
 
 
 def _combobox_property(widget):
@@ -491,7 +408,7 @@ def _combobox_property(widget):
         for k, v in dct.items():
             widget.addItem(k, v)
 
-    return GuiettaProperty(get_items, set_items)
+    return _GuiettaProperty(get_items, set_items)
 
 
 #########
@@ -540,6 +457,9 @@ class SmartQLabel(QWidget):
     def text(self):
         return self._orig_value
 
+    def __guietta_property__(self):
+        return _text_property(self)
+
 
 def _guietta_property(widget):
     '''Create the instance property corresponding to `widget`'''
@@ -561,15 +481,6 @@ def _guietta_property(widget):
 
     elif isinstance(widget, QComboBox):
         return _combobox_property(widget)
-
-    elif isinstance(widget, MatplotlibWidget):
-        return _matplotlib_property(widget)
-
-    elif isinstance(widget, PyQtGraphPlotWidget):
-        return _pyqtgraph_plot_property(widget)
-
-    elif isinstance(widget, PyQtGraphImageView):
-        return _pyqtgraph_image_property(widget)
 
     else:
         return _readonly_property(widget)
@@ -1170,6 +1081,32 @@ class M(_DeferredCreationWidget):
                 def _on_button_press(self, event):
                     self.clicked.emit(event.xdata, event.ydata)
 
+                def __guietta_property__(self):
+                
+                    def getx():
+                        return self
+                
+                    @_alsoAcceptAnotherGui(self)
+                    def setx(x):
+                        if x is None:
+                            return
+                
+                        import numpy as np
+                        try:
+                            arr = np.array(x)
+                        except:
+                            raise TypeError('Matplotlib widgets need an array-like value')
+                
+                        with Ax(self) as ax:
+                            if len(arr.shape) == 1:
+                                ax.plot(arr)
+                            elif len(arr.shape) == 2:
+                                ax.imshow(arr)
+                            else:
+                                raise ValueError('Only 1d or 2d values are supported')
+                
+                    return (getx, setx)
+
             globals()['MatplotlibWidget'] = RealMatplotlibWidget
             _default_signals[RealMatplotlibWidget] = 'clicked'
 
@@ -1199,6 +1136,31 @@ class PG(_DeferredCreationWidget):
                     super().__init__()
                     self.kwargs = kwargs
 
+                def __guietta_property__(self):
+
+                    def getx():
+                        return self
+                
+                    @_alsoAcceptAnotherGui(self)
+                    def setx(x):
+                        if x is None:
+                            return
+                
+                        import numpy as np
+                        try:
+                            arr = np.array(x)
+                        except:
+                            raise TypeError('Pyqtgraph widgets need an array-like value')
+                
+                        if len(arr.shape) == 1:
+                            self.plot(arr, clear=True)
+                            for k,v in self.kwargs.items():
+                                getattr(self, k).__call__(v)
+                        else:
+                            raise ValueError('Only 1d values are supported')
+                
+                    return (getx, setx)
+
             globals()['PyQtGraphPlotWidget'] = RealPyQtGraphPlotWidget
 
         widget = PyQtGraphPlotWidget(**self._kwargs)
@@ -1224,6 +1186,33 @@ class PGI(_DeferredCreationWidget):
                 def __init__(self, **kwargs):
                     super().__init__()
                     self.kwargs = kwargs
+
+                def __guietta_property__(self):
+                    '''Property for pyqtgraph image widgets'''
+                
+                    def getx():
+                        return widget
+                
+                    @_alsoAcceptAnotherGui(self)
+                    def setx(x):
+                        if x is None:
+                            return
+                
+                        import numpy as np
+                        try:
+                            arr = np.array(x)
+                        except:
+                            raise TypeError('Pyqtgraph widgets need an array-like value')
+                
+                        if len(arr.shape) == 2:
+                            self.setImage(arr)
+                            for k,v in self.kwargs.items():
+                                getattr(self, k).__call__(v)
+                            self.getHistogramWidget().hide()
+                        else:
+                            raise ValueError('Only 2d values are supported')
+                
+                    return (getx, setx)
 
             globals()['PyQtGraphImageView'] = RealPyQtGraphImageView
 
@@ -1784,7 +1773,7 @@ class Gui:
         if self._create_properties:
             for name, widget in self._widgets.items():
                 if hasattr(widget, '__guietta_property__'):
-                    prop = widget.__guietta_property__()
+                    prop = _GuiettaProperty(*widget.__guietta_property__())
                 else:
                     prop = _guietta_property(widget)
                 self._guietta_properties[name] = prop
