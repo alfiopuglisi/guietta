@@ -179,7 +179,7 @@ class ContextMixIn():
         else:
             widget = self
 
-        connect(widget, signal_name='default', slot=locals_copy['slot'])
+        connect(widget, slot=locals_copy['slot'])
 
         return True   # Cancel the exception raised by the first execution
 
@@ -311,7 +311,7 @@ def _signal_property(widget):
 
     @_alsoAcceptAnotherGui(widget)
     def setx(value):
-        connect(widget, signal_name='default', slot=value)
+        connect(widget, slot=value)
 
     return _GuiettaProperty(getx, setx)
 
@@ -1610,7 +1610,7 @@ def splash(text,
     return splash
 
 
-def connect(widget, signal_name, slot):
+def connect(widget, signal_name='default', slot=None):
 
     if hasattr(widget, '_gui'):
         gui = widget._gui
@@ -2171,7 +2171,7 @@ class Gui:
             if widget_name in self.widgets:
                 try:
                     widget = self.widgets[widget_name]
-                    connect(widget, 'default', func)
+                    connect(widget, slot=func)
 
                 except ValueError:
                     # No default signal defined
