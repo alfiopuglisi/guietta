@@ -340,6 +340,18 @@ attribute::
 this way, one is sure that the code will be executed only under *gui.run()*,
 but most of the time there is no need.
 
+Explicit connect
+++++++++++++++++
+
+Most of the above action assignments end up calling *guietta.connect()*,
+which has the following signature::
+
+    guietta.connect(widget, signal_name='default', slot=None)
+
+It can be used to explicitly connect a certain *widget* instance
+to the callable *slot*, when the signal *signal_name* is emitted.
+
+
 Exception handling
 ++++++++++++++++++
 
@@ -805,6 +817,9 @@ with its *G* widget, which can be assigned directly another Gui instance::
     gui = Gui( [ G('my group') ] )
 
     gui.mygroup = another_gui
+
+Instead of replacing the whole widget, this code will show the
+child Gui instance inside the group box, keeping it visible.
 
 See also the `groupbox example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/groupbox.py>`_
 

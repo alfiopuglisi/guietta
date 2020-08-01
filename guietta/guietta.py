@@ -282,7 +282,8 @@ def _alsoAcceptAnotherGui(widget):
     '''Decorator for the set() function of a guietta property.
 
     Adds the possibility of receiving a Gui instance as the value,
-    replacing the widget with the Gui layout
+    replacing the widget with the Gui widget. In case of the widget
+    is a QGroupBox instance, the GUi is placed as the inner layout instead.
     '''
     def decorator(f):
         @wraps(f)
