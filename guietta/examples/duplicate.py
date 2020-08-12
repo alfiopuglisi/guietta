@@ -3,7 +3,7 @@
 from guietta import B, _, Gui, Quit
 
 gui = Gui(
-    
+
   [  'Enter expression:', '__expr__'  , B('Eval!') ],
   [  'result'          , 'result'    , _          ],
   [  _                  , _           , Quit       ] )
@@ -17,7 +17,7 @@ while True:
         except Exception as e:
             gui.result = 'Error: ' + str(e)
 
-    if name == None:
+    elif name is None:
         break
 
 

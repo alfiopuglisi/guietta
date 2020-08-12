@@ -4,7 +4,7 @@ import os.path
 from guietta import B, L, _, Gui
 
 gui = Gui(
-    
+
   [ ['left']                   ],     # Simple button
   [ (['left'], 'bb')           ],     # Simple button, renamed
   [ B('left')                  ],     # Previous two with explicit B
@@ -34,7 +34,7 @@ while True:
 
     print(name, event)
 
-    if name == None:
+    if name is None:
         break
 
 

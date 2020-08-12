@@ -4,13 +4,13 @@ import os.path
 from guietta import B, L, _, Gui, Quit
 
 gui = Gui(
-    
+
   [  'Enter expression:', '__expr__'  , B('right.png', 'newname') ],
   [  L('left.png', 'result')          , 'result'    , _          ],
   [  _                  , _           , Quit       ],
-  
+
   images_dir = os.path.dirname(__file__)
-  
+
   )
 
 while True:
@@ -22,7 +22,7 @@ while True:
         except Exception as e:
             gui.result = 'Error: ' + str(e)
 
-    elif name == None:
+    elif name is None:
         break
 
 

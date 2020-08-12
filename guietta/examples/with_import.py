@@ -22,9 +22,11 @@ gui = Gui(
 )
 
 with gui.h:
-    info = {}
-    info['Orbital height:'] = gui.h * u.km
-    info['Orbital speed:'] = orbital_speed(gui.h * u.km)
+    info = {
+        'Orbital height:': gui.h * u.km,
+        'Orbital speed:': orbital_speed(gui.h * u.km),
+    }
+
     info['Orbital length:'] = 2*np.pi*gui.h * u.km
     gui.results = info
 

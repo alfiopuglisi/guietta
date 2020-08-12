@@ -70,7 +70,7 @@ while True:
         gui.lcd2.display( float(gui.dial))
         gui.progbar = gui.dial
 
-    elif name == None:
+    elif name is None:
         break
 
 

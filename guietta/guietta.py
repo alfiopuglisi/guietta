@@ -174,11 +174,7 @@ class ContextMixIn():
         locals_copy = caller_locals.copy()
         exec(code, caller_globals, locals_copy)
 
-        if hasattr(self, '_widget'):
-            widget = self._widget
-        else:
-            widget = self
-
+        widget = self._widget if hasattr(self, '_widget') else self
         connect(widget, slot=locals_copy['slot'])
 
         return True   # Cancel the exception raised by the first execution
@@ -864,7 +860,7 @@ class _ValueSlider(_CombinedWidget):
 
         slider_name = (self.slider, self.name)
 
-        if self.anchor == Qt.AnchorLeft or self.anchor == Qt.AnchorTop:
+        if self.anchor in [Qt.AnchorLeft, Qt.AnchorTop]:
             first, last = self.editbox, slider_name
         else:
             first, last = slider_name, self.editbox
@@ -1518,7 +1514,7 @@ def _convert_compacts(x):
         return L(x)
 
     elif isinstance(x, list) and isinstance(x[0], str):
-        if len(x) == 1 or len(x) == 2:
+        if len(x) in [1, 2]:
             return B(*x)
         else:
             raise ValueError('Invalid syntax: ' + str(x))
@@ -2116,9 +2112,8 @@ class Gui:
 
         if not callable(func):
             raise TypeError('func must be a callable')
-        if callback is not None:
-            if not callable(callback):
-                raise TypeError('callback must be a callable')
+        if callback is not None and not callable(callback):
+            raise TypeError('callback must be a callable')
 
         app = QApplication.instance()
         app.customEvent = _customEvent

@@ -4,7 +4,7 @@ import os.path
 from guietta import B, L, _, Gui
 
 gui = Gui(
-    
+
   [  _             , L('up.png')   , _              ],
   [  B('left.png') ,     _         , B('right.png') ],
   [  _             , L('down.png') , _           ,  ],
@@ -16,7 +16,7 @@ while True:
 
     print(name, event)
 
-    if name == None:
+    if name is None:
         break
 
 
