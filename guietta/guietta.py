@@ -354,7 +354,7 @@ def _value_property(widget, typ):
 
     def get_value():
         value = widget.value()
-        if typ == int:
+        if typ is int:
             return _ContextInt(widget, value)
         else:
             return value
@@ -864,7 +864,7 @@ class _ValueSlider(_CombinedWidget):
 
         slider_name = (self.slider, self.name)
 
-        if self.anchor == Qt.AnchorLeft or self.anchor == Qt.AnchorTop:
+        if self.anchor in [Qt.AnchorLeft, Qt.AnchorTop]:
             first, last = self.editbox, slider_name
         else:
             first, last = slider_name, self.editbox
@@ -1287,7 +1287,7 @@ def _create_default_widgets(x):
 
     # Also recurse into (WidgetClass, 'name')
     if (
-        type(x) == tuple
+        type(x) is tuple
         and (len(x) == 2)
         and isinstance(x[1], str)
     ):
