@@ -91,13 +91,24 @@ in order to be sure that the resulting name is a valid Python identifier.
 In practice, this means that letters a-Z, A-Z, numbers 0-9 and underscores
 are kept, preserving case, and everything else is removed, including spaces::
 
-   gui = Gui('This is button 2!')
+   gui = Gui(['This is button 2!'])
    
    gui.Thisisbutton2 = 'new text'
 
 The GUI shown in the previous chapter will have five widgets: 
 "Enternumber", "num", "Go", "Result", and "result". If a name is a duplicate,
 it is auto-numbered starting with the number 2.
+
+In case the widget name becomes too long, guietta supports a *tuple syntax*
+to set a custom name::
+
+   gui = Gui([ ('Very very long label text', 'short_name') ])
+
+   gui.short_name = 'new text'
+
+The tuple syntax can be used with any supported widget. The general form
+is *(QWidget, 'name')*, where *QWidget* can be any of the supported
+widget generation syntax (strings to create labels, etc.)
 
 All widgets are available in the `widgets` dictionary, so it is possible
 to use all ordinary QT methods::
