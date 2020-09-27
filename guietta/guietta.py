@@ -1015,7 +1015,7 @@ def Ax(widget):
         ax = widget.ax
     except AttributeError as e:
         raise AttributeError('Class %s does not have an ''ax'' attribute.\n'
-                      'Are you sure that you are referencing the currect plot?'
+                      'Are you sure that you are referencing the correct plot?'
                        %  widget.__class__.__name__) from e
     ax.clear()
 
