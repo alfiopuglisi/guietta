@@ -1000,18 +1000,6 @@ def _exception_wrapper(func, mode):
 ############
 # Matplotlib
 
-class MatplotlibWidget:
-    '''Dummy definition to avoid importing matplotlib when it is not used.'''
-    pass
-
-class PyQtGraphPlotWidget:
-    '''Dummy definition to avoid importing pyqtgraph when it is not used.'''
-    pass
-
-class PyQtGraphImageView:
-    '''Dummy definition to avoid importing pyqtgraph when it is not used.'''
-    pass
-
 @contextlib.contextmanager
 def Ax(widget):
     '''
@@ -1023,10 +1011,12 @@ def Ax(widget):
         with Ax(gui.plot) as ax:
             ax.plot(...)
     '''
-    if not isinstance(widget, MatplotlibWidget):
-        raise TypeError('An instance of MatplotlibWidget is required, '
-                        'got %s instead' % widget.__class__.__name__)
-    ax = widget.ax
+    try:
+        ax = widget.ax
+    except AttributeError as e:
+        raise AttributeError('Class %s does not have an ''ax'' attribute.\n'
+                      'Are you sure that you are referencing the currect plot?'
+                       %  widget.__class__.__name__) from e
     ax.clear()
 
     yield ax
@@ -1043,6 +1033,8 @@ class M(_DeferredCreationWidget):
     calls every time the Ax decorator is used. For example, adding the
     argument `set_ylabel='foo'`, will result in this function call:
     `ax.set_ylabel('foo')`
+    
+    Creating an object of this class will import the matplotlib module.
     '''
     def __init__(self, name, width=5, height=3, dpi=100,
                        subplots=(1,1), **kwargs):
@@ -1055,169 +1047,46 @@ class M(_DeferredCreationWidget):
         self._kwargs = kwargs
 
     def create(self, gui):
-        if globals()['MatplotlibWidget'].__name__ == 'MatplotlibWidget':
+        from guietta import guietta_matplotlib
+        widget_class = guietta_matplotlib.MatplotlibWidget
 
-            from matplotlib.figure import Figure
-            from matplotlib.backends.backend_qt5agg import FigureCanvas
+        _default_signals[widget_class] = 'clicked'
 
-            class RealMatplotlibWidget(FigureCanvas):
-
-                clicked = Signal(float, float)
-
-                def __init__(self, width, height, dpi, subplots, **kwargs):
-                    figure = Figure(figsize=(width, height), dpi=dpi)
-                    # DO not use add_subplots(), for compatibility with
-                    # old versions of maplotlib (<2.1)
-                    if subplots == (1,1):
-                        self.ax = figure.add_subplot(1,1,1)
-                    else:
-                        self.ax = []
-                        for x in range(subplots[0]*subplots[1]):
-                            self.ax.append(figure.add_subplot(subplots[0], subplots[1], x+1))
-                    self.kwargs = kwargs
-                    super().__init__(figure)
-                    figure.canvas.mpl_connect('button_press_event',
-                                              self._on_button_press)
-
-                def _on_button_press(self, event):
-                    self.clicked.emit(event.xdata, event.ydata)
-
-                def __guietta_property__(self):
-                
-                    def getx():
-                        return self
-                
-                    @_alsoAcceptAnotherGui(self)
-                    def setx(x):
-                        if x is None:
-                            return
-                
-                        import numpy as np
-                        try:
-                            arr = np.array(x)
-                        except:
-                            raise TypeError('Matplotlib widgets need an array-like value')
-                
-                        with Ax(self) as ax:
-                            if len(arr.shape) == 1:
-                                ax.plot(arr)
-                            elif len(arr.shape) == 2:
-                                ax.imshow(arr)
-                            else:
-                                raise ValueError('Only 1d or 2d values are supported')
-                
-                    return (getx, setx)
-
-            globals()['MatplotlibWidget'] = RealMatplotlibWidget
-            _default_signals[RealMatplotlibWidget] = 'clicked'
-
-
-        widget = MatplotlibWidget(self._width, self._height, self._dpi,
-                                  self._subplots, **self._kwargs)
+        widget = widget_class(self._width, self._height, self._dpi,
+                              self._subplots, **self._kwargs)
         return (widget, self._name)
 
 
 class PG(_DeferredCreationWidget):
-    '''A pyqtgraph PlotWidget'''
+    '''A pyqtgraph PlotWidget.
+    
+    Creating an object of this class will import the pyqtgraph module.'''
 
+    _pyqtgraph_imported = False
+    
     def __init__(self, name, **kwargs):
+
         self._name = name
         self._kwargs = kwargs
 
     def create(self, gui):
-        if globals()['PyQtGraphPlotWidget'].__name__ == 'PyQtGraphPlotWidget':
-
-            import pyqtgraph
-            if pyqtgraph.__version__ < '0.11.0':
-                raise Exception('Minimum version for pyqtgraph is 0.11.0,'
-                                'you have '+pyqtgraph.__version__)
-
-            class RealPyQtGraphPlotWidget(pyqtgraph.PlotWidget):
-                def __init__(self, **kwargs):
-                    super().__init__()
-                    self.kwargs = kwargs
-
-                def __guietta_property__(self):
-
-                    def getx():
-                        return self
-                
-                    @_alsoAcceptAnotherGui(self)
-                    def setx(x):
-                        if x is None:
-                            return
-                
-                        import numpy as np
-                        try:
-                            arr = np.array(x)
-                        except:
-                            raise TypeError('Pyqtgraph widgets need an array-like value')
-                
-                        if len(arr.shape) == 1:
-                            self.plot(arr, clear=True)
-                            for k,v in self.kwargs.items():
-                                getattr(self, k).__call__(v)
-                        else:
-                            raise ValueError('Only 1d values are supported')
-                
-                    return (getx, setx)
-
-            globals()['PyQtGraphPlotWidget'] = RealPyQtGraphPlotWidget
-
-        widget = PyQtGraphPlotWidget(**self._kwargs)
+        from guietta import guietta_pyqtgraph
+        widget =  guietta_pyqtgraph.PyQtGraphPlotWidget(**self._kwargs)
         return (widget, self._name)
       
 
 class PGI(_DeferredCreationWidget):
-    '''A pyqtgraph ImageView'''
+    '''A pyqtgraph ImageView.
+    
+      Creating an object of this class will import the pyqtgraph module.'''
 
     def __init__(self, name, **kwargs):
         self._name = name
         self._kwargs = kwargs
 
     def create(self, gui):
-        if globals()['PyQtGraphImageView'].__name__ == 'PyQtGraphImageView':
-
-            import pyqtgraph
-            if pyqtgraph.__version__ < '0.11.0':
-                raise Exception('Minimum version for pyqtgraph is 0.11.0,'
-                                'you have '+pyqtgraph.__version__)
-
-            class RealPyQtGraphImageView(pyqtgraph.ImageView):
-                def __init__(self, **kwargs):
-                    super().__init__()
-                    self.kwargs = kwargs
-
-                def __guietta_property__(self):
-                    '''Property for pyqtgraph image widgets'''
-                
-                    def getx():
-                        return widget
-                
-                    @_alsoAcceptAnotherGui(self)
-                    def setx(x):
-                        if x is None:
-                            return
-                
-                        import numpy as np
-                        try:
-                            arr = np.array(x)
-                        except:
-                            raise TypeError('Pyqtgraph widgets need an array-like value')
-                
-                        if len(arr.shape) == 2:
-                            self.setImage(arr)
-                            for k,v in self.kwargs.items():
-                                getattr(self, k).__call__(v)
-                            self.getHistogramWidget().hide()
-                        else:
-                            raise ValueError('Only 2d values are supported')
-                
-                    return (getx, setx)
-
-            globals()['PyQtGraphImageView'] = RealPyQtGraphImageView
-
-        widget = PyQtGraphImageView(**self._kwargs)
+        from guietta import guietta_pyqtgraph
+        widget =  guietta_pyqtgraph.PyQtGraphImageView(**self._kwargs)
         return (widget, self._name)
 
 
