@@ -75,8 +75,8 @@ except ImportError:
         from PyQt5.QtGui import QPixmap, QIcon, QFont
         from PyQt5.QtCore import Qt, QTimer, QEvent
         from PyQt5.QtCore import pyqtSignal as Signal
-    except ImportError:
-        raise Exception('At least one of PySide2 or PyQt5 must be installed')
+    except ImportError as e:
+        raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
@@ -1231,8 +1231,8 @@ def _process_font(x):
     elif _sequence(x):
         try:
             return QFont(*x)
-        except:
-            raise ValueError('%s rejected by QFont constructor' % x)
+        except Exception as e:
+            raise ValueError('%s rejected by QFont constructor' % x) from e
     else:
         raise TypeError('Element %s is not a valid font specification' % x)
 
