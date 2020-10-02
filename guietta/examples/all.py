@@ -53,20 +53,20 @@ gui.l2 = "This is Label 2"
 
 for x in range( 4 ):
     for y in range( 5 ):
-        item = QTableWidgetItem( f'{x}, {y}' )
+        item = QTableWidgetItem('%d %d' ^ (x, y))
         gui.widgets['tab1'].setItem( y, x, item )
-        gui.widgets['tab1'].setHorizontalHeaderItem( x, QTableWidgetItem( f'Col: {x}' ) )
-        gui.widgets['tab1'].setVerticalHeaderItem( y, QTableWidgetItem( f'Row: {y}' ) )
+        gui.widgets['tab1'].setHorizontalHeaderItem( x, QTableWidgetItem('Col: %d' % x ) )
+        gui.widgets['tab1'].setVerticalHeaderItem( y, QTableWidgetItem('Row: %d' % y ) )
 
 while True:
     name, event = gui.get()
 
     if name == 'slider1':
         gui.lcd.display( float(gui.slider1))
-        gui.widgets['tab1'].itemAt( 0, 0 ).setText( f'{gui.slider1}' )
+        gui.widgets['tab1'].itemAt( 0, 0 ).setText(str(gui.slider1))
 
     elif name == 'dial':
-        gui.widgets['tab1'].itemAt( 0, 1 ).setText( f'{gui.dial}' )
+        gui.widgets['tab1'].itemAt( 0, 1 ).setText(str(gui.dial))
         gui.lcd2.display( float(gui.dial))
         gui.progbar = gui.dial
 
