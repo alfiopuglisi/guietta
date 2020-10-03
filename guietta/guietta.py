@@ -306,6 +306,30 @@ def _alsoAcceptAnotherGui(widget):
     return decorator
 
 
+def _returnUndoContextManager(get_func):
+    '''
+    Modify the function so that it returns a context manager that,
+    when exiting, restores the previous widget state (saved
+    calling *get_func*)
+    '''
+    def decorator(f):
+        @wraps(f)
+        def wrapper(value):
+
+            class InnerUndoContextManager:
+                def __init__(self, old_value):
+                    self.old_value = old_value
+                def __enter__(self): pass
+                def __exit__(self, *args):
+                    f(self.old_value)
+
+            old_value = get_func()
+            f(value)
+            return InnerUndoContextManager(old_value)
+
+        return wrapper
+    return decorator
+
 
 def _signal_property(widget):
     '''Property that handles the widget's default signal
@@ -330,6 +354,7 @@ def _text_property(widget):
         text = widget.text()
         return _ContextStr(widget, text)
 
+    @_returnUndoContextManager(get_text)
     @_alsoAcceptAnotherGui(widget)
     def set_text(text):
         if isinstance(widget, SmartQLabel):
@@ -347,6 +372,7 @@ def _title_property(widget):
         title = widget.title()
         return _ContextStr(widget, title)
 
+    @_returnUndoContextManager(get_title)
     @_alsoAcceptAnotherGui(widget)
     def set_title(title):
         print('set_title')
@@ -365,6 +391,7 @@ def _value_property(widget, typ):
         else:
             return value
 
+    @_returnUndoContextManager(get_value)
     @_alsoAcceptAnotherGui(widget)
     def set_value(value):
         widget.setValue(typ(value))
@@ -392,6 +419,7 @@ def _items_property(widget):
         items = map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
         return _ContextList(widget, items)
 
+    @_returnUndoContextManager(get_items)
     @_alsoAcceptAnotherGui(widget)
     def set_items(lst):
         widget.clear()
@@ -409,6 +437,7 @@ def _combobox_property(widget):
         data = [widget.itemData(i) for i in range(widget.count())]
         return _ContextDict(widget, zip(texts, data))
 
+    @_returnUndoContextManager(get_items)
     @_alsoAcceptAnotherGui(widget)
     def set_items(dct):
         widget.clear()
