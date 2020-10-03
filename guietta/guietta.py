@@ -1633,10 +1633,10 @@ class Gui:
 
                 done.add(element)
 
-        self.align_guietta_properties()
+        self._align_guietta_properties()
         self.title(title)
 
-    def align_guietta_properties(self):
+    def _align_guietta_properties(self):
         '''Make sure that any and all widgets have a property'''
 
         self._guietta_properties.clear()
@@ -1824,7 +1824,7 @@ class Gui:
             self._widgets[new_name] = self._widgets[old_name]
             del self._widgets[old_name]
 
-        self.align_guietta_properties()
+        self._align_guietta_properties()
 
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
