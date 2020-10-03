@@ -270,10 +270,14 @@ Gui class reference
 .. autoclass:: guietta.Gui
    :members:
 
+.. autoclass:: guietta.GuiettaProperty
+   :members:
+
 
 Module-level functions reference
 --------------------------------
 
+.. autofunction:: guietta.normalized
 .. autofunction:: guietta.splash
 .. autofunction:: guietta.Ax
 .. autofunction:: guietta.M

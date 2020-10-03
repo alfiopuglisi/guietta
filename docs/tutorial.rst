@@ -146,6 +146,30 @@ is clicked. A complete list of property types is available in the
 A special case where magic properties are also used are dynamical layouts,
 described in more detail `here <#hierarchical-guis>`_.
 
+Working with normalized names
++++++++++++++++++++++++++++++
+
+It is possible to obtain the name corresponding to a certain text
+using the *normalized()* module-level function::
+
+
+    from guietta import normalized
+    
+    print(normalized('This is button 2!'))
+    
+this code will return 'thisisbutton2'.
+
+It is also possible to recover the original text that was used to create
+the widget, given the normalized name (this can be useful when using the
+*get()* feature, described later, that returns the normalized name). The
+*Gui.names* property is a mapping that provides the original name::
+
+     gui.names['thisisbutton2']
+
+would return 'This is button 2!'.
+
+*normalized()* and *names* were added in version 0.4.
+
 Define magic properties for custom widgets
 ++++++++++++++++++++++++++++++++++++++++++
 
@@ -176,6 +200,62 @@ number shown as text::
                             
             return (get_number, set_number)
 
+Property proxies
+++++++++++++++++
+
+If a widget is created with a text generated dynamically, it will not be
+possible to use a magic property as described above::
+
+
+    row = [ 'label%d'%x for x in range(10) ]
+    gui = Gui(row)
+
+if now we want to address all labels, we would need to explcitly write::
+
+    gui.label0 = 'foo'
+    gui.label1 = 'bar'
+    ...
+    
+Guietta allows to retrieve a *proxy* for the widget properties. It is a
+simple *namedtuple* of type *GuiettaProperty*, with two members: *get()*
+and *set()*, the latter taking a single argument::
+
+    p = gui.proxy('label0')
+    p.set('foo')
+    a = p.get()  # a is now 'foo'
+
+which could be used as follows::
+
+    for x in range(10):
+       gui.proxy('label%d'%x).set('foo %d' % x)
+
+
+Property proxies were introduced in version 0.4.
+
+Property contexts
++++++++++++++++++
+
+If you have tried to run the previous example from the command prompt,
+you will have seen the following output when calling *set()*::
+
+    ... 
+    <guietta.guietta._returnUndoContextManager.<locals>.decorator.<locals>.wrapper.<locals>.InnerUndoContextManager object at 0x7f188487a5c0>
+    ...
+
+This is expected. The *set()* call can be used as a context manager to
+temporarily replace the widget contents with something else. When the context
+manager exists, the widget contents are automatically restored::
+
+    gui.status = 'idle'
+    label = gui.proxy('status')
+    ...
+    with label.set('busy'):
+        ... do something
+        
+the label will show "busy" while the statements inside the *with* block are
+executed, and will revert back to "idle" afterwards.
+
+Property contexts were introduced in version 0.4.
 
 GUI actions
 -----------
@@ -401,7 +481,7 @@ Guietta's *get()* method instead of *run()*.
 With *get()*, the GUI behaves like a
 `queue <https://docs.python.org/3/library/queue.html>`_
 of *events*. These events are exactly the same as the ones we have seen
-before, but instead of triggering a function or a with block, they
+before, but instead of triggering a function or a *with* block, they
 are put into an internal queue.
 
 *get()* blocks until an event happens. It returns the name of the widget
@@ -532,8 +612,8 @@ to the ``Gui`` constructor to change it. So for example::
     gui = Gui(
         
       [  _             , ['up.png']   , _              ],
-      [  ['left.png'] ,     _         , ['right.png']  ],
-      [  _             , ['down.png'] , _           ,  ],
+      [  ['left.png']  ,     _        , ['right.png']  ],
+      [  _             , ['down.png'] , _              ],
     
       images_dir = os.path.dirname(__file__))
 
@@ -548,7 +628,7 @@ Radio buttons
 
 Radio buttons can be created using the R() widget, which stands for a
 QRadioButton() instance. By default, all radio buttons in a single Gui
-instance are exclusive. If multiple radio buttons are desired, Guietta
+instance are exclusive. If multiple radio buttons groups are desired, Guietta
 makes available ten pre-defined widgets classes called R0, R1, R2 ... R9,
 which will create radio buttons belonging to one of the 10 groups.
 For example::
