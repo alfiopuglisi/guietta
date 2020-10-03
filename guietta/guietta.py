@@ -245,7 +245,13 @@ class _Analyzer(ast.NodeVisitor):
 # We cannot use real properties because they are defined on the class
 # and would be shared by different GUIs!
 
-_GuiettaProperty = namedtuple('GuiettaProperty', 'get set')
+GuiettaProperty = namedtuple('GuiettaProperty', 'get set')
+GuiettaProperty.__doc__ = '''
+Holds the get/set methods for a Guietta magic property.
+
+get() - returns the property value
+set(x) - sets the property to x
+'''
 
 
 class _ContextStr(str, ContextMixIn):
@@ -314,7 +320,7 @@ def _signal_property(widget):
     def setx(value):
         connect(widget, slot=value)
 
-    return _GuiettaProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _text_property(widget):
@@ -331,7 +337,7 @@ def _text_property(widget):
         else:
             widget.setText(str(text))
 
-    return _GuiettaProperty(get_text, set_text)
+    return GuiettaProperty(get_text, set_text)
 
 
 def _title_property(widget):
@@ -346,7 +352,7 @@ def _title_property(widget):
         print('set_title')
         widget.setTitle(str(title))
 
-    return _GuiettaProperty(get_title, set_title)
+    return GuiettaProperty(get_title, set_title)
 
 
 def _value_property(widget, typ):
@@ -363,7 +369,7 @@ def _value_property(widget, typ):
     def set_value(value):
         widget.setValue(typ(value))
 
-    return _GuiettaProperty(get_value, set_value)
+    return GuiettaProperty(get_value, set_value)
 
 
 def _readonly_property(widget):
@@ -376,7 +382,7 @@ def _readonly_property(widget):
     def setx(x):
         raise AttributeError('This property is read-only')
 
-    return _GuiettaProperty(getx, setx)
+    return GuiettaProperty(getx, setx)
 
 
 def _items_property(widget):
@@ -392,7 +398,7 @@ def _items_property(widget):
         widget.addItems(list(map(str, lst)))  # use list() to support
                                               # PySide v5.9
 
-    return _GuiettaProperty(get_items, set_items)
+    return GuiettaProperty(get_items, set_items)
 
 
 def _combobox_property(widget):
@@ -409,7 +415,7 @@ def _combobox_property(widget):
         for k, v in dct.items():
             widget.addItem(k, v)
 
-    return _GuiettaProperty(get_items, set_items)
+    return GuiettaProperty(get_items, set_items)
 
 
 #########
@@ -1125,9 +1131,12 @@ class StdoutLog(QPlainTextEdit):
 
 # Some helper functions
 
-def _normalize(x):
-    '''Return x without all special characters. Keep only a-zA-Z0-9 and _'''
-    return ''.join(c for c in x if c.isalnum() or c == '_')
+def normalized(name):
+    '''Returns the given *name* without any special characters or spaces.
+
+    Only a-zA-Z0-9 and _ will be kept
+    '''
+    return ''.join(c for c in name if c.isalnum() or c == '_')
 
 
 def _bound_method(method, to_whom):
@@ -1548,6 +1557,7 @@ class Gui:
         self._layout = QGridLayout()
         self._widgets = {}                # widgets by name
         self._counter = defaultdict(int)  # widgets counter
+        self._original_names = {}         # Reverse widget name lookup
         self._window = None
         self._app = QApplication.instance()
         self._font = font
@@ -1643,7 +1653,7 @@ class Gui:
         if self._create_properties:
             for name, widget in self._widgets.items():
                 if hasattr(widget, '__guietta_property__'):
-                    prop = _GuiettaProperty(*widget.__guietta_property__())
+                    prop = GuiettaProperty(*widget.__guietta_property__())
                 else:
                     prop = _guietta_property(widget)
                 self._guietta_properties[name] = prop
@@ -1652,6 +1662,20 @@ class Gui:
     def widgets(self):
         '''Read-only property with the widgets dictionary'''
         return self._widgets
+
+    @property
+    def names(self):
+        '''Read-only property with the normalized -> original mapping'''
+        return self._original_names
+
+    def prop(self, name):
+        '''Returns the *guietta property* for the a (normalized) widget name.
+
+        A guietta property is an instance of the *GuiettaProperty* namedtuple,
+        with two members: get() and set()
+        '''
+        name = normalized(name)
+        return self.__dict__['_guietta_properties'][name]
 
     def __getattr__(self, name):
         '''Use guietta_properties to emulate properties on this instance'''
@@ -1686,22 +1710,24 @@ class Gui:
         - auto-number duplicate names.
         '''
         if isinstance(element, tuple):
-            widget, name = element
+            widget, original_name = element
         else:
             widget = element
             if hasattr(widget, 'text'):
-                name = widget.text()
+                original_name = widget.text()
             elif hasattr(widget, 'title'):
-                name = widget.title()
+                original_name = widget.title()
             else:
-                name = widget.__class__.__name__
+                original_name = widget.__class__.__name__
 
-        name = _normalize(name)
+        name = normalized(original_name)
 
         # If the name is a duplicate, auto-number it starting with 2.
         self._counter[name] += 1
         if self._counter[name] > 1:
             name = name + str(self._counter[name])
+
+        self._original_names[name] = original_name
 
         return widget, name
 
