@@ -1697,7 +1697,7 @@ class Gui:
         '''Read-only property with the normalized -> original mapping'''
         return self._original_names
 
-    def prop(self, name):
+    def proxy(self, name):
         '''Returns the *guietta property* for the a (normalized) widget name.
 
         A guietta property is an instance of the *GuiettaProperty* namedtuple,
