@@ -210,7 +210,7 @@ possible to use a magic property as described above::
     row = [ 'label%d'%x for x in range(10) ]
     gui = Gui(row)
 
-if now we want to address all labels, we would need to explcitly write::
+if now we want to address all labels, we would need to write explicitly::
 
     gui.label0 = 'foo'
     gui.label1 = 'bar'
