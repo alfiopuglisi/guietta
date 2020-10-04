@@ -1,11 +1,23 @@
 # Changelog
 
+## [0.5.0] - 2020-10-04
 
-## [0.3.9] - 
+### Added
+  - iterator protocol to loop through GUI events
+  - thread management options
 
+
+## [0.4.0] - 2020-10-03
+
+### Changed
+  - Refactored matlotlib and pyqtgraph code into separate files
+  
 ### Added
   - PGI() widget for pyqtgraph images.
   - pyqtgraph widgets: added magic properties for plots and images.
+  - property proxies with the proxy() method
+  - "undo" context manager for properties
+  - connect() now has a default signal name
 
 
 ## [0.3.8] - 2020-07-20

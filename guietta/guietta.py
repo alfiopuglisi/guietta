@@ -250,8 +250,17 @@ class GuiettaProperty:
     '''Holds the get/set methods for a Guietta magic property.
     
     Initialize with two callables, *get* and *set()*::
+
         get() - returns the property value
         set(x) - sets the property to x
+
+    *widget* must be a reference to the widget for which the property is
+    being set.
+    
+    The *set()* method is automatically decorated with
+    `guietta.execute_in_main_thread` and `guietta.undo_context_manager`.
+    Set *add_decorators* to False to avoid this. In this case, the
+    *widget* parameter is ignored.
     '''
     def __init__(self, get, set, widget, add_decorators=True):
         try:

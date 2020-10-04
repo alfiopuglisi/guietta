@@ -152,7 +152,6 @@ Working with normalized names
 It is possible to obtain the name corresponding to a certain text
 using the *normalized()* module-level function::
 
-
     from guietta import normalized
     
     print(normalized('This is button 2!'))
@@ -169,133 +168,6 @@ the widget, given the normalized name (this can be useful when using the
 would return 'This is button 2!'.
 
 *normalized()* and *names* were added in version 0.4.
-
-Working with threads
-++++++++++++++++++++
-
-If your Python program uses multiple threads, be aware that QT restricts
-any GUI update to the main thread (that is, the one that created the GUI
-and runs the event loop, in other words, that called *gui.run()* or
-*gui.get()*). Undefined behaviour can result otherwise, including random
-crashes.
-
-All magic properties automatically use the main thread
-to update the GUI, even if called from other threads, so you don't need
-to worry about this.
-
-If instead you access the widgets dictionary directly, as described above::
-
-  gui.widgets['result'].setText('foo')
-
-make sure that this call runs on the main thread.
-
-The automatic threading management for magic properties can be turned off
-using the *manage_threads* argument to the `guietta.Gui` class.
-
-Define magic properties for custom widgets
-++++++++++++++++++++++++++++++++++++++++++
-
-Guietta's properties work on any widget that respects the following
-protocol:
-
-1. defines a *__guietta_property__()* method
-#. that returns a tuple with two callables: *get()* and *set(value)*.
-
-Note that get() and set() are just conventional names,
-actual functions can have a different name. The get function must
-take no arguments and return the value. The set function must
-take exactly one positional value, and the return value (if any)
-is ignored.
-
-The following example shows a widget where the property is a
-number shown as text::
-
-    from guietta import execute_in_main_thread
-
-    class MyLabel(QLabel):
-        def __init__(self):
-            super().___init__('0')
-
-        def __guietta_property__(self):
-            def get_number():
-                return float(self.getText())
-            
-            @execute_in_main_thread
-            def set_number(num):
-                self.setText('%5.3f' % num)
-                            
-            return (get_number, set_number)
-
-The *set()* function is automatically decorated by gueitta in order to
-support the *with* context manager and multithreading (using the
-`guietta.execute_in_main_thread` and `guietta.undo_context_manager` decorators).
-If desired,
-you can avoid setting these decorators setting *_guietta_decorators*
-to False in your widget class or instance::
-
-    class MyLabel(QLabel):
-        _guietta_decorators = False
-
-It will be then your responsibility that the custom widget is able to
-work in multithreaded QT programs.
-
-
-Property proxies
-++++++++++++++++
-
-If a widget is created with a text generated dynamically, it will not be
-possible to use a magic property as described above::
-
-
-    row = [ 'label%d'%x for x in range(10) ]
-    gui = Gui(row)
-
-if now we want to address all labels, we would need to write explicitly::
-
-    gui.label0 = 'foo'
-    gui.label1 = 'bar'
-    ...
-    
-Guietta allows to retrieve a *proxy* for the widget properties. It is a
-simple *namedtuple* of type *GuiettaProperty*, with two members: *get()*
-and *set()*, the latter taking a single argument::
-
-    p = gui.proxy('label0')
-    p.set('foo')
-    a = p.get()  # a is now 'foo'
-
-which could be used as follows::
-
-    for x in range(10):
-       gui.proxy('label%d'%x).set('foo %d' % x)
-
-
-Property proxies were introduced in version 0.4.
-
-Property contexts
-+++++++++++++++++
-
-If you have tried to run the previous example from the command prompt,
-you will have seen the following output when calling *set()*::
-
-    ... 
-    <guietta.guietta._returnUndoContextManager.<locals>.decorator.<locals>.wrapper.<locals>.InnerUndoContextManager object at 0x7f188487a5c0>
-    ...
-
-This is expected. The *set()* call can be used as a context manager to
-temporarily replace the widget contents with something else. When the context
-manager exists, the widget contents are automatically restored::
-
-    gui.status = 'idle'
-    label = gui.proxy('status')
-    ...
-    with label.set('busy'):
-        ... do something
-        
-the label will show "busy" while the statements inside the *with* block are
-executed, and will revert back to "idle" afterwards.
-
-Property contexts were introduced in version 0.4.
 
 GUI actions
 -----------
@@ -901,8 +773,12 @@ function:
 
 The splash function was introducted in version 0.3.1.
 
+Advanced topics
+---------------
+
 Background processing
----------------------
++++++++++++++++++++++
+
 
 Sometimes a handler function needs to run for a long time, and during
 that time the GUI would be frozen. In order to avoid this, the Gui class
@@ -910,6 +786,131 @@ allows to span a function into a background thread. Once the function
 is done, an optional callback in the main thread will be triggered.
 
 .. autofunction:: guietta.Gui.execute_in_background
+
+Working with threads
+++++++++++++++++++++
+
+If your Python program uses multiple threads, using the background processing
+feature described above or your own threads, be aware that QT restricts
+any GUI update to the main thread (that is, the one that created the GUI
+and runs the event loop, in other words, that called *gui.run()* or
+*gui.get()*). Undefined behaviour can result otherwise, including random
+crashes.
+
+All magic properties automatically use the main thread
+to update the GUI, even if called from other threads, so you don't need
+to worry about this.
+
+If instead you access the widgets dictionary directly, as described above::
+
+  gui.widgets['result'].setText('foo')
+
+make sure that this call runs on the main thread.
+
+The automatic threading management for magic properties can be turned off
+using the *manage_threads* argument to the `guietta.Gui` class.
+
+Define magic properties for custom widgets
+++++++++++++++++++++++++++++++++++++++++++
+
+Guietta's properties work on any widget that respects the following
+protocol:
+
+1. defines a *__guietta_property__()* method
+#. that returns a tuple with two callables: *get()* and *set(value)*.
+
+Note that get() and set() are just conventional names,
+actual functions can have a different name. The get function must
+take no arguments and return the value. The set function must
+take exactly one positional value, and the return value (if any)
+is ignored.
+
+The following example shows a widget where the property is a
+number shown as text::
+
+    class MyLabel(QLabel):
+        def __init__(self):
+            super().___init__('0')
+
+        def __guietta_property__(self):
+            def get_number():
+                return float(self.getText())
+            
+            def set_number(num):
+                self.setText('%5.3f' % num)
+                            
+            return (get_number, set_number)
+
+The *set()* function is automatically decorated by gueitta in order to
+support the *with* context manager and multithreading (using the
+`guietta.execute_in_main_thread` and `guietta.undo_context_manager` decorators).
+If desired,
+you can avoid setting these decorators setting *_guietta_decorators*
+to False in your widget class or instance::
+
+    class MyLabel(QLabel):
+        _guietta_decorators = False
+
+It will be then your responsibility that the custom widget is able to
+work in multithreaded QT programs.
+
+
+Property proxies
+++++++++++++++++
+
+If a widget is created with a text generated dynamically, it will not be
+possible to use a magic property as described above::
+
+
+    row = [ 'label%d'%x for x in range(10) ]
+    gui = Gui(row)
+
+if now we want to address all labels, we would need to write explicitly::
+
+    gui.label0 = 'foo'
+    gui.label1 = 'bar'
+    ...
+    
+Guietta allows to retrieve a *proxy* for the widget properties. It is a
+class called `guietta.GuiettaProperty`, with two attributes: *get()*
+and *set()*, the latter taking a single argument::
+
+    p = gui.proxy('label0')
+    p.set('foo')
+    a = p.get()  # a is now 'foo'
+
+which could be used as follows::
+
+    for x in range(10):
+       gui.proxy('label%d'%x).set('foo %d' % x)
+
+
+Property proxies were introduced in version 0.4.
+
+Property contexts
++++++++++++++++++
+
+If you have tried to run the previous example from the command prompt,
+you will have seen the following output when calling *set()*::
+
+    ... 
+    <guietta.guietta._returnUndoContextManager.<locals>.decorator.<locals>.wrapper.<locals>.InnerUndoContextManager object at 0x7f188487a5c0>
+    ...
+
+This is expected. The *set()* call can be used as a context manager to
+temporarily replace the widget contents with something else. When the context
+manager exists, the widget contents are automatically restored::
+
+    gui.status = 'idle'
+    label = gui.proxy('status')
+    ...
+    with label.set('busy'):
+        ... do something
+        
+the label will show "busy" while the statements inside the *with* block are
+executed, and will revert back to "idle" afterwards.
+
+Property contexts were introduced in version 0.4.
 
 Using other QT classes
 ----------------------

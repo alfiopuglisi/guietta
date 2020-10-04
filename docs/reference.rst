@@ -281,6 +281,8 @@ Module-level functions reference
 .. autofunction:: guietta.splash
 .. autofunction:: guietta.Ax
 .. autofunction:: guietta.M
+.. autofunction:: guietta.PG
+.. autofunction:: guietta.PGI
 .. autofunction:: guietta.execute_in_main_thread
 .. autofunction:: guietta.undo_context_manager
 
