@@ -1948,6 +1948,13 @@ class Gui:
             self._names_by_widget = {v: k for k, v in self._widgets.items()}
             self._inverted = True
 
+    def iter(self):
+        '''Returns an interable for GUI events
+
+        for name, event in gui.iter():
+        '''
+        return GuiIterator(self)
+
     def get(self, block=True, timeout=None):
         '''Runs the GUI in queue mode
 
@@ -2103,5 +2110,28 @@ class Gui:
                     pass
 
         return func
+
+
+class GuiIterator():
+    '''An iterator that allows looping over the GUI events:
+
+    for name, event in gui.iter():
+        pass
+
+    Iteration will stop when the GUI is closed.
+    '''
+    def __init__(self, gui):
+        self.gui = gui
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        name, event = self.gui.get()
+        if name is not None:
+            return (name, event)
+        else:
+            raise StopIteration
+         
 
 # ___oOo___
