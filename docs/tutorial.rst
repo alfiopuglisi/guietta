@@ -170,6 +170,28 @@ would return 'This is button 2!'.
 
 *normalized()* and *names* were added in version 0.4.
 
+Working with threads
+++++++++++++++++++++
+
+If your Python program uses multiple threads, be aware that QT restricts
+any GUI update to the main thread (that is, the one that created the GUI
+and runs the event loop, in other words, that called *gui.run()* or
+*gui.get()*). Undefined behaviour can result otherwise, including random
+crashes.
+
+All magic properties automatically use the main thread
+to update the GUI, even if called from other threads, so you don't need
+to worry about this.
+
+If instead you access the widgets dictionary directly, as described above::
+
+  gui.widgets['result'].setText('foo')
+
+make sure that this call runs on the main thread.
+
+The automatic threading management for magic properties can be turned off
+using the *manage_threads* argument to the `guietta.Gui` class.
+
 Define magic properties for custom widgets
 ++++++++++++++++++++++++++++++++++++++++++
 
@@ -188,6 +210,8 @@ is ignored.
 The following example shows a widget where the property is a
 number shown as text::
 
+    from guietta import execute_in_main_thread
+
     class MyLabel(QLabel):
         def __init__(self):
             super().___init__('0')
@@ -195,10 +219,26 @@ number shown as text::
         def __guietta_property__(self):
             def get_number():
                 return float(self.getText())
+            
+            @execute_in_main_thread
             def set_number(num):
                 self.setText('%5.3f' % num)
                             
             return (get_number, set_number)
+
+The *set()* function is automatically decorated by gueitta in order to
+support the *with* context manager and multithreading (using the
+`guietta.execute_in_main_thread` and `guietta.undo_context_manager` decorators).
+If desired,
+you can avoid setting these decorators setting *_guietta_decorators*
+to False in your widget class or instance::
+
+    class MyLabel(QLabel):
+        _guietta_decorators = False
+
+It will be then your responsibility that the custom widget is able to
+work in multithreaded QT programs.
+
 
 Property proxies
 ++++++++++++++++

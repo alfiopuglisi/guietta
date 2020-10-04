@@ -46,6 +46,7 @@ import inspect
 import os.path
 import textwrap
 import functools
+import threading
 import contextlib
 from enum import Enum
 from types import SimpleNamespace
@@ -245,13 +246,26 @@ class _Analyzer(ast.NodeVisitor):
 # We cannot use real properties because they are defined on the class
 # and would be shared by different GUIs!
 
-GuiettaProperty = namedtuple('GuiettaProperty', 'get set')
-GuiettaProperty.__doc__ = '''
-Holds the get/set methods for a Guietta magic property.
-
-get() - returns the property value
-set(x) - sets the property to x
-'''
+class GuiettaProperty:
+    '''Holds the get/set methods for a Guietta magic property.
+    
+    Initialize with two callables, *get* and *set()*::
+        get() - returns the property value
+        set(x) - sets the property to x
+    '''
+    def __init__(self, get, set, widget, add_decorators=True):
+        try:
+            assert(callable(get))
+            assert(callable(set))
+        except AssertionError as e:
+            errmsg = 'get and set must be two Python callables'
+            raise TypeError(errmsg) from e
+            
+        self.get = get
+        if add_decorators:
+            gui = widget._gui
+            set = undo_context_manager(get)(execute_in_main_thread(gui)(set))
+        self.set = set
 
 
 class _ContextStr(str, ContextMixIn):
@@ -306,11 +320,26 @@ def _alsoAcceptAnotherGui(widget):
     return decorator
 
 
-def _returnUndoContextManager(get_func):
+def undo_context_manager(get_func):
     '''
-    Modify the function so that it returns a context manager that,
+    Modify the decorated function so that it returns a context manager that,
     when exiting, restores the previous widget state (saved
-    calling *get_func*)
+    calling *get_func*)::
+        
+        def get_label()
+            return gui.label
+
+        @undo_context_manager(get_label):
+        def set_label(value):
+            gui.label = value
+            
+    then later in the program::
+        
+        with set_label(value):
+            ...
+    
+    upon exiting the *with* block, the label text will revert to its
+    previous value.
     '''
     def decorator(f):
         @wraps(f)
@@ -331,6 +360,34 @@ def _returnUndoContextManager(get_func):
     return decorator
 
 
+def execute_in_main_thread(gui):
+    '''Decorator that makes sure that GUI methods run in the main thread.
+    
+    QT restricts GUI updates to the main thread (that is, the thread that
+    created the GUI). In order to allow updating
+    the GUI from other threads, any function that does so can be decorated::
+        
+        @execute_in_main_thread(gui)
+        def myfunc(gui, widget, text):
+           widget.setText(text)
+
+    The decorator checks the current thread and, if different from the
+    main GUI thread, wraps the function call into a QT event that will
+    be eventually received and processed by the main GUI thread. Otherwise,
+    the function is executed immediately.
+    
+    All guietta magic properties already use this decorator, so all GUI
+    updates are automatically executed in the main GUI thread.
+    '''
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args):
+            return gui.execute_in_main_thread(f, *args)
+
+        return wrapper
+    return decorator
+
+
 def _signal_property(widget):
     '''Property that handles the widget's default signal
 
@@ -344,7 +401,7 @@ def _signal_property(widget):
     def setx(value):
         connect(widget, slot=value)
 
-    return GuiettaProperty(getx, setx)
+    return GuiettaProperty(getx, setx, widget)
 
 
 def _text_property(widget):
@@ -354,7 +411,6 @@ def _text_property(widget):
         text = widget.text()
         return _ContextStr(widget, text)
 
-    @_returnUndoContextManager(get_text)
     @_alsoAcceptAnotherGui(widget)
     def set_text(text):
         if isinstance(widget, SmartQLabel):
@@ -362,7 +418,7 @@ def _text_property(widget):
         else:
             widget.setText(str(text))
 
-    return GuiettaProperty(get_text, set_text)
+    return GuiettaProperty(get_text, set_text, widget)
 
 
 def _title_property(widget):
@@ -372,13 +428,12 @@ def _title_property(widget):
         title = widget.title()
         return _ContextStr(widget, title)
 
-    @_returnUndoContextManager(get_title)
     @_alsoAcceptAnotherGui(widget)
     def set_title(title):
         print('set_title')
         widget.setTitle(str(title))
 
-    return GuiettaProperty(get_title, set_title)
+    return GuiettaProperty(get_title, set_title, widget)
 
 
 def _value_property(widget, typ):
@@ -391,12 +446,11 @@ def _value_property(widget, typ):
         else:
             return value
 
-    @_returnUndoContextManager(get_value)
     @_alsoAcceptAnotherGui(widget)
     def set_value(value):
         widget.setValue(typ(value))
 
-    return GuiettaProperty(get_value, set_value)
+    return GuiettaProperty(get_value, set_value, widget)
 
 
 def _readonly_property(widget):
@@ -409,7 +463,7 @@ def _readonly_property(widget):
     def setx(x):
         raise AttributeError('This property is read-only')
 
-    return GuiettaProperty(getx, setx)
+    return GuiettaProperty(getx, setx, widget)
 
 
 def _items_property(widget):
@@ -419,14 +473,13 @@ def _items_property(widget):
         items = map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
         return _ContextList(widget, items)
 
-    @_returnUndoContextManager(get_items)
     @_alsoAcceptAnotherGui(widget)
     def set_items(lst):
         widget.clear()
         widget.addItems(list(map(str, lst)))  # use list() to support
                                               # PySide v5.9
 
-    return GuiettaProperty(get_items, set_items)
+    return GuiettaProperty(get_items, set_items, widget)
 
 
 def _combobox_property(widget):
@@ -437,14 +490,13 @@ def _combobox_property(widget):
         data = [widget.itemData(i) for i in range(widget.count())]
         return _ContextDict(widget, zip(texts, data))
 
-    @_returnUndoContextManager(get_items)
     @_alsoAcceptAnotherGui(widget)
     def set_items(dct):
         widget.clear()
         for k, v in dct.items():
             widget.addItem(k, v)
 
-    return GuiettaProperty(get_items, set_items)
+    return GuiettaProperty(get_items, set_items, widget)
 
 
 #########
@@ -1572,7 +1624,8 @@ class Gui:
                                exceptions=Exceptions.POPUP,
                                persistence=PERSISTENT,
                                title='',
-                               font=None):
+                               font=None,
+                               manage_threads=True):
 
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
@@ -1590,6 +1643,9 @@ class Gui:
         self._window = None
         self._app = QApplication.instance()
         self._font = font
+
+        self._manage_threads = manage_threads
+        self._main_thread = threading.get_ident()
 
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
@@ -1679,13 +1735,28 @@ class Gui:
         '''Make sure that any and all widgets have a property'''
 
         self._guietta_properties.clear()
-        if self._create_properties:
-            for name, widget in self._widgets.items():
-                if hasattr(widget, '__guietta_property__'):
-                    prop = GuiettaProperty(*widget.__guietta_property__())
+        if not self._create_properties:
+            return
+        
+        for name, widget in self._widgets.items():
+            if hasattr(widget, '__guietta_property__'):
+                prop = widget.__guietta_property__()
+                if isinstance(prop, GuiettaProperty):
+                    pass
                 else:
-                    prop = _guietta_property(widget)
-                self._guietta_properties[name] = prop
+                    try:
+                        get, set = widget.__guietta_property__()
+                        assert callable(get)
+                        assert callable(set)
+                    except (TypeError, AssertionError) as e:
+                        errmsg = ('__guietta_property__() must return '
+                                  'a tuple with two callables')
+                        raise TypeError(errmsg) from e
+                        
+                    prop = GuiettaProperty(get, set, widget)
+            else:
+                prop = _guietta_property(widget)
+            self._guietta_properties[name] = prop
 
     @property
     def widgets(self):
@@ -1700,8 +1771,8 @@ class Gui:
     def proxy(self, name):
         '''Returns the *guietta property* for the a (normalized) widget name.
 
-        A guietta property is an instance of the *GuiettaProperty* namedtuple,
-        with two members: get() and set()
+        A guietta property is an instance of the *GuiettaProperty* class,
+        with two attributes: get() and set()
         '''
         name = normalized(name)
         return self.__dict__['_guietta_properties'][name]
@@ -2034,6 +2105,22 @@ class Gui:
         '''Sets the window title'''
         self.window().setWindowTitle(title)
         
+    def execute_in_main_thread(self, f, *args):
+        '''Make sure that f(args) is executed in the main GUI thread.
+
+        If the caller is running a different thread, the call details
+        are packaged into a QT event that is emitted. It will be eventually
+        received by the main thread, which will execute the call.
+        '''
+        curr_thread = threading.get_ident()
+        main_thread = self._main_thread
+
+        if (curr_thread == main_thread) or (self._manage_threads is False):
+            f(*args)
+        else:
+            app = QApplication.instance()
+            app.postEvent(app, _result_event(QEvent.User, f, args))
+
     def execute_in_background(self, func, args=(), callback=None):
         '''
         Executes `func` in a background thread and updates GUI with a callback.
@@ -2043,8 +2130,6 @@ class Gui:
         argument, plus whatever was returned by `func` as additional
         arguments.
         '''
-        import threading
-
         if not callable(func):
             raise TypeError('func must be a callable')
         if callback is not None:
