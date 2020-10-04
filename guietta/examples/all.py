@@ -53,7 +53,7 @@ gui.l2 = "This is Label 2"
 
 for x in range( 4 ):
     for y in range( 5 ):
-        item = QTableWidgetItem('%d %d' ^ (x, y))
+        item = QTableWidgetItem('%d %d' % (x, y))
         gui.widgets['tab1'].setItem( y, x, item )
         gui.widgets['tab1'].setHorizontalHeaderItem( x, QTableWidgetItem('Col: %d' % x ) )
         gui.widgets['tab1'].setVerticalHeaderItem( y, QTableWidgetItem('Row: %d' % y ) )
