@@ -810,7 +810,7 @@ make sure that this call runs on the main thread.
 
 The automatic threading management for magic properties can be turned off
 using the *manage_threads* argument to the `guietta.Gui` class. If this
-argument is set to False, it will be your responsability that magic properties
+argument is set to False, it will be your responsibility that magic properties
 are updated in the correct thread.
 
 
