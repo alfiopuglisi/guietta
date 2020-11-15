@@ -787,6 +787,7 @@ is done, an optional callback in the main thread will be triggered.
 
 .. autofunction:: guietta.Gui.execute_in_background
 
+
 Working with threads
 ++++++++++++++++++++
 
@@ -808,7 +809,10 @@ If instead you access the widgets dictionary directly, as described above::
 make sure that this call runs on the main thread.
 
 The automatic threading management for magic properties can be turned off
-using the *manage_threads* argument to the `guietta.Gui` class.
+using the *manage_threads* argument to the `guietta.Gui` class. If this
+argument is set to False, it will be your responsability that magic properties
+are updated in the correct thread.
+
 
 Define magic properties for custom widgets
 ++++++++++++++++++++++++++++++++++++++++++
