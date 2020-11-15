@@ -596,6 +596,7 @@ class _DeferredCreationWidget:
     def create(self, gui):
         pass
 
+
 class HS(_DeferredCreationWidget):
     '''Horizontal slider'''
 
@@ -876,6 +877,18 @@ class CB(_DeferredCreationWidget):
                             'or a mapping')
 
         return (cb, self._name)
+
+
+########################
+# Password entry field
+
+class PW(_DeferredCreationWidget):
+    '''A password entry field'''
+
+    def create(self, gui):
+        widget = QLineEdit('')
+        widget.setEchoMode(QLineEdit.Password)
+        return (widget, self._name)
 
 
 #################
@@ -1666,7 +1679,7 @@ class Gui:
         self.images_dir = images_dir
         self.is_running = False
 
-        # Prefedined button groups
+        # Predefined button groups
         self._groups = [QButtonGroup() for i in range(10)]
 
         # Input argument checks

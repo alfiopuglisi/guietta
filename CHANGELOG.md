@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0]
+
+### Added
+  - password field
+
 ## [0.5.0] - 2020-10-04
 
 ### Added
