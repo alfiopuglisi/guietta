@@ -1,9 +1,10 @@
 # Changelog
 
-## [0.6.0]
+## [0.6.0] - 2020-11-21
 
 ### Added
-  - password field
+  - password input field
+  - timer_start() and timer_stop()
 
 ## [0.5.0] - 2020-10-04
 

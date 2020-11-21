@@ -1668,6 +1668,7 @@ class Gui:
 
         self._manage_threads = manage_threads
         self._main_thread = threading.get_ident()
+        self._timer = None
 
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
@@ -1973,6 +1974,17 @@ class Gui:
             del self._widgets[old_name]
 
         self._align_guietta_properties()
+
+    def timer_start(self, callback, interval=1.0):
+        '''Set up a timer to call *callback* every *interval* seconds.'''
+        self._timer = QTimer()
+        self._timer.timeout.connect(_exception_wrapper(callback,
+                                                       self._exception_mode))
+        self._timer.start(interval*1000)
+
+    def timer_stop(self):
+        if self._timer is not None:
+            self._timer.stop()
 
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
