@@ -97,8 +97,8 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 
 * Matplotlib or pyqtraph will only be imported if the M(), PG() or PGI() widgets
-  are used. Matplotlib and pyqtgraph are not is not installed automatically
-  together with guietta. If the M() widget  is used, the user must install
+  are used. Matplotlib and pyqtgraph are not installed automatically
+  together with guietta. If the M() widget is used, the user must install
   matplotlib manually, same for PG() and pyqtgraph.
 
 Buttons support both images and texts at the same time:

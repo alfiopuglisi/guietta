@@ -57,9 +57,9 @@ name to a pair of get/set functions (a namedtuple is used for the pair
 in order to have nice methods names). These methods are set to the ones
 appropriate for the widget type at construction time.
 
-The _guietta_properties dict is used by __getattr__ and __setattr__ to
+The *_guietta_properties* dict is used by __getattr__ and __setattr__ to
 emulate the property behaviour. Since these methods would be used
-to lookup _guietta_properties itself, this mapping must be created in the
+to lookup *_guietta_properties* itself, this mapping must be created in the
 __init__ method as its first instruction, and using self.__dict__ instead
 of direct attribute access.
 
