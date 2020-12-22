@@ -1120,12 +1120,21 @@ def Ax(widget):
         with Ax(gui.plot) as ax:
             ax.plot(...)
     '''
+    from guietta.guietta_matplotlib import Colorbar
     try:
         ax = widget.ax
     except AttributeError as e:
         raise AttributeError('Class %s does not have an ''ax'' attribute.\n'
                       'Are you sure that you are referencing the correct plot?'
                        %  widget.__class__.__name__) from e
+        
+    # hack to remove all colorbars, in order to restore the ax geometry:
+    # creating a colorbar will resize the ax, and creating a new one
+    # will resize it further, unless the previous one has been removed.
+    for child in ax.get_children():
+        if isinstance(getattr(child, 'colorbar', None), Colorbar):
+            child.colorbar.remove()
+
     ax.clear()
 
     yield ax
@@ -1668,7 +1677,10 @@ class Gui:
 
         self._manage_threads = manage_threads
         self._main_thread = threading.get_ident()
+
         self._timer = None
+        self._timer_count = 0
+        self._user_timer_callback = None
 
         self._get_handler = False   # These three for the get() method
         self._event_queue = queue.Queue()
@@ -1976,16 +1988,29 @@ class Gui:
         self._align_guietta_properties()
 
     def timer_start(self, callback, interval=1.0):
-        '''Set up a timer to call *callback* every *interval* seconds.'''
+        '''Set up a timer to call *callback* every *interval* seconds.
+        
+        The callback will receive the Gui instance as the first argument.
+        '''
         self._timer = QTimer()
-        self._timer.timeout.connect(_exception_wrapper(callback,
-                                                       self._exception_mode))
+        self._user_timer_callback = _exception_wrapper(callback,
+                                                       self._exception_mode)
+        self._timer.timeout.connect(self._timer_callback)
         self._timer.start(interval*1000)
 
     def timer_stop(self):
         if self._timer is not None:
             self._timer.stop()
 
+    def timer_count(self):
+        '''Returns the number of times the timer has been fired'''
+        return self._timer_count
+
+    def _timer_callback(self):
+        self._timer_count += 1
+        if self._user_timer_callback is not None:
+            self._user_timer_callback(self)
+        
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
         return self._layout.itemAtPosition(name[0], name[1]).widget()
