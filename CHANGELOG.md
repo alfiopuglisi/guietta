@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.1] - 2020-11-22
+
+### Added
+  - timer_count()
+
+### Changed
+  - the timer callback now gets the gui as its first argument
+  - fixed bug where matplotlib images were rescaled every time the Ax
+    decorator was used, if a colorbar was been created.
+
+
 ## [0.6.0] - 2020-11-21
 
 ### Added
