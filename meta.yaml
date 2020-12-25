@@ -1,0 +1,33 @@
+{% set name = "guietta" %}
+{% set version = "0.6.1" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: 6154aa2f763058df5bdbd10a9d3baf0911a1ad803ce7c7b9383baccef5c081bb
+
+build:
+  noarch: python
+  number: 0
+  script: "{{ PYTHON }} -m pip install . --force-reinstall --no-deps -vv "
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - pyside2
+
+test:
+  imports:
+    - guietta
+    
+about:
+  home: https://github.com/alfiopuglisi/guietta
+  license: MIT
+  license_family: MIT
+  summary: Simple GUI for Python
