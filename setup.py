@@ -2,6 +2,7 @@
 import os
 import sys
 from shutil import rmtree
+import subprocess
 
 from setuptools import setup, Command
 
@@ -55,6 +56,62 @@ class UploadCommand(Command):
         os.system('git push --tags')
 
         sys.exit()
+        
+        
+class CondaCommand(Command):
+    """Build and upload conda package."""
+
+    description = 'Build and publish the package on conda.'
+    user_options = []
+    
+    @staticmethod    
+    def using_conda():
+        """Check whether inside a conda environment."""
+        
+        if sys.platform == "win32":
+            env_variable = "%CONDA_PREFIX%"
+            
+        elif sys.platform in ["linux", "darwin"]:
+            env_variable = "$CONDA_PREFIX"
+            
+        command = "echo " + env_variable
+        out = subprocess.check_output(command, shell=True).decode('utf-8')
+        
+        if env_variable in out:
+            return False
+        else:
+            return True
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print('\033[1m{0}\033[0m'.format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if not self.using_conda():
+            self.status('Checking conda environment status…')
+            print("Not inside conda environment.")
+            sys.exit()
+        
+        try:
+            self.status('Removing previous builds…')
+            rmtree(os.path.join(here, 'dist_conda'))
+        except OSError:
+            pass
+
+        self.status('Building conda distribution…')
+        os.system('conda build . --output-folder dist_conda/ -c conda-forge')
+
+        self.status('Uploading the package to conda…')
+        os.system('anaconda upload dist_conda/noarch/guietta-{}-py_0.tar.bz2'.format(about['__version__']))
+
+        sys.exit()
 
 
 setup(name=NAME,
@@ -75,5 +132,6 @@ setup(name=NAME,
                 ],
       install_requires=['PySide2'],
       test_suite='test',
-      cmdclass={'upload': UploadCommand},
+      cmdclass={'upload': UploadCommand,
+                'conda': CondaCommand},
       )
