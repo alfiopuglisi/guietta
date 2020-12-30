@@ -2,39 +2,31 @@
 QT incompatibilities with conda
 ===============================
 
-Short version: before or after installing guietta, also install PySide2
-using conda::
+Guietta is available on both pip and conda (on the conda-forge channel).
+In both cases, several dependencies will be installed too. Unfortunately,
+one of those dependencies (`PySide2 <https://pypi.org/project/PySide2/>`_)
+can wreak havoc on conda environments when installed from pip.
 
+PySide2 is the official Python binding for Qt5. Another third-party
+binding exists, with the official-sounding name of PyQt5. The conda
+package for the latter has been renamed "pyqt".
+
+This renaming leads pip to believe that PyQt5 is not installed,
+so it installs it, resulting in two incompatible libraries and a crash
+at the first "import PyQt5".
+
+For reasons that I (the Guietta author) do not fully understand,
+this also affects the PySide2 binding.
+
+If for some reason you installed guietta with conda and PySide2 with pip,
+and find that your conda environments do not work anymore, you can
+try to fix the situation by forcing an install of PySide2 with conda:
 
   conda install -c conda-forge pyside2
 
-This command sometimes takes a lot of time to complete. Give it time.
-
-Long version:
-
-pip and conda do not work well together. In particular, Conda ships
-with a default QT library, which is not detected by pip. When guietta
-is installed, pip will automatically install its version of PySide2
-as a dependency. Unfortunately the two libraries are not binary compatible,
-and this will lead to a crash when PySide2 is imported.
-
-This is fixed by installing PySide2 with conda, before or after guietta
-is installed, using this command::
-
-  conda install -c conda-forge pyside2
-
-A new conda-compatible copy  of PySide2 will be installed, that
-should work without problems.
 
 Some bug reports about the problems of Conda with Qt5:
 
 - https://github.com/ContinuumIO/anaconda-issues/issues/1970
 - https://github.com/ContinuumIO/anaconda-issues/issues/1554
  
-It appears that the root cause is conda's renaming of "PyQt5" to "pyqt".
-This leads pip to believe that PyQt5 is not installed, so it installs it,
-resulting in two incompatible libraries and a crash at the first
-"import PyQt5".
-
-Guietta uses the `PySide2 Qt binding <https://pypi.org/project/PySide2/>`_,
-but it seems to suffer from the same problem.

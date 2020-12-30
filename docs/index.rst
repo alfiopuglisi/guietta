@@ -40,7 +40,22 @@ Also featuring:
 Installation
 ============
 
+Using Conda
++++++++++++
+
+Guietta is available on the conda-forge community channel:
+
+ **conda install -c conda-forge guietta**
+
+*Warning*: if you are managing your environments with Conda, do not use the
+pip installer. Guietta installs fine either way, but one of its
+dependences (PySide2) will break things (`details <qt_conda.html>`_).
+
+Using Pip
++++++++++
+
  **pip install guietta**
+
  
 Install on older platforms
 ++++++++++++++++++++++++++
@@ -71,11 +86,11 @@ Direct link to the tutorial: `tutorial.html <tutorial.html>`_.
 
 See also the rest of the `documentation <index.html#id1>`_ below.
 
+
 Source code
 ===========
 
 https://github.com/alfiopuglisi/guietta
-
 
 
 Troubleshooting
@@ -86,8 +101,6 @@ to have an incomplete default installation. If you encounter trouble
 running guietta, please read the
 `troubleshooting guide <troubleshooting.html>`_.
 
-If you use conda, please read our page on
-`QT incompatibilities with conda <qt_conda.html>`_.
 
 Documentation
 =============
