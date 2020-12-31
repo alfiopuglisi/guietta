@@ -959,6 +959,44 @@ child Gui instance inside the group box, keeping it visible.
 
 See also the `groupbox example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/groupbox.py>`_
 
+Timers
+------
+
+Sometimes it is useful to regularly repeat an action every x seconds,
+for example to regularly update your GUI.
+
+Guietta includes a built-in timer that can be started like this::
+
+    gui.timer_start(f, interval=0.1)
+
+after this call, whenever the message loop is running (that is, after
+*run()* or *get()* has been called as well), the *f* function will be called
+every 0.1 seconds. *f* may be any Python callable, and must accept
+one argument, that will be set to the *Gui* object instance. For example,
+this code will update a widget showing the number of seconds passed
+since timer_start::
+
+
+    def regular_update(gui):
+        gui.mywidget = 'Seconds: '+str(gui.timer_count())
+
+    gui.timer_start(regular_update, interval=1)
+
+
+The time resolution is the one offered by the underlying QTimer object
+and is never better than a millisecond.
+
+If an exception is raised while executing *f*, the usual exception rules
+described `here <tutorial.html#exception-handling>`_ apply.
+
+If the timer is no longer needed, the *gui.timer_stop()* method will stop
+the regular calls. Another call to *gui.timer_start()* can be used
+to restart it, possibly with a different function and/or interval.
+
+The number of times that the timer callback has been called 
+since the Gui object has been built is returned by the *gui.timer_count()*
+method. This counter is not resetted to zero by a *gui.timer_stop()* call.
+
 Packaging your application
 -----------------------------
 

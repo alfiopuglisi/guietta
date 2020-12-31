@@ -1804,7 +1804,7 @@ class Gui:
         return self._original_names
 
     def proxy(self, name):
-        '''Returns the *guietta property* for the a (normalized) widget name.
+        '''Returns the *guietta property* for a (normalized) widget name.
 
         A guietta property is an instance of the *GuiettaProperty* class,
         with two attributes: get() and set()
@@ -1990,7 +1990,7 @@ class Gui:
     def timer_start(self, callback, interval=1.0):
         '''Set up a timer to call *callback* every *interval* seconds.
         
-        The callback will receive the Gui instance as the first argument.
+        The callback will receive the Gui instance as its only argument.
         '''
         self._timer = QTimer()
         self._user_timer_callback = _exception_wrapper(callback,
@@ -1999,6 +1999,7 @@ class Gui:
         self._timer.start(interval*1000)
 
     def timer_stop(self):
+        '''Stops the timer'''
         if self._timer is not None:
             self._timer.stop()
 
