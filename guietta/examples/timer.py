@@ -3,7 +3,7 @@
 from guietta import Gui, Quit, _
 
 counter=0
-def regular_update():
+def regular_update(gui):
     global counter
     counter += 1
     gui.counter = counter
