@@ -995,7 +995,7 @@ to restart it, possibly with a different function and/or interval.
 
 The number of times that the timer callback has been called 
 since the Gui object has been built is returned by the *gui.timer_count()*
-method. This counter is not resetted to zero by a *gui.timer_stop()* call.
+method. This counter is not reset to zero by a *gui.timer_stop()* call.
 
 Packaging your application
 -----------------------------
