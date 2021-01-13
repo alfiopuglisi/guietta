@@ -1879,7 +1879,7 @@ class Gui:
         rows = Rows(lists)
         rows.check_same(self._rows, allow_less_rows=True)
 
-        for i, j, stretch in rows.enumerate():
+        for i, _, stretch in rows.enumerate():
             self._layout.setRowStretch(i, stretch)
 
     def column_stretch(self, *lists):
@@ -1896,7 +1896,7 @@ class Gui:
         rows = Rows(lists)
         rows.check_same(self._rows, allow_less_rows=True)
 
-        for i, j, stretch in rows.enumerate():
+        for _, j, stretch in rows.enumerate():
             self._layout.setColumnStretch(j, stretch)
 
     def events(self, *lists):
