@@ -19,7 +19,7 @@ gui.run()
 ```
 And here it is:
 
-![Example GUI](http://guietta.com/_images/example.png)
+![Example GUI](https://guietta.readthedocs.io/en/stable/_images/example.png)
 
 Also featuring:
  * matplotlib and pyqtgraph integration, for easy event-driven plots
