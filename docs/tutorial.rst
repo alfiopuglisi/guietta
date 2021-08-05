@@ -326,7 +326,7 @@ While extremely simple and intuitive, this style has a number of caveats:
     - like the @auto decorator above, it is not guaranteed to work on
       a Python prompt. It works on the standard Python one, but for example
       will not work with some versions of IPython.
-    - the code inside *with* block is also executed once when it is encoureted
+    - the code inside *with* block is also executed once when it is encountered
       for the first time, before *gui.run()* is called.
       This is unavoidable due to how code is parsed by
       Python. Most probably, it will generate an exception (in this case,
