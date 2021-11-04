@@ -11,6 +11,7 @@ List of widget shortcuts:
     B('text')      ->   same as ['text']
     B('image.jpg') ->   same as ['image.jpg']
     '__name__'     ->   QLineEdit(''), name set to 'name'
+    '__name__:text'->   QLineEdit('text'), name set to 'name'
     E('text')      ->   QLineEdit('text')
     C('text')      ->   QCheckBox('text')
     R('text')      ->   QRadioButton('text')
@@ -894,15 +895,6 @@ class PW(_DeferredCreationWidget):
 #################
 # Slider combined with editbox
 
-class _QLineEditDoNotErase(QLineEdit):
-    '''A QLineEdit that whose contents must not be erased
-
-    Gui constructor erases all the QLineEdit content because normally
-    it is the widget name. This class signals that the contents should
-    not be erased.
-    '''
-    pass
-
 
 class _CombinedWidget:
     '''Base class for widgets that combine multiple ones'''
@@ -937,7 +929,7 @@ class _ValueSlider(_CombinedWidget):
         slider.setMaximum(stop)
         slider.setSingleStep(step)
 
-        editbox = _QLineEditDoNotErase()
+        editbox = QLineEdit('')
 
         def slider_to_unit(v):
             return v / factor
@@ -1491,7 +1483,8 @@ def _convert_compacts(x):
     Compact elements processing.
 
     Converts:
-        '__xxx___' to QLineEdit('xxx')
+        '__xxx__:yy' to (QLineEdit('yy'), 'xxx')
+        '__xxx__' to (QLineEdit(''), 'xxx')
         'xxx'     to L('xxx')
         ['xxx']   to B('xxx')
         ['xxx', 'yyy']   to B('xxx', 'yyy')
@@ -1501,11 +1494,16 @@ def _convert_compacts(x):
     Lists with zero length or longer than 2 elements raise a ValueError.
     '''
 
-    if isinstance(x, str) and x.startswith('__') and x.endswith('__'):
-        return QLineEdit(x[2:-2])
+    if isinstance(x, str):
+        m = re.match('__(\w+)__\:(.*)', x)
+        if m:
+            return (QLineEdit(m.group(2)), m.group(1))
 
-    elif isinstance(x, str):
-        return L(x)
+        elif x.startswith('__') and x.endswith('__'):
+            return (QLineEdit(''), x[2:-2])
+
+        else:
+            return L(x)
 
     elif isinstance(x, list) and isinstance(x[0], str):
         if len(x) == 1 or len(x) == 2:
@@ -1755,12 +1753,6 @@ class Gui:
                 ContextMixIn.convert_object(widget)
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
                 self._widgets[name] = widget
-
-                # Special case for QLineEdit, make it empty.
-                if isinstance(widget, QLineEdit):
-                    if not isinstance(widget, _QLineEditDoNotErase):
-                        widget.setText('')
-
                 done.add(element)
 
         self._align_guietta_properties()

@@ -13,7 +13,8 @@ For the constructor aruguments:
 
 - Compact syntax is expanded (*convert_compacts()*) 
     1. 'xxx' is converted to L('xxx')
-    #. '__xxx__' is converted to QLineEdit('xxx')
+    #. '__xxx__' is converted to (QLineEdit(''), 'xxx')
+    #. '__xxx__:yyy' is converted to (QLineEdit('yyy'), 'xxx')
     #. ['xxx', 'yyy'] is converted to B('xxx', 'yyy'), with 'yyy' optional.
        Lists with 0 or >2 elements raise ValueError
     #. 2-tuples are recursed into in order to expand 

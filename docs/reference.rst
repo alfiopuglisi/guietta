@@ -64,6 +64,8 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | '__name__'      |   QLineEdit(''), name set to 'name'   | 'name'      |
 +-----------------+---------------------------------------+-------------+
+| '__name__:text' |  QLineEdit('text'), name set to 'name'| 'name'      |
++-----------------+---------------------------------------+-------------+
 | E('text')       |   QLineEdit('text')                   | 'text'      |
 +-----------------+---------------------------------------+-------------+
 | C('text')       |   QCheckBox('text')                   | 'text'      |
@@ -93,7 +95,8 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | widget          |   any valid QT widget                 | none        |
 +-----------------+---------------------------------------+-------------+
-| (widget, 'name')|   any valid QT widget                 | 'name'      |
+| (widget, 'name')|   any valid QT widget, including any  | 'name'      |
+|                 |   of the above definitions            |             |
 +-----------------+---------------------------------------+-------------+
 
 * Matplotlib or pyqtraph will only be imported if the M(), PG() or PGI() widgets
