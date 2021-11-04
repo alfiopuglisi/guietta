@@ -627,11 +627,13 @@ class _R(_DeferredCreationWidget):
 
     _group = None
 
-    def __init__(self, text):
+    def __init__(self, text, checked=False):
         self._text = text
+        self._checked = checked
 
     def create(self, gui):
         button = QRadioButton(self._text)
+        button.setChecked(self._checked)
         gui._groups[self._group].addButton(button)
         return (button, self._text)
 

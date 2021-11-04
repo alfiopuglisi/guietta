@@ -7,7 +7,7 @@ from guietta import Gui, _, R1, R2, R3
 
 gui = Gui(
 
-  [ R1('rad1')  ,  R2('rad3')  , R3('rad5')   ],
+  [ R1('rad1',1),  R2('rad3')  , R3('rad5')   ],
   [ R1('rad2')  ,  R2('rad4')  , R3('rad6')   ],
 
 )

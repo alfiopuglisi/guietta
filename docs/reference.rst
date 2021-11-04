@@ -72,6 +72,9 @@ Here is the complete widget set::
 +-----------------+---------------------------------------+-------------+
 | R('text')       |   QRadioButton('text')                | 'text'      |
 +-----------------+---------------------------------------+-------------+
+| R('text', True) |   QRadioButton('text')                | 'text'      |
+|                 |   with setChecked(True)               |             |
++-----------------+---------------------------------------+-------------+
 | P('name')       |   QProgressBar()                      | 'name'      |
 +-----------------+---------------------------------------+-------------+
 | PW('name')      |   QLineEdit() passsword-style         | 'name'      |
@@ -180,7 +183,7 @@ Table of default signals:
 +----------------------+----------------------------------+
 |  QCheckBox           |  stateChanged(int)               |
 +----------------------+----------------------------------+
-|  QRadioButton        |  toggled())                      |
+|  QRadioButton        |  toggled()                       |
 +----------------------+----------------------------------+
 |  QAbstractSlider     |  valueChanged(int)               |
 |  (QSlider, QDial,    |                                  |

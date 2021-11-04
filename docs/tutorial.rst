@@ -557,6 +557,8 @@ For example::
 That code creates six radio buttons, belonging to three different
 exclusive groups arranged vertically.
 
+An optional second argument is passed to the setChecked method. For exmaple, "R2('rad4', 1)" would have initialized the "rad4" button to the Checked state. By default, all buttons are unchecked.
+
 The `radio buttons example <https://github.com/alfiopuglisi/guietta/blob/master/guietta/examples/radio.py>`_ shows how
 to connect radio buttons to events and how to check if a radio button
 is checked or not.
