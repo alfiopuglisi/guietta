@@ -25,8 +25,9 @@ class CompactsTest(unittest.TestCase):
 
     def test_editbox(self):
         x = _convert_compacts('__foo__')
-        assert isinstance(x, QLineEdit)
-        assert x.text() == 'foo'
+        assert isinstance(x[0], QLineEdit)
+        assert x[0].text() == ''
+        assert x[1] == 'foo'
 
     def test_label(self):
         x = _convert_compacts('foo')
@@ -45,10 +46,17 @@ class CompactsTest(unittest.TestCase):
         assert x._text == 'bar'
 
     def test_editbox_in_tuple(self):
-        x = _convert_compacts(('__foo__', 'name'))
+        x,y = _convert_compacts(('__foo__', 'name'))
         assert isinstance(x[0], QLineEdit)
-        assert x[0].text() == 'foo'
-        assert x[1] == 'name'
+        assert x[0].text() == ''
+        assert x[1] == 'foo'
+        assert y == 'name'
+
+    def test_editbox_default(self):
+        x = _convert_compacts('__foo__:bar')
+        assert isinstance(x[0], QLineEdit)
+        assert x[0].text() == 'bar'
+        assert x[1] == 'foo'
 
     def test_label_in_tuple(self):
         x = _convert_compacts(('foo', 'name'))

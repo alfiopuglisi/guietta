@@ -1497,7 +1497,7 @@ def _convert_compacts(x):
     '''
 
     if isinstance(x, str):
-        m = re.match('__(\w+)__\:(.*)', x)
+        m = re.match(r'__(\w+)__\:(.*)', x)
         if m:
             return (QLineEdit(m.group(2)), m.group(1))
 
