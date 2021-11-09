@@ -15,5 +15,5 @@ gui2.a = 'bar'
 
 gui1.show()
 gui2.show()
-gui1._app.exec()
+gui1._app.exec_()
 
