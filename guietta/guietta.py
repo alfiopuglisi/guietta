@@ -1688,6 +1688,7 @@ class Gui:
                                title='',
                                font=None,
                                manage_threads=True,
+                               setup=None,
                                use_formats=True):
 
         # This line must be the first one in this method otherwise
@@ -1727,6 +1728,13 @@ class Gui:
 
         # Predefined button groups
         self._groups = [QButtonGroup() for i in range(10)]
+
+        # Setup function
+        if setup and not callable(setup):
+            raise Exception('Setup value must be callable')
+
+        self._setup_func = setup
+        self._setup_done = False
 
         # Input argument checks
         self._rows = Rows(lists)
@@ -1792,6 +1800,18 @@ class Gui:
 
         self._align_guietta_properties()
         self.title(title)
+
+    def _setup(self):
+        '''
+        Call the setup function, if any, for this GUI and all
+        sub-GUIs. Also enable stdout/err redirection before setting up.
+        '''
+
+        if not self._setup_done:
+            if self._setup_func:
+                _exception_wrapper(self._setup_func, self)(self)
+
+        self._setup_done = True
 
     def _align_guietta_properties(self):
         '''Make sure that any and all widgets have a property'''
@@ -2086,6 +2106,7 @@ class Gui:
         This call is blocking and will return when the window is closed.
         Any user interaction must be done with callbacks.
         '''
+        self._setup()
         self.show()
         self.is_running = True
         self._app.exec_()
@@ -2153,6 +2174,7 @@ class Gui:
             self._get_handler = True
 
         self.window().closeEvent = self._stop_handler
+        self._setup()
         self.show()
         self._closed = False
 
