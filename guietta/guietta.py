@@ -765,7 +765,7 @@ class _AutoConnectButton(_DeferredCreationWidget):
     def create(self, gui):
         button = QPushButton(self._text)
         slot = getattr(gui, self._slot_name)
-        handler = _exception_wrapper(slot, gui._exception_mode)
+        handler = _exception_wrapper(slot, gui)
         button.clicked.connect(handler)
         return button
 
@@ -1080,33 +1080,44 @@ class Exceptions(Enum):
     pass                    # callable = custom exception handler
 
 
-def _exception_wrapper(func, mode):
+def _exception_handler(e, gui):
+    '''
+    Exception handler for all automatic actions and
+    signal slots. The exception moment is checked on the fly,
+    and thus can be changed at runtime.
+    '''
+    mode = gui._exception_mode
+
     if mode == Exceptions.OFF:
-        return func
+        raise e from None
 
     elif mode == Exceptions.SILENT:
-        handler = lambda e: None
+        pass
 
     elif mode == Exceptions.PRINT:
-        handler = lambda e: print('Exception: %s\n%s' %
-                                  (e.__class__.__name__, str(e)))
+        print('Exception: %s\n%s' % (e.__class__.__name__, str(e)))
 
     elif mode == Exceptions.POPUP:
-        handler = lambda e: QMessageBox.warning(None, "Error", "%s\n%s" %
-                                                (e.__class__.__name__, str(e)))
+        QMessageBox.warning(None, "Error", "%s\n%s" %
+                           (e.__class__.__name__, str(e)))
     elif callable(mode):
-        handler = mode
+        mode()
 
     else:
         raise TypeError('Exception mode must be either an instance of '
                         'the Exceptions enum or a callable handler.')
 
+def _exception_wrapper(func, gui):
+    '''
+    Wraps *func* with the default exception handler, based
+    on the exception mode set by *gui* at the moment of handling.
+    '''
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
         except Exception as e:
-            handler(e)
+            _exception_handler(e, gui)
 
     return wrapper
 
@@ -1641,7 +1652,7 @@ def connect(widget, signal_name='default', slot=None):
     else:
         use_slot = functools.partial(slot, gui)
 
-    signal.connect(_exception_wrapper(use_slot, gui._exception_mode))
+    signal.connect(_exception_wrapper(use_slot, gui))
 
 
 class Gui:
@@ -2000,8 +2011,7 @@ class Gui:
         The callback will receive the Gui instance as its only argument.
         '''
         self._timer = QTimer()
-        self._user_timer_callback = _exception_wrapper(callback,
-                                                       self._exception_mode)
+        self._user_timer_callback = _exception_wrapper(callback, self)
         self._timer.timeout.connect(self._timer_callback)
         self._timer.start(interval*1000)
 
