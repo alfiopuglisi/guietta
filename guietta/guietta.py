@@ -324,6 +324,7 @@ def _alsoAcceptAnotherGui(widget):
                 else:
                     widget._gui.layout().replaceWidget(widget, value.window())
                     widget.hide()
+                widget._gui.add_as_subgui(value)
             else:
                 f(value)
         return wrapper
@@ -1744,6 +1745,7 @@ class Gui:
 
         self._setup_func = setup
         self._setup_done = False
+        self._subguis_to_setup = []
 
         # Input argument checks
         self._rows = Rows(lists)
@@ -1820,6 +1822,8 @@ class Gui:
         if not self._setup_done:
             if self._setup_func:
                 _exception_wrapper(self._setup_func, self)(self)
+            for subgui in self._subguis_to_setup:
+                subgui._setup()
 
         self._setup_done = True
 
@@ -2313,6 +2317,15 @@ class Gui:
                     pass
 
         return func
+
+    def add_as_subgui(self, subgui):
+        '''
+        Set *subgui* as a sub-gui of this one. Exception modes will be
+        propagated, and the sub-gui setup function will be called
+        just after the main gui one.
+        '''
+        subgui._exception_mode = self._exception_mode
+        self._subguis_to_setup.append(subgui)
 
 
 class GuiIterator():
