@@ -519,6 +519,11 @@ class SmartQLabel(QWidget):
     and lists, which are shown one element per line.
     If a dict is passed, both labels are shown and used for keys and
     values respectively, one element per line.
+
+    If the initializator contains a % character, it is interpreted
+    as a format string that will be used as the format for later
+    assignments. This behaviour can be turned off by setting
+    gui.use_formats to False.
     '''
 
     def __init__(self, text=''):
@@ -530,7 +535,10 @@ class SmartQLabel(QWidget):
         self._layout.addWidget(self._left)
         self._layout.addWidget(self._right)
         self.setLayout(self._layout)
+        self._format = None
         self.setText(text)
+        if '%' in text:
+            self._format = text
 
     def setText(self, value):
 
@@ -548,7 +556,10 @@ class SmartQLabel(QWidget):
 
         else:
             self._right.hide()
-            self._left.setText(str(value))
+            if self._format and self._gui.use_formats:
+                self._left.setText(self._format % value)
+            else:
+                self._left.setText(str(value))
 
         self._orig_value = value
 
@@ -1656,7 +1667,8 @@ class Gui:
                                persistence=PERSISTENT,
                                title='',
                                font=None,
-                               manage_threads=True):
+                               manage_threads=True,
+                               use_formats=True):
 
         # This line must be the first one in this method otherwise
         # __setattr__ does not work.
@@ -1691,6 +1703,7 @@ class Gui:
 
         self.images_dir = images_dir
         self.is_running = False
+        self.use_formats = use_formats
 
         # Predefined button groups
         self._groups = [QButtonGroup() for i in range(10)]
