@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0] - 2021-12-06
+
+### Added
+  - New syntax for edit field initialization
+  - New syntax for automatic buttons with a callable
+  - Optional checked parameter for radio buttons
+  - Setup function to be executed after GUI initialization
+  - Labels can be initialized with % format strings
+
+### Changed
+  - Fixed bug with matplotlib colobars
+  - Sub-GUIs now inherit the exception mode of the main GUI
+  - StdoutLog widget only captures output after GUI
+    has been initialized, in order to avoid error messages
+    "disappearing" if they happen before the GUI is shown.
+
 ## [0.6.1] - 2020-11-22
 
 ### Added
