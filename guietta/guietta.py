@@ -764,7 +764,10 @@ class _AutoConnectButton(_DeferredCreationWidget):
 
     def create(self, gui):
         button = QPushButton(self._text)
-        slot = getattr(gui, self._slot_name)
+        if callable(self._slot_name):
+            slot = functools.partial(self._slot_name, gui)
+        else:
+            slot = getattr(gui, self._slot_name)
         handler = _exception_wrapper(slot, gui)
         button.clicked.connect(handler)
         return button
@@ -1512,10 +1515,13 @@ def _convert_compacts(x):
         'xxx'     to L('xxx')
         ['xxx']   to B('xxx')
         ['xxx', 'yyy']   to B('xxx', 'yyy')
+        callable  to button(x.__name__)
 
     L and B are used instead of QLabel and QPushButton in order to support
     images if xxx is a valid filename.
     Lists with zero length or longer than 2 elements raise a ValueError.
+    A callable is converted to a button with text set to the callable's name,
+    and the callable itself as the button slot.
     '''
 
     if isinstance(x, str):
@@ -1534,6 +1540,9 @@ def _convert_compacts(x):
             return B(*x)
         else:
             raise ValueError('Invalid syntax: ' + str(x))
+
+    elif callable(x) and not isinstance(x, type) and hasattr(x, '__name__'):
+        return _AutoConnectButton(x.__name__.replace('_', ' '), x)
 
     elif isinstance(x, tuple) and len(x) == 2:
         return (_convert_compacts(x[0]), x[1])
