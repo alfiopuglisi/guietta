@@ -1231,9 +1231,14 @@ class PGI(_DeferredCreationWidget):
 # Stdout redirection
 
 class StdoutLog(QPlainTextEdit):
-    '''Log widget showing the stdout/stderr in the GUI'''
+    '''Log widget showing the stdout/stderr in the GUI
 
+    By default, stdout/stderr is redirected just before
+    setup() is called, while the original stdout/err is kept
+    while the GUI is initialized.
+    '''
     newData = Signal(str)
+    active = False
 
     def __init__(self):
         super().__init__('')
@@ -1243,6 +1248,7 @@ class StdoutLog(QPlainTextEdit):
         # because if the logging module is used, it makes a copy of
         # sys.stderr and the replacement would not work!
 
+        self._orig = sys.stdout.write, sys.stderr.write
         sys.stdout.write = self._write
         sys.stderr.write = self._write
 
@@ -1255,9 +1261,12 @@ class StdoutLog(QPlainTextEdit):
         self.newData.emit(data)
 
     def dataAvail(self, data):
-        text = data.strip()
-        if text != '':
-            self.appendPlainText(text)
+        if self.active:
+            text = data.strip()
+            if text != '':
+                self.appendPlainText(text)
+        else:
+            self._orig[0](data)
 
 
 # Some helper functions
@@ -1806,6 +1815,7 @@ class Gui:
         Call the setup function, if any, for this GUI and all
         sub-GUIs. Also enable stdout/err redirection before setting up.
         '''
+        StdoutLog.active = True
 
         if not self._setup_done:
             if self._setup_func:
