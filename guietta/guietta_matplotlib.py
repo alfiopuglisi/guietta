@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from matplotlib.figure import Figure
+from matplotlib.colorbar import Colorbar
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 
 from guietta import Signal, _alsoAcceptAnotherGui, Ax

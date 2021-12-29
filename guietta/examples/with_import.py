@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Does not work because both the module "u" and the function
-# orbital_speed() in the with block become undefined.
-
 import numpy as np
 import astropy.units as u
 from astropy.constants import G, M_earth, R_earth

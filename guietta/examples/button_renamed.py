@@ -6,7 +6,7 @@ from guietta import B, L, _, Gui, Quit
 gui = Gui(
     
   [  'Enter expression:', '__expr__'  , B('right.png', 'newname') ],
-  [  L('left.png', 'result')          , 'result'    , _          ],
+  [  L('left.png')      , 'result'    , _          ],
   [  _                  , _           , Quit       ],
   
   images_dir = os.path.dirname(__file__)
