@@ -2071,6 +2071,13 @@ class Gui:
         self._timer_count += 1
         if self._user_timer_callback is not None:
             self._user_timer_callback(self)
+
+    def timer(self, interval):
+        '''Decorator that starts a function using the GUI timer'''
+        def decorator(func):
+            self.timer_start(func, interval)
+            return func
+        return decorator
         
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
