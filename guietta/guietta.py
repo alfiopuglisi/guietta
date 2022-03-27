@@ -24,6 +24,10 @@ List of widget shortcuts:
     _              ->   QLabel('')
     ___            ->   (three underscores) Horizontal widget span
     III            ->   (three capital letters i) vertical widget span
+    M              ->   Matplotlib plot or image
+    MA             ->   Matplotlib plot or imag with fast update
+    PG             ->   pyqtgraph plot
+    PGI            ->   pyqtgraph image
 
     QPushButtons with both image and text:
     ['image.jpg', 'text']  ->   QPushButton(QIcon('image.jpg'), 'text')
@@ -1175,7 +1179,7 @@ class M(_DeferredCreationWidget):
     Creating an object of this class will import the matplotlib module.
     '''
     def __init__(self, name, width=5, height=3, dpi=100,
-                       subplots=(1,1), **kwargs):
+                       subplots=(1,1), animated=False, **kwargs):
 
         self._name = name
         self._width = width
@@ -1183,6 +1187,7 @@ class M(_DeferredCreationWidget):
         self._dpi = dpi
         self._subplots = subplots
         self._kwargs = kwargs
+        self._animated = animated
 
     def create(self, gui):
         from guietta import guietta_matplotlib
@@ -1191,8 +1196,20 @@ class M(_DeferredCreationWidget):
         _default_signals[widget_class] = 'clicked'
 
         widget = widget_class(self._width, self._height, self._dpi,
-                              self._subplots, **self._kwargs)
+                              self._subplots, self._animated, **self._kwargs)
         return (widget, self._name)
+
+
+class MA(M):
+    '''Animated Matplotlib widget
+
+    First display works as usual. When new data is assigned to the widget,
+    the set_ydata (for plots) or set_array (for images) method is called to
+    update the display without redrawing the entire widget.
+    '''
+    def __init__(self, name, width=5, height=3, dpi=100,
+                       subplots=(1,1), **kwargs):
+        super().__init__(name, width, height, dpi, subplots, animated=True, **kwargs)
 
 
 class PG(_DeferredCreationWidget):

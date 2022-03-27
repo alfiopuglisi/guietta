@@ -11,7 +11,7 @@ class MatplotlibWidget(FigureCanvas):
 
     clicked = Signal(float, float)
 
-    def __init__(self, width, height, dpi, subplots, **kwargs):
+    def __init__(self, width, height, dpi, subplots, animated=False, **kwargs):
         figure = Figure(figsize=(width, height), dpi=dpi)
         # DO not use add_subplots(), for compatibility with
         # old versions of maplotlib (<2.1)
@@ -22,6 +22,8 @@ class MatplotlibWidget(FigureCanvas):
             for x in range(subplots[0] * subplots[1]):
                 self.ax.append(figure.add_subplot(subplots[0], subplots[1], x+1))
         self.kwargs = kwargs
+        self.animated = animated
+        self.plotobj = None
         super().__init__(figure)
         figure.canvas.mpl_connect('button_press_event',
                                   self._on_button_press)
@@ -45,15 +47,23 @@ class MatplotlibWidget(FigureCanvas):
             except Exception as e:
                 errmsg = 'Matplotlib widgets need an array-like value'
                 raise TypeError(errmsg) from e
+
+            if len(arr.shape) not in [1,2]:
+                raise ValueError('Value must be 1d or 2d, shape is %s instead' %
+                                  str(arr.shape))
     
-            with Ax(self) as ax:
+            if not self.animated or self.plotobj is None:
+                with Ax(self) as ax:
+                    if len(arr.shape) == 1:
+                        self.plotobj = ax.plot(arr)
+                    elif len(arr.shape) == 2:
+                        self.plotobj = ax.imshow(arr)
+            else:
                 if len(arr.shape) == 1:
-                    ax.plot(arr)
+                    self.plotobj[0].set_ydata(arr)
                 elif len(arr.shape) == 2:
-                    ax.imshow(arr)
-                else:
-                    raise ValueError('Value must be 1d or 2d, shape is %s instead'
-                                     % str(arr.shape))
+                    self.plotobj.set_array(arr)
+                self.ax.figure.canvas.draw()
             
         return (getx, setx)
 
