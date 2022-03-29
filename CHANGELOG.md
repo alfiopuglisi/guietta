@@ -1,6 +1,12 @@
 # Changelog
 
-## [1.0.1] - 2022-03-27
+## [1.2.0] - 2022-03-29
+
+  - Matplotlib widgets expose all methods of their
+    Axes and AxesImage children widgets.
+  - Convenience function colorbar() for matplotlib widgets
+ 
+## [1.1.0] - 2022-03-27
 
 ### Added
   - Matplotlib updatable widgets MA()

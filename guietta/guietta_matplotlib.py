@@ -28,6 +28,28 @@ class MatplotlibWidget(FigureCanvas):
         figure.canvas.mpl_connect('button_press_event',
                                   self._on_button_press)
 
+    def image(self):
+        images = self.ax.get_images()
+        if len(images) > 0:
+            return images[0]
+        else:
+            return None
+
+    def colorbar(self, *args, **kwargs):
+        image = self.image()
+        if image:
+            self.ax.get_figure().colorbar(image, *args, **kwargs)
+        else:
+            raise Exception('There is no image to attach the colorbar to')
+
+    def __getattr__(self, name):
+        if hasattr(self.ax, name):
+            return getattr(self.ax, name)
+        elif hasattr(self.image(), name):
+            return getattr(self.image(), name)
+        else:
+            raise AttributeError(name)
+
     def _on_button_press(self, event):
         self.clicked.emit(event.xdata, event.ydata)
 
