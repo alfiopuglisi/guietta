@@ -60,27 +60,27 @@ from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
 try:
-    from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-    from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-    from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-    from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-    from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-    from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-    from PySide2.QtWidgets import QProgressBar, QGroupBox
-    from PySide2.QtGui import QPixmap, QIcon, QFont
-    from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+    from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+    from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+    from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+    from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+    from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+    from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+    from PyQt5.QtWidgets import QProgressBar, QGroupBox
+    from PyQt5.QtGui import QPixmap, QIcon, QFont
+    from PyQt5.QtCore import Qt, QTimer, QEvent
+    from PyQt5.QtCore import pyqtSignal as Signal
 except ImportError:
     try:
-        from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-        from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-        from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-        from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-        from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-        from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-        from PyQt5.QtWidgets import QProgressBar, QGroupBox
-        from PyQt5.QtGui import QPixmap, QIcon, QFont
-        from PyQt5.QtCore import Qt, QTimer, QEvent
-        from PyQt5.QtCore import pyqtSignal as Signal
+        from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+        from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+        from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+        from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+        from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+        from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+        from PySide2.QtWidgets import QProgressBar, QGroupBox
+        from PySide2.QtGui import QPixmap, QIcon, QFont
+        from PySide2.QtCore import Qt, QTimer, Signal, QEvent
     except ImportError as e:
         raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
 
