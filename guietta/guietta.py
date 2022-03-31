@@ -45,6 +45,7 @@ Signals can be connected with gui.events() where every widget has:
 import re
 import ast
 import sys
+import time
 import queue
 import signal
 import inspect
@@ -436,6 +437,20 @@ def _text_property(widget):
     return GuiettaProperty(get_text, set_text, widget)
 
 
+def _setonly_text_property(widget):
+    '''Text property that allows setting but not reading
+
+    The widget instance is returned when reading the property
+    '''
+
+    def get():
+        return widget
+
+    prop = _text_property(widget)
+    prop.get = get
+    return prop
+
+
 def _title_property(widget):
     '''Property for widgets with a title (QGroupBox)'''
 
@@ -531,9 +546,10 @@ class SmartQLabel(QWidget):
     gui.use_formats to False.
     '''
 
-    def __init__(self, text=''):
+    def __init__(self, gui, text=''):
 
         super().__init__()
+        self._mygui = gui
         self._layout = QHBoxLayout()
         self._left = QLabel('')
         self._right = QLabel('')
@@ -562,9 +578,15 @@ class SmartQLabel(QWidget):
         else:
             self._right.hide()
             if self._format and self._gui.use_formats:
-                self._left.setText(self._format % value)
+                mystr = self._format % value
             else:
-                self._left.setText(str(value))
+                mystr = str(value)
+
+            fullpath, name = _image_fullpath(self._mygui, mystr)
+            if fullpath:
+                self._left.setPixmap(QPixmap(fullpath))
+            else:
+                self._left.setText(mystr)
 
         self._orig_value = value
 
@@ -573,6 +595,32 @@ class SmartQLabel(QWidget):
 
     def __guietta_property__(self):
         return _text_property(self)
+
+
+class HeartBeat(SmartQLabel):
+    '''Heartbeat class
+
+       A label that changes appearance when triggered,
+       and reverts back to the original one after a delay.
+    '''
+    def __init__(self, gui, text_or_filename1, text_or_filename2):
+        self._text_or_filename1 = text_or_filename1
+        self._text_or_filename2 = text_or_filename2
+        super().__init__(gui, text_or_filename1)
+
+    def _endbeat(self, *args):
+        self.setText(self._text_or_filename1)
+
+    def _wait(self):
+        time.sleep(self._delay)
+
+    def beat(self, delay=0.2):
+        self._delay = delay
+        self.setText(self._text_or_filename2)
+        self._mygui.execute_in_background(self._wait, (), self._endbeat)
+
+    def __guietta_property__(self):
+        return _setonly_text_property(self)
 
 
 def _guietta_property(widget):
@@ -652,6 +700,18 @@ class _R(_DeferredCreationWidget):
         button.setChecked(self._checked)
         gui._groups[self._group].addButton(button)
         return (button, self._text)
+
+
+class HB(_DeferredCreationWidget):
+    '''Text label or image label'''
+
+    def __init__(self, text_or_filename1, text_or_filename2):
+        self._text_or_filename1 = text_or_filename1
+        self._text_or_filename2 = text_or_filename2
+
+    def create(self, gui):
+        fullpath, name = _image_fullpath(gui, self._text_or_filename1)
+        return (HeartBeat(gui, self._text_or_filename1, self._text_or_filename2), name)
 
 
 class R0(_R):
@@ -738,12 +798,7 @@ class L(_DeferredCreationWidget):
 
     def create(self, gui):
         fullpath, name = _image_fullpath(gui, self._text_or_filename)
-        if fullpath:
-            label = QLabel()
-            label.setPixmap(QPixmap(fullpath))
-            return (label, name)
-        else:
-            return (SmartQLabel(self._text_or_filename), name)
+        return (SmartQLabel(gui, self._text_or_filename), name)
 
 
 class B(_DeferredCreationWidget):

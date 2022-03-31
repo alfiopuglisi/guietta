@@ -1,7 +1,20 @@
 # Changelog
 
+## [1.4.0] - 2022-03-31
+
+### Added
+  - HeartBeat widget
+
+## [1.3.0] - 2022-03-29
+
+### Changed
+  - Inverted import order of PyQt5 and PySide2,
+    giving priority to PyQt5 to fix compatibility
+    problems with matplotlib
+
 ## [1.2.0] - 2022-03-29
 
+### Added
   - Matplotlib widgets expose all methods of their
     Axes and AxesImage children widgets.
   - Convenience function colorbar() for matplotlib widgets
