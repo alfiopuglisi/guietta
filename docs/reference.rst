@@ -111,6 +111,10 @@ Here is the complete widget set::
 | (widget, 'name')    |   any valid QT widget, including any  | 'name'      |
 |                     |   of the above definitions            |             |
 +---------------------+---------------------------------------+-------------+
+| Gui()               |   any other Gui instance can be used  |             |
+|                     |   as a sub-gui. Equivalent to G()     |             |
+|                     |   and assigning the Gui to it.        |             |
++---------------------+---------------------------------------+-------------+
 
 * Matplotlib or pyqtraph will only be imported if the M(), PG() or PGI() widgets
   are used. Matplotlib and pyqtgraph are not installed automatically
