@@ -1598,6 +1598,7 @@ def _convert_compacts(x):
         ['xxx']   to B('xxx')
         ['xxx', 'yyy']   to B('xxx', 'yyy')
         callable  to button(x.__name__)
+        GUI object to G('name')
 
     L and B are used instead of QLabel and QPushButton in order to support
     images if xxx is a valid filename.
@@ -1626,11 +1627,27 @@ def _convert_compacts(x):
     elif callable(x) and not isinstance(x, type) and hasattr(x, '__name__'):
         return _AutoConnectButton(x.__name__.replace('_', ' '), x)
 
+    elif isinstance(x, Gui):
+        return SubGui(x)
+
     elif isinstance(x, tuple) and len(x) == 2:
         return (_convert_compacts(x[0]), x[1])
 
     else:
         return x  # No change
+
+
+class SubGui(_DeferredCreationWidget):
+    '''Groupbox holding a sub-gui'''
+
+    def __init__(self, subgui):
+        self.subgui = subgui
+
+    def create(self, gui):
+        groupbox = QGroupBox()
+        groupbox.setLayout(self.subgui.layout())
+        gui.add_as_subgui(self.subgui)
+        return groupbox
 
 
 ##################
