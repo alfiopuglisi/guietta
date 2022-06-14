@@ -156,7 +156,7 @@ class ContextMixIn():
         else:
             # Do not use inspect.getsourcelines because it appears
             # to fail on some systems
-            lines = open(self._start.filename).readlines()
+            lines = open(self._start.filename,encoding='utf-8').readlines()
             withlines = lines[self._start.lineno - 1 : end.lineno]
 
         withsource = textwrap.dedent(''.join(withlines))
