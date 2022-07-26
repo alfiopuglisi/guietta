@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.1] - 2022-07-26
+
+### Added
+  - keyword "projection" to matplotlib M() widget,
+    passed internally to add_subplot.
+
 ## [1.4.0] - 2022-03-31
 
 ### Added

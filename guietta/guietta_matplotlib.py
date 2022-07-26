@@ -11,16 +11,16 @@ class MatplotlibWidget(FigureCanvas):
 
     clicked = Signal(float, float)
 
-    def __init__(self, width, height, dpi, subplots, animated=False, **kwargs):
+    def __init__(self, width, height, dpi, subplots, animated=False, projection=None, **kwargs):
         figure = Figure(figsize=(width, height), dpi=dpi)
         # DO not use add_subplots(), for compatibility with
         # old versions of maplotlib (<2.1)
         if subplots == (1,1):
-            self.ax = figure.add_subplot(1,1,1)
+            self.ax = figure.add_subplot(1,1,1, projection=projection)
         else:
             self.ax = []
             for x in range(subplots[0] * subplots[1]):
-                self.ax.append(figure.add_subplot(subplots[0], subplots[1], x+1))
+                self.ax.append(figure.add_subplot(subplots[0], subplots[1], x+1, projection=projection))
         self.kwargs = kwargs
         self.animated = animated
         self.plotobj = None
