@@ -20,4 +20,5 @@ jobs:
       #   python-version: ${{ matrix.python-version }}
       - run: pip install black codespell flake8 isort pytest
       - run: pip install -r requirements.txt
+      - run: export DISPLAY=:90
       - run: xvfb-run pytest -v

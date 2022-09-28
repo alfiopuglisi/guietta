@@ -60,6 +60,8 @@ from functools import wraps
 from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
+print('Environment:', os.environ['DISPLAY'])
+
 try:
     from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
     from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
@@ -86,7 +88,6 @@ except ImportError:
         raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
 
 # We need a QApplication before creating any widgets
-print('Environment:', os.environ['DISPLAY'])
 if QApplication.instance() is None:
     app = QApplication(sys.argv)
 
