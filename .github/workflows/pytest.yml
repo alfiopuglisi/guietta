@@ -9,15 +9,20 @@ jobs:
      matrix:
        os: [ubuntu-latest, macos-latest, windows-latest]
        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10]  # , pypy3]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@master
+        with: ${{ matrix.version }}
       - uses: actions/setup-python@master
+        with: ${{ matrix.version }}
       - name: Install system dependencies
+        with: ${{ matrix.version }}
         run: |
           sudo apt-get install -y xvfb libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
       - run: pip install black codespell flake8 isort pytest
       - run: pip install -r requirements.txt
       - name: Run GUI test
+        with: ${{ matrix.version }}
         uses: GabrielBB/xvfb-action@v1
         with:
           run: pytest
