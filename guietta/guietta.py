@@ -87,7 +87,7 @@ except ImportError:
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
-    app = QApplication([])
+    app = QApplication(sys.argv)
 
 # Needed in order for PyQt to play nice with Ctrl-C
 signal.signal(signal.SIGINT, signal.SIG_DFL)
