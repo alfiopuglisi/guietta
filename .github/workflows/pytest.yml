@@ -5,19 +5,16 @@ on:
   #  branches: [master]
 jobs:
   run_pytest:
-    runs-on: ubuntu-latest
-    # strategy:
-    #  matrix:
-    #    os: [ubuntu-latest, macos-latest, windows-latest]
-    #    python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10]  # , pypy3]
+    strategy:
+     matrix:
+       os: [ubuntu-latest, macos-latest, windows-latest]
+       python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10]  # , pypy3]
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
       - name: Install system dependencies
         run: |
           sudo apt-get install -y xvfb libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
-      # with:
-      #   python-version: ${{ matrix.python-version }}
       - run: pip install black codespell flake8 isort pytest
       - run: pip install -r requirements.txt
       - name: Run GUI test
