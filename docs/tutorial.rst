@@ -751,7 +751,7 @@ the need to use the PG() wrapper.
 .. note: minimum version for pyqtgraph is 0.11.0. This is the first version
          to support PySide2, used by Guietta.
 
-Support for pyqtgraph was introducted in version 0.3.5.
+Support for pyqtgraph was introduced in version 0.3.5.
 
 Images
 ++++++
@@ -762,7 +762,7 @@ widget. 2d numpy arrays can be assigned to its property::
    gui = Gui([PGI('myimage')])
    gui.myimage = np.arange(100).reshape((10,10))
 
-Support for pyqtgraph images was introducted in version 0.3.9.
+Support for pyqtgraph images was introduced in version 0.3.9.
 
 
 Splash screens
@@ -773,7 +773,7 @@ function:
 
 .. autofunction:: guietta.splash
 
-The splash function was introducted in version 0.3.1.
+The splash function was introduced in version 0.3.1.
 
 Advanced topics
 ---------------
