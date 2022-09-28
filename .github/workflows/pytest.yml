@@ -20,4 +20,8 @@ jobs:
       #   python-version: ${{ matrix.python-version }}
       - run: pip install black codespell flake8 isort pytest
       - run: pip install -r requirements.txt
-      - run: xvfb-run --auto-servernum pytest
+      - name: Run GUI test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: pytest
+
