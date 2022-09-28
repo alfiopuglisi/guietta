@@ -86,6 +86,7 @@ except ImportError:
         raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
 
 # We need a QApplication before creating any widgets
+print('Environment:', os.environ['DISPLAY'])
 if QApplication.instance() is None:
     app = QApplication(sys.argv)
 
