@@ -18,6 +18,6 @@ jobs:
           sudo apt-get install -y xvfb libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
       # with:
       #   python-version: ${{ matrix.python-version }}
-      - run: pip install black codespell flake8 isort pytest pytest-xvfb
+      - run: pip install black codespell flake8 isort pytest
       - run: pip install -r requirements.txt
-      - run: pytest
+      - run: xvfb-run --auto-servernum pytest
