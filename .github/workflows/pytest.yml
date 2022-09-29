@@ -23,5 +23,5 @@ jobs:
       - name: Run GUI test
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: pytest
+          run: pytest 2>&1
 
