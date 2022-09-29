@@ -19,5 +19,5 @@ jobs:
       # with:
       #   python-version: ${{ matrix.python-version }}
       - run: pip install black codespell flake8 isort pytest
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements_github.txt
       - run: xvfb-run pytest
