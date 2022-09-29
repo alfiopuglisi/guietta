@@ -21,7 +21,5 @@ jobs:
       - run: pip install black codespell flake8 isort pytest
       - run: pip install -r requirements.txt
       - name: Run GUI test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: python -m pytest
+        run: xvfb-run -a -e /dev/stdout python -m pytest
 
