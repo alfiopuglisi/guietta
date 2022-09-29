@@ -7,8 +7,8 @@ jobs:
   run_pytest:
     strategy:
      matrix:
-       os: ubuntu-latest
-       python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]  # , pypy3]
+       os: [ ubuntu-latest ]
+       python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9] 
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@master
