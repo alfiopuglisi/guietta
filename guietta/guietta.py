@@ -42,24 +42,6 @@ Signals can be connected with gui.events() where every widget has:
 
 '''
 
-import re
-import ast
-import sys
-import time
-import queue
-import signal
-import inspect
-import os.path
-import textwrap
-import functools
-import threading
-import contextlib
-from enum import Enum
-from types import SimpleNamespace
-from functools import wraps
-from collections import namedtuple, defaultdict
-from collections.abc import Sequence, Mapping, MutableSequence
-
 try:
     from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
     from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
@@ -84,6 +66,25 @@ except ImportError:
         from PySide2.QtCore import Qt, QTimer, Signal, QEvent
     except ImportError as e:
         raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
+
+import re
+import ast
+import sys
+import time
+import queue
+import signal
+import inspect
+import os.path
+import textwrap
+import functools
+import threading
+import contextlib
+from enum import Enum
+from types import SimpleNamespace
+from functools import wraps
+from collections import namedtuple, defaultdict
+from collections.abc import Sequence, Mapping, MutableSequence
+
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
