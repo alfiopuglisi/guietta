@@ -2336,6 +2336,7 @@ class Gui:
             f(*args)
         else:
             app = QApplication.instance()
+            app.customEvent = _customEvent
             app.postEvent(app, _result_event(QEvent.User, f, args))
 
     def execute_in_background(self, func, args=(), callback=None):
