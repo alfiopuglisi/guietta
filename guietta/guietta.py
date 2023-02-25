@@ -460,7 +460,6 @@ def _title_property(widget):
 
     @_alsoAcceptAnotherGui(widget)
     def set_title(title):
-        print('set_title')
         widget.setTitle(str(title))
 
     return GuiettaProperty(get_title, set_title, widget)
