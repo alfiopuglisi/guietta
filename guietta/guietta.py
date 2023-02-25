@@ -1041,9 +1041,9 @@ class _ValueSlider(_CombinedWidget):
         slider_name = (self.slider, self.name)
 
         if self.anchor in [Qt.AnchorLeft, Qt.AnchorTop]:
-            first, last = self.editbox, slider_name
+            first, last = (self.editbox, self.name+'_editbox'), slider_name
         else:
-            first, last = slider_name, self.editbox
+            first, last = slider_name, (self.editbox, self.name+'_editbox')
 
         if self.slider.orientation() == Qt.Horizontal:
             ncols = len(rows[row])
