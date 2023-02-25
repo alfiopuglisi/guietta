@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.0] - 2023-02-25
+
+### Added
+  - Widget groups to set/get multiple widgets using any Python iterable
+  - ValueSlider editbox now has a name, allowing it to be referenced
+
+### Changed
+  - Removed debug output
+  - Fixed bug preventing "execute_in_main_thread" decorator to work
+    when "execute_in_background" is not used as well.
+
 ## [1.4.1] - 2022-07-26
 
 ### Added
