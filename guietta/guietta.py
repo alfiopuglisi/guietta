@@ -2423,6 +2423,39 @@ class Gui:
         subgui._exception_mode = self._exception_mode
         self._subguis_to_setup.append(subgui)
 
+    def group(self, name, get_list, set_list=None, map_on_get=None):
+        '''
+        Groups widgets in *get_list* so that they can be read in a single
+        instruction returning a namedtuple where each field has the corresponding widget name.
+        When assigning an iterable to the group, the widgets in *set_list*
+        are assigned to. If *set_list* is None, the same list as *get_list* is used.
+        Uses a *namedtuple* under the hood so the lists can be formatted like
+        in the namedtuple constructor.
+        '''
+        if set_list is None:
+            set_list = get_list
+
+        if map_on_get is None:
+            map_on_get = lambda x: x
+
+        class WidgetGroup():
+            def __init__(self, gui, get_list, set_list):
+                self.get_tuple = namedtuple('WidgetGroup', get_list)
+                self.set_tuple = namedtuple('WidgetGroup', set_list)
+                self._gui = gui
+
+            def __guietta_property__(self):
+                def get():
+                    values = [self._gui.proxy(name).get() for name in self.get_tuple._fields]
+                    return self.get_tuple(*map(map_on_get, values))
+                def set(xx):
+                    for name, x in zip(self.set_tuple._fields, xx):
+                        self._gui.proxy(name).set(x)
+                return GuiettaProperty(get, set, self)
+
+        self.widgets[name] = WidgetGroup(self, get_list, set_list)
+        self._align_guietta_properties()
+
 
 class GuiIterator():
     '''An iterator that allows looping over the GUI events:
