@@ -1583,6 +1583,15 @@ class Rows:
             for i in range(len(row)):
                 row[i] = func(row[i])
 
+    def region(self, line1, line2, row1, row2):
+        '''Extract a rectangular region as a new Rows object'''
+        newrows = []
+        for row in range(line1,line2):
+            newrow = [self[row,col] for col in range(col1, col2)]
+            newrows.append(newrow)
+
+        return Rows(newrows)
+
 
 # Compact element processing
 
@@ -2477,6 +2486,34 @@ class GuiIterator():
             return (name, event)
         else:
             raise StopIteration
-         
+
+
+# Splitter support
+
+def _recurse_splitter(splitter, region):
+    widget = QWidget()
+    splitter.addWidget(widget)
+    sublayout = QGridLayout()
+    widget.setLayout(sublayout)
+    _handle_splitters(region, sublayout)
+
+
+def _handle_splitters(region, layout):
+    vertical_regions = _split_by_complete_horizontal_rows(region)
+    horizontal_regions = _split_by_complete_vertical_cols(region)
+    if vertical_regions:
+        splitter = QSplitter(Qt.Horizontal)
+        layout.addWidget(splitter)
+        for region in vertical_regions:
+            _recurse_splitter(splitter, region)
+    elif horizontal_regions:
+        splitter = QSplitter(Qt.Vertical)
+        layout.addWidget(splitter)
+        for region in horizontal_regions:
+            _recurse_splitter(splitter, region)
+    else:
+        _build_gridbox_layout(region, layout)
+
+
 
 # ___oOo___
