@@ -156,7 +156,7 @@ class ContextMixIn():
         else:
             # Do not use inspect.getsourcelines because it appears
             # to fail on some systems
-            lines = open(self._start.filename,encoding='utf-8').readlines()
+            lines = open(self._start.filename, encoding='utf-8').readlines()
             withlines = lines[self._start.lineno - 1 : end.lineno]
 
         withsource = textwrap.dedent(''.join(withlines))
@@ -254,7 +254,7 @@ class _Analyzer(ast.NodeVisitor):
 
 class GuiettaProperty:
     '''Holds the get/set methods for a Guietta magic property.
-    
+
     Initialize with two callables, *get* and *set()*::
 
         get() - returns the property value
@@ -262,12 +262,13 @@ class GuiettaProperty:
 
     *widget* must be a reference to the widget for which the property is
     being set.
-    
+
     The *set()* method is automatically decorated with
     `guietta.execute_in_main_thread` and `guietta.undo_context_manager`.
     Set *add_decorators* to False to avoid this. In this case, the
     *widget* parameter is ignored.
     '''
+
     def __init__(self, get, set, widget, add_decorators=True):
         try:
             assert(callable(get))
@@ -275,7 +276,7 @@ class GuiettaProperty:
         except AssertionError as e:
             errmsg = 'get and set must be two Python callables'
             raise TypeError(errmsg) from e
-            
+
         self.get = get
         if add_decorators:
             gui = widget._gui
@@ -341,19 +342,19 @@ def undo_context_manager(get_func):
     Modify the decorated function so that it returns a context manager that,
     when exiting, restores the previous widget state (saved
     calling *get_func*)::
-        
+
         def get_label()
             return gui.label
 
         @undo_context_manager(get_label):
         def set_label(value):
             gui.label = value
-            
+
     then later in the program::
-        
+
         with set_label(value):
             ...
-    
+
     upon exiting the *with* block, the label text will revert to its
     previous value.
     '''
@@ -378,11 +379,11 @@ def undo_context_manager(get_func):
 
 def execute_in_main_thread(gui):
     '''Decorator that makes sure that GUI methods run in the main thread.
-    
+
     QT restricts GUI updates to the main thread (that is, the thread that
     created the GUI). In order to allow updating
     the GUI from other threads, any function that does so can be decorated::
-        
+
         @execute_in_main_thread(gui)
         def myfunc(gui, widget, text):
            widget.setText(text)
@@ -391,7 +392,7 @@ def execute_in_main_thread(gui):
     main GUI thread, wraps the function call into a QT event that will
     be eventually received and processed by the main GUI thread. Otherwise,
     the function is executed immediately.
-    
+
     All guietta magic properties already use this decorator, so all GUI
     updates are automatically executed in the main GUI thread.
     '''
@@ -980,11 +981,11 @@ class _ValueSlider(_CombinedWidget):
     '''A slider combined with an inputbox for the value.'''
 
     def __init__(self, orientation,
-                      name,
-                      anchor,
-                      myrange=None,
-                      unit='',
-                      default=None):
+                 name,
+                 anchor,
+                 myrange=None,
+                 unit='',
+                 default=None):
 
         if myrange is None:
             myrange = range(0, 100, 1)
@@ -1080,7 +1081,7 @@ class HValueSlider(_ValueSlider):
     '''A slider combined with an inputbox for the value.'''
 
     def __init__(self, name, myrange=None, unit='',
-                       anchor=Qt.AnchorRight, default=None):
+                 anchor=Qt.AnchorRight, default=None):
 
         super().__init__(Qt.Horizontal, name, anchor, myrange, unit, default)
 
@@ -1089,7 +1090,7 @@ class VValueSlider(_ValueSlider):
     '''A slider combined with an inputbox for the value.'''
 
     def __init__(self, name, myrange=None, unit='',
-                       anchor=Qt.AnchorBottom, default=None):
+                 anchor=Qt.AnchorBottom, default=None):
 
         super().__init__(Qt.Vertical, name, anchor, myrange, unit, default)
 
@@ -1161,13 +1162,14 @@ def _exception_handler(e, gui):
 
     elif mode == Exceptions.POPUP:
         QMessageBox.warning(None, "Error", "%s\n%s" %
-                           (e.__class__.__name__, str(e)))
+                            (e.__class__.__name__, str(e)))
     elif callable(mode):
         mode()
 
     else:
         raise TypeError('Exception mode must be either an instance of '
                         'the Exceptions enum or a callable handler.')
+
 
 def _exception_wrapper(func, gui):
     '''
@@ -1204,8 +1206,8 @@ def Ax(widget):
     except AttributeError as e:
         raise AttributeError('Class %s does not have an ''ax'' attribute.\n'
                       'Are you sure that you are referencing the correct plot?'
-                       %  widget.__class__.__name__) from e
-        
+                       % widget.__class__.__name__) from e
+
     # hack to remove all colorbars, in order to restore the ax geometry:
     # creating a colorbar will resize the ax, and creating a new one
     # will resize it further, unless the previous one has been removed.
@@ -1217,7 +1219,7 @@ def Ax(widget):
 
     yield ax
 
-    for k,v in widget.kwargs.items():
+    for k, v in widget.kwargs.items():
         getattr(widget.ax, k).__call__(v)
     ax.figure.canvas.draw()
 
@@ -1229,11 +1231,11 @@ class M(_DeferredCreationWidget):
     calls every time the Ax decorator is used. For example, adding the
     argument `set_ylabel='foo'`, will result in this function call:
     `ax.set_ylabel('foo')`
-    
+
     Creating an object of this class will import the matplotlib module.
     '''
     def __init__(self, name, width=5, height=3, dpi=100,
-                       subplots=(1,1), animated=False, **kwargs):
+                 subplots=(1, 1), animated=False, **kwargs):
 
         self._name = name
         self._width = width
@@ -1262,17 +1264,17 @@ class MA(M):
     update the display without redrawing the entire widget.
     '''
     def __init__(self, name, width=5, height=3, dpi=100,
-                       subplots=(1,1), **kwargs):
+                 subplots=(1,1), **kwargs):
         super().__init__(name, width, height, dpi, subplots, animated=True, **kwargs)
 
 
 class PG(_DeferredCreationWidget):
     '''A pyqtgraph PlotWidget.
-    
+
     Creating an object of this class will import the pyqtgraph module.'''
 
     _pyqtgraph_imported = False
-    
+
     def __init__(self, name, **kwargs):
 
         self._name = name
@@ -1280,13 +1282,13 @@ class PG(_DeferredCreationWidget):
 
     def create(self, gui):
         from guietta import guietta_pyqtgraph
-        widget =  guietta_pyqtgraph.PyQtGraphPlotWidget(**self._kwargs)
+        widget = guietta_pyqtgraph.PyQtGraphPlotWidget(**self._kwargs)
         return (widget, self._name)
-      
+
 
 class PGI(_DeferredCreationWidget):
     '''A pyqtgraph ImageView.
-    
+
       Creating an object of this class will import the pyqtgraph module.'''
 
     def __init__(self, name, **kwargs):
@@ -1295,7 +1297,7 @@ class PGI(_DeferredCreationWidget):
 
     def create(self, gui):
         from guietta import guietta_pyqtgraph
-        widget =  guietta_pyqtgraph.PyQtGraphImageView(**self._kwargs)
+        widget = guietta_pyqtgraph.PyQtGraphImageView(**self._kwargs)
         return (widget, self._name)
 
 
@@ -1424,6 +1426,7 @@ def _process_slots(x):
     else:
         raise ValueError('Element %s is not a valid slot assignment' % x)
 
+
 def _process_font(x):
     '''Normalize font assignments.
 
@@ -1456,6 +1459,7 @@ def _process_font(x):
             raise ValueError('%s rejected by QFont constructor' % x) from e
     else:
         raise TypeError('Element %s is not a valid font specification' % x)
+
 
 def _check_string(x):
     if not isinstance(x, str) and x not in _specials:
@@ -1921,7 +1925,7 @@ class Gui:
         self._guietta_properties.clear()
         if not self._create_properties:
             return
-        
+
         for name, widget in self._widgets.items():
             if hasattr(widget, '__guietta_property__'):
                 prop = widget.__guietta_property__()
@@ -1936,7 +1940,7 @@ class Gui:
                         errmsg = ('__guietta_property__() must return '
                                   'a tuple with two callables')
                         raise TypeError(errmsg) from e
-                        
+
                     prop = GuiettaProperty(get, set, widget)
             else:
                 prop = _guietta_property(widget)
@@ -2017,14 +2021,14 @@ class Gui:
 
     def row_stretch(self, *lists):
         '''Defines the row stretches
-        
+
         Arguments are lists as in the initializer. Since typically all
         rows have the same stretch, it is allowed to define just one or only
         a few rows in this method.
 
         Every element in the lists must be a number, that will be passed to the
         setRowStretch() QT function, or _ if no particular stretch is desired.
-        '''        
+        '''
         rows = Rows(lists)
         rows.check_same(self._rows, allow_less_rows=True)
 
@@ -2076,7 +2080,7 @@ class Gui:
         rows.map_in_place(_process_slots)
 
         for i, j, pair in rows.enumerate():
-            item = self[i,j]
+            item = self[i, j]
             signal_name, slot = pair
             connect(item, signal_name, slot)
 
@@ -2107,7 +2111,7 @@ class Gui:
         rows.map_in_place(_process_font)
 
         for i, j, font_spec in rows.enumerate():
-            self[i,j].setFont(font_spec)
+            self[i, j].setFont(font_spec)
 
     def rename(self, *lists):
         '''Overrides the default widget names.
@@ -2128,7 +2132,7 @@ class Gui:
         names_by_widget = {v: k for k, v in self._widgets.items()}
 
         for i, j, new_name in rows.enumerate():
-            widget = self[i,j]
+            widget = self[i, j]
             old_name = names_by_widget[widget]
 
             self._widgets[new_name] = self._widgets[old_name]
@@ -2138,7 +2142,7 @@ class Gui:
 
     def timer_start(self, callback, interval=1.0):
         '''Set up a timer to call *callback* every *interval* seconds.
-        
+
         The callback will receive the Gui instance as its only argument.
         '''
         self._timer = QTimer()
@@ -2166,7 +2170,7 @@ class Gui:
             self.timer_start(func, interval)
             return func
         return decorator
-        
+
     def __getitem__(self, name):
         '''Widget by coordinates [row,col]'''
         return self._layout.itemAtPosition(name[0], name[1]).widget()
@@ -2321,7 +2325,7 @@ class Gui:
     def title(self, title):
         '''Sets the window title'''
         self.window().setWindowTitle(title)
-        
+
     def execute_in_main_thread(self, f, *args):
         '''Make sure that f(args) is executed in the main GUI thread.
 
@@ -2477,6 +2481,6 @@ class GuiIterator():
             return (name, event)
         else:
             raise StopIteration
-         
+
 
 # ___oOo___
