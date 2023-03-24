@@ -623,6 +623,42 @@ class HeartBeat(SmartQLabel):
         return _setonly_text_property(self)
 
 
+class Led(QLabel):
+    '''Led class
+
+    A label that changes foreground color between two possible values,
+    initialized by default with a small square with the foreground color.
+    Can be assigned a boolean to switch state.
+    '''
+    def __init__(self, offcolor='red', oncolor='green', text='<html>&#9635;</html>'):
+        self._offcolor = offcolor
+        self._oncolor = oncolor
+        self._state = None
+        super().__init__(text)
+        self.off()
+
+    def on(self):
+        self.setStyleSheet('QLabel { color: '+self._oncolor+' }')
+        self._state = False
+
+    def off(self):
+        self.setStyleSheet('QLabel { color: '+self._offcolor+' }')
+        self._state = True
+
+    def __guietta_property__(self):
+
+        def get_state():
+            return self._state
+
+        def set_state(state):
+            if state:
+                self.on()
+            else:
+                self.off()
+
+        return GuiettaProperty(get_state, set_state, self)
+
+
 def _guietta_property(widget):
     '''Create the instance property corresponding to `widget`'''
 
