@@ -1649,6 +1649,45 @@ class SubGui(_DeferredCreationWidget):
         return groupbox
 
 
+class Stretch():
+    def __init__(self, factor):
+        self.factor = factor
+
+
+def detect_and_remove_stretches(rows):
+
+    col_stretches = {}
+    row_stretches = {}
+    rows = list(rows)
+
+    # Detect column stretches
+    # A row with just Stretch() or _ elements is a column stretch definition
+    for i, row in enumerate(rows):
+        print([w for w in row])
+        if all((isinstance(widget, Stretch) or widget == _) for widget in row):
+            for j, widget in enumerate(row):
+                if isinstance(widget, Stretch):
+                    col_stretches[j] = widget.factor
+
+            rows.pop(i)
+            break
+
+    # Detect row stretches
+    # A row with a Stretch element either at the beginning or end
+    for i, row in enumerate(rows):
+        if isinstance(row[0], Stretch):
+            row_stretches[i] = row.pop(0).factor
+        elif isinstance(row[-1], Stretch):
+            row_stretches[i] = row.pop().factor
+
+    for row in rows:
+        for widget in row:
+            if isinstance(widget, Stretch):
+                raise ValueError('Incorrect Stretch widget placement')
+
+    return rows, row_stretches, col_stretches
+
+
 ##################
 # GUIs persistence
 # The global list keeps references to all GUIs and allows them
@@ -1836,12 +1875,15 @@ class Gui:
         self._subguis_to_setup = []
 
         # Input argument checks
+        lists, row_stretches, col_stretches = detect_and_remove_stretches(lists)
         self._rows = Rows(lists)
+
         self._rows.map_in_place(_convert_compacts)
         self._rows.map_in_place(_create_default_widgets)
         self._rows.map_in_place(functools.partial(_create_deferred, self))
         self._rows.map_in_place(_collapse_names)
         self._rows.map_in_place(_check_widget)
+
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and III are encountered.
@@ -1896,6 +1938,12 @@ class Gui:
                 self._layout.addWidget(widget, i, j, rowspan, colspan)
                 self._widgets[name] = widget
                 done.add(element)
+
+        for k,v in col_stretches.items():
+            self._layout.setColumnStretch(k, v)
+
+        for k,v in row_stretches.items():
+            self._layout.setRowStretch(k, v)
 
         self._align_guietta_properties()
         self.title(title)
