@@ -2185,7 +2185,7 @@ class Gui:
             self._window.setLayout(self._layout)
             self._window.closeEvent = self._close_handler
             if self._font is not None:
-                self._window.setFont(self._font)
+                self._window.setFont(QFont(self._font))
         return self._window
 
     def font(self):
