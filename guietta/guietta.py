@@ -639,11 +639,11 @@ class Led(QLabel):
 
     def on(self):
         self.setStyleSheet('QLabel { color: '+self._oncolor+' }')
-        self._state = False
+        self._state = True
 
     def off(self):
         self.setStyleSheet('QLabel { color: '+self._offcolor+' }')
-        self._state = True
+        self._state = False
 
     def __guietta_property__(self):
 
