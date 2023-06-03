@@ -1703,7 +1703,6 @@ def detect_and_remove_stretches(rows):
     # Detect column stretches
     # A row with just Stretch() or _ elements is a column stretch definition
     for i, row in enumerate(rows):
-        print([w for w in row])
         if all((isinstance(widget, Stretch) or widget == _) for widget in row):
             for j, widget in enumerate(row):
                 if isinstance(widget, Stretch):
