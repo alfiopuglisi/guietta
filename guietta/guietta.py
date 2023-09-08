@@ -45,6 +45,7 @@ Signals can be connected with gui.events() where every widget has:
 import re
 import ast
 import sys
+import glob
 import time
 import queue
 import signal
@@ -69,7 +70,7 @@ try:
     from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
     from PyQt5.QtWidgets import QProgressBar, QGroupBox
     from PyQt5.QtGui import QPixmap, QIcon, QFont
-    from PyQt5.QtCore import Qt, QTimer, QEvent
+    from PyQt5.QtCore import Qt, QTimer, QEvent, QFileSystemWatcher
     from PyQt5.QtCore import pyqtSignal as Signal
 except ImportError:
     try:
@@ -81,7 +82,7 @@ except ImportError:
         from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
         from PySide2.QtWidgets import QProgressBar, QGroupBox
         from PySide2.QtGui import QPixmap, QIcon, QFont
-        from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+        from PySide2.QtCore import Qt, QTimer, Signal, QEvent, QFileSystemWatcher
     except ImportError as e:
         raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
 
@@ -990,6 +991,33 @@ class CB(_DeferredCreationWidget):
                             'or a mapping')
 
         return (cb, self._name)
+
+
+########################
+# Combobox with directory list
+
+class DirCB(CB):
+    '''A combobox with the list of files in a directory'''
+
+    def __init__(self, name, dirname):
+        super().__init__(name, [])
+        self._dirname = dirname
+        print(dirname)
+        self._watcher = QFileSystemWatcher([dirname])
+        self._watcher.directoryChanged.connect(self.refresh)
+
+    def create(self, gui):
+        self._cb, name = super().create(gui)
+        self.refresh()
+        return self._cb, name
+
+    def refresh(self):
+        print('refresh', self._dirname)
+        filenames = glob.glob(os.path.join(self._dirname, '*'))
+        filenames = sorted([os.path.basename(x) for x in filenames])
+        self._cb.clear()
+        for f in filenames:
+            self._cb.addItem(f, None)
 
 
 ########################
