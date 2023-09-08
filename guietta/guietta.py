@@ -143,6 +143,12 @@ class ContextMixIn():
     def __exit__(self, *args):
         end = inspect.stack()[1]
 
+        # Python 3.11+ has the new 'positions' attribute
+        if hasattr(self._start, 'positions'):
+            endlineno = self._start.positions.end_lineno
+        else:
+            endlineno = end.lineno
+
         if end.filename == '<stdin>':
             import readline
             idx = readline.get_current_history_length()
@@ -157,7 +163,7 @@ class ContextMixIn():
             # Do not use inspect.getsourcelines because it appears
             # to fail on some systems
             lines = open(self._start.filename, encoding='utf-8').readlines()
-            withlines = lines[self._start.lineno - 1 : end.lineno]
+            withlines = lines[self._start.lineno - 1 : endlineno]
 
         withsource = textwrap.dedent(''.join(withlines))
 
