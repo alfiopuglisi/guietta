@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.1] - 2023-09-08
+
+### Changed
+  - Fixed 'with' syntax bug on Python 3.11+
+
 ## [1.6.0] - 2023-03-26
 
 ### Added
