@@ -144,6 +144,12 @@ class ContextMixIn():
     def __exit__(self, *args):
         end = inspect.stack()[1]
 
+        # Python 3.11+ has the new 'positions' attribute
+        if hasattr(self._start, 'positions'):
+            endlineno = self._start.positions.end_lineno
+        else:
+            endlineno = end.lineno
+
         if end.filename == '<stdin>':
             import readline
             idx = readline.get_current_history_length()
@@ -158,7 +164,7 @@ class ContextMixIn():
             # Do not use inspect.getsourcelines because it appears
             # to fail on some systems
             lines = open(self._start.filename, encoding='utf-8').readlines()
-            withlines = lines[self._start.lineno - 1 : end.lineno]
+            withlines = lines[self._start.lineno - 1 : endlineno]
 
         withsource = textwrap.dedent(''.join(withlines))
 
@@ -640,11 +646,11 @@ class Led(QLabel):
 
     def on(self):
         self.setStyleSheet('QLabel { color: '+self._oncolor+' }')
-        self._state = False
+        self._state = True
 
     def off(self):
         self.setStyleSheet('QLabel { color: '+self._offcolor+' }')
-        self._state = True
+        self._state = False
 
     def __guietta_property__(self):
 
@@ -1731,7 +1737,6 @@ def detect_and_remove_stretches(rows):
     # Detect column stretches
     # A row with just Stretch() or _ elements is a column stretch definition
     for i, row in enumerate(rows):
-        print([w for w in row])
         if all((isinstance(widget, Stretch) or widget == _) for widget in row):
             for j, widget in enumerate(row):
                 if isinstance(widget, Stretch):
