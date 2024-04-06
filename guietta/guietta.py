@@ -1039,8 +1039,8 @@ class _ValueSlider(_CombinedWidget):
         # Normalize things to step of 1
         factor = 1.0 / step
         step = 1
-        start *= factor
-        stop *= factor
+        start = int(start*factor)
+        stop = int(stop*factor)
 
         slider = QSlider(orientation)
         slider.setMinimum(start)
@@ -1064,7 +1064,7 @@ class _ValueSlider(_CombinedWidget):
             m = re.search(pattern, text)
             if m:
                 value = m.group(1)
-                slider.setValue(unit_to_slider(float(value)))
+                slider.setValue(int(unit_to_slider(float(value))))
 
         slider.valueChanged.connect(update_editbox)
         editbox.returnPressed.connect(update_slider)
@@ -1072,7 +1072,7 @@ class _ValueSlider(_CombinedWidget):
         if default is None:
             slider.setValue(start)
         else:
-            slider.setValue(unit_to_slider(default))
+            slider.setValue(int(unit_to_slider(default)))
 
         self.slider = slider
         self.editbox = editbox
