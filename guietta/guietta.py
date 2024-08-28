@@ -2384,7 +2384,7 @@ class Gui:
         if (block is False) or (timeout is not None):
             if (block is False) or (timeout < 0):
                 timeout = 0
-            QTimer.singleShot(timeout * 1000,
+            QTimer.singleShot(int(timeout * 1000),
                               self._timeout_handler)
 
         self._app.exec_()  # Start event loop. Handlers will stop it
