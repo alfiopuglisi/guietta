@@ -65,13 +65,13 @@ class PyQtGraphImageView(pyqtgraph.ImageView):
                 errmsg = 'pyqtgraph widgets need an array-like value'
                 raise TypeError(errmsg) from e
 
-            if len(arr.shape) == 2:
+            if len(arr.shape) in [2, 3]:
                 self.setImage(arr)
                 for k, v in self.kwargs.items():
                     getattr(self, k).__call__(v)
                 self.getHistogramWidget().hide()
             else:
-                raise ValueError('Value must be 2d, shape is %s instead'
+                raise ValueError('Value must be 2d or 3d, shape is %s instead'
                                  % str(arr.shape))
         return (getx, setx)
 

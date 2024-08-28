@@ -2237,7 +2237,7 @@ class Gui:
         self._timer = QTimer()
         self._user_timer_callback = _exception_wrapper(callback, self)
         self._timer.timeout.connect(self._timer_callback)
-        self._timer.start(interval*1000)
+        self._timer.start(int(interval*1000))
 
     def timer_stop(self):
         '''Stops the timer'''
@@ -2286,6 +2286,7 @@ class Gui:
 
     def _close_handler(self, event):
         _remove_from_persistence_list(self)
+        self.timer_stop()
 
     def import_into(self, obj):
         '''

@@ -11,6 +11,7 @@ gui = Gui(
   [  _   , 'c'  , _   , Stretch(10)],
 )
 
+gui.window().resize(500,500)
 
 while True:
     name, event = gui.get()
