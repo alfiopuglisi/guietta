@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.2] - 2024-08-28
+
+### Changed
+  - Accept non-integer time intervals
+  - Timers are stopped when the window is closed
+
 ## [1.6.1] - 2023-09-08
 
 ### Changed
