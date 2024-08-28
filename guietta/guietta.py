@@ -2330,7 +2330,7 @@ class Gui:
             self._inverted = True
 
     def iter(self):
-        '''Returns an interable for GUI events
+        '''Returns an iterable for GUI events
 
         for name, event in gui.iter():
         '''
