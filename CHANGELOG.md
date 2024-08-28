@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.3] - 2024-08-28
+
+### Changed
+  - Timer fixes for get()
+
 ## [1.6.2] - 2024-08-28
 
 ### Changed
