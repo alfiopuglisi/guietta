@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.0] - 2026-10-25
+
+### Changed
+  - Qt bindings are imported through qtpy: PySide6, PyQt6, PyQt5 and
+    PySide2 are all supported. Select one with the QT_API environment
+    variable.
+  - **Breaking:** no Qt binding is installed automatically anymore, to
+    avoid clashes with conda-installed bindings. Install one with an
+    extra, e.g. `pip install guietta[pyside6]`
+  - get_selections() on a list box returns a list instead of an iterator
+  - Faster 'with' syntax and widget creation
+  - HeartBeat uses a Qt timer instead of a background thread
+
+### Fixed
+  - 'with' syntax on Python 3.14
+  - PyQt6 crash when connecting signals of the matplotlib widget
+  - A row with only _ elements was mistaken for a column stretch
+  - ValueSlider editbox ignored negative and decimal values
+  - execute_in_background() failed when the function returned a list
+  - get() reported old names after rename() or group()
+  - timer_start() did not stop a previously started timer
+  - pyqtgraph minimum version check
+
 ## [1.6.3] - 2024-08-28
 
 ### Changed
