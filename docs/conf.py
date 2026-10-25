@@ -25,29 +25,9 @@ author = 'Alfio Timothy Puglisi'
 
 # -- General configuration ---------------------------------------------------
 
-# Mock the PySide2 module
-# Otherwise the build on readthedocs.io fails!
-
-class QtWidgets:
-    QPushButton = QLabel = QLineEdit = QCheckBox = object
-    QRadioButton = QSlider = QWidget = QGridLayout = object
-    QAbstractSlider = QAbstractButton = QMessageBox = object
-    QListWidget = QAbstractItemView = QPlainTextEdit = object
-    QHBoxLayout = QComboBox = QSplashScreen = QFileDialog = object
-    QButtonGroup = QProgressBar = QGroupBox = object
-    class QFrame:
-        HLine = VLine = Sunken = None
-        def setFrameShadow(self, a): pass
-        def setFrameShape(self, a): pass
-        def setMinimumWidth(self, a): pass
-        def setFixedHeight(self, a): pass
-    class QApplication:
-        @staticmethod
-        def instance():
-            return 1    # With this, the main file will not trty
-                        # to create a new one.
-
-sys.modules['PySide2.QtWidgets'] = QtWidgets
+# There is no display on readthedocs.io: importing guietta creates
+# a QApplication, which needs the offscreen platform to work.
+os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
 sys.path.insert(0, os.path.abspath('..'))
 from guietta.__version__ import __version__

@@ -59,30 +59,24 @@ from types import SimpleNamespace
 from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
+# qtpy selects the Qt binding: the QT_API environment variable
+# if set (pyside6, pyqt6, pyqt5, pyside2), otherwise the first one found.
 try:
-    from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-    from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-    from PyQt5.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-    from PyQt5.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-    from PyQt5.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-    from PyQt5.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-    from PyQt5.QtWidgets import QProgressBar, QGroupBox
-    from PyQt5.QtGui import QPixmap, QIcon, QFont
-    from PyQt5.QtCore import Qt, QTimer, QEvent
-    from PyQt5.QtCore import pyqtSignal as Signal
-except ImportError:
-    try:
-        from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-        from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-        from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-        from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-        from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-        from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-        from PySide2.QtWidgets import QProgressBar, QGroupBox
-        from PySide2.QtGui import QPixmap, QIcon, QFont
-        from PySide2.QtCore import Qt, QTimer, Signal, QEvent
-    except ImportError as e:
-        raise Exception('At least one of PySide2 or PyQt5 must be installed') from e
+    import qtpy   # noqa: F401
+except ImportError as e:  # Also raised by qtpy when no binding is found
+    raise ImportError(
+        'Guietta needs a Qt binding. Install one of them, e.g. with '
+        '"pip install guietta[pyside6]" or "conda install pyside6"') from e
+
+from qtpy.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+from qtpy.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+from qtpy.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+from qtpy.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+from qtpy.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+from qtpy.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+from qtpy.QtWidgets import QProgressBar, QGroupBox
+from qtpy.QtGui import QPixmap, QIcon, QFont
+from qtpy.QtCore import Qt, QTimer, Signal, QEvent
 
 # We need a QApplication before creating any widgets
 if QApplication.instance() is None:
@@ -200,6 +194,11 @@ class ContextMixIn():
         new_cls = cls._converted_classes.get(base_cls)
         if new_cls is None:
             new_cls = type('Context' + base_cls.__name__, (base_cls, cls), {})
+            # PyQt6 builds the QMetaObject of a Python class lazily
+            # when it is first instantiated. Since objects are assigned
+            # to this class instead, force it here, otherwise connecting
+            # a signal defined in Python segfaults.
+            getattr(new_cls, 'staticMetaObject', None)
             cls._converted_classes[base_cls] = new_cls
         obj.__class__ = new_cls
 

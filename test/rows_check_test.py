@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import Rows, _check_widget
 
-from PySide2.QtWidgets import QWidget
+from qtpy.QtWidgets import QWidget
 
 
 class RowsCheckTest(unittest.TestCase):

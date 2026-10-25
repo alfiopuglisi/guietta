@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import _collapse_names
 
-from PySide2.QtWidgets import QWidget
+from qtpy.QtWidgets import QWidget
 
 '''((widget, name1), name2) -> (widget, name2), arbitrarily nested'''
 

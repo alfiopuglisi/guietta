@@ -5,8 +5,8 @@
 import unittest
 from guietta.guietta import _process_font, _
 
-from PySide2.QtWidgets import QWidget
-from PySide2.QtGui import QFont
+from qtpy.QtWidgets import QWidget
+from qtpy.QtGui import QFont
 
 
 class ProcessFontTest(unittest.TestCase):

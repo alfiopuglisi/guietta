@@ -35,26 +35,25 @@ Also featuring:
 
 # Installation
 
- **pip install guietta**
+Guietta works with any of the PySide6, PyQt6, PyQt5 and PySide2 Qt
+bindings, through [QtPy](https://pypi.org/project/QtPy/). No binding is
+installed automatically, so you can choose the one you prefer.
+If you do not have one already, install guietta together with a binding:
+
+    pip install guietta[pyside6]
+
+(or `guietta[pyqt6]`, `guietta[pyqt5]`, `guietta[pyside2]`).
+If a Qt binding is already installed, just use **pip install guietta**.
+
+With conda:
+
+    conda install -c conda-forge guietta
+
+If more than one binding is installed, select one by setting the
+`QT_API` environment variable to `pyside6`, `pyqt6`, `pyqt5` or `pyside2`.
 
 If you use conda, please read our page on
 [QT incompatibilities with conda](https://guietta.readthedocs.io/en/latest/qt_conda.html).
-
-## Install on older platforms
-
-
-Guietta uses the [PySide2](https://pypi.org/project/PySide2/) QT binding
-by default, and some systems
-(older Macs, Raspberry PI) do not have it available. Guietta can fallback
-to the PyQt5 binding if available, but does not specify it as an automatic
-dependency. If you get an
-installation error about PySide2, try to use PyQt5 instead using the
-following:
-
-```
-    pip install guietta --no-deps
-    pip install pyqt5
-```
 
 # Documentation
 

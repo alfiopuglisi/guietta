@@ -47,29 +47,28 @@ Guietta is available on the conda-forge community channel:
 
  **conda install -c conda-forge guietta**
 
-*Warning*: if you are managing your environments with Conda, do not use the
-pip installer. Guietta installs fine either way, but one of its
-dependences (PySide2) will break things (`details <qt_conda.html>`_).
+*Warning*: if you are managing your environments with Conda, install
+the Qt binding with conda too, not with pip (`details <qt_conda.html>`_).
 
 Using Pip
 +++++++++
 
- **pip install guietta**
+Guietta works with any of the PySide6, PyQt6, PyQt5 and PySide2 Qt
+bindings, through `QtPy <https://pypi.org/project/QtPy/>`_. No binding is
+installed automatically, so you can choose the one you prefer.
+If you do not have one already, install guietta together with a binding::
 
- 
-Install on older platforms
-++++++++++++++++++++++++++
+    pip install guietta[pyside6]
 
-Guietta uses the `PySide2 <https://pypi.org/project/PySide2/>`_ QT5 binding
-by default, and some systems
-(older Macs, Raspberry PI) do not have it available. Guietta can fallback
-to the PyQt5 binding if available, but does not specify it as an automatic
-dependency. If you get an
-installation error about PySide2, try to use PyQt5 instead using the
-following::
+(or ``guietta[pyqt6]``, ``guietta[pyqt5]``, ``guietta[pyside2]``).
+If a Qt binding is already installed, just use **pip install guietta**.
 
-    pip install guietta --no-deps
-    pip install pyqt5
+Selecting the Qt binding
+++++++++++++++++++++++++
+
+If more than one binding is installed, select one by setting the
+``QT_API`` environment variable to ``pyside6``, ``pyqt6``, ``pyqt5``
+or ``pyside2``.
 
 Screenshots
 ===========
@@ -96,7 +95,7 @@ https://github.com/alfiopuglisi/guietta
 Troubleshooting
 ===============
 
-Guietta uses Qt5, and some Linux distributions, like Ubuntu 16.04, appear
+Guietta uses Qt, and some Linux distributions, like Ubuntu 16.04, appear
 to have an incomplete default installation. If you encounter trouble
 running guietta, please read the
 `troubleshooting guide <troubleshooting.html>`_.

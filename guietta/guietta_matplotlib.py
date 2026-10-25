@@ -2,7 +2,11 @@
 
 from matplotlib.figure import Figure
 from matplotlib.colorbar import Colorbar
-from matplotlib.backends.backend_qt5agg import FigureCanvas
+try:
+    # Matplotlib >= 3.5, supports both Qt5 and Qt6
+    from matplotlib.backends.backend_qtagg import FigureCanvas
+except ImportError:
+    from matplotlib.backends.backend_qt5agg import FigureCanvas
 
 from guietta import Signal, _alsoAcceptAnotherGui, Ax
 

@@ -130,7 +130,16 @@ setup(name=NAME,
       packages=['guietta',
                 'guietta.examples',
                 ],
-      install_requires=['PySide2'],
+      # No Qt binding is required, in order not to clash with
+      # Qt bindings installed with conda (which uses different
+      # package names). Use an extra, e.g. pip install guietta[pyside6]
+      install_requires=['qtpy>=2.0'],
+      extras_require={'pyside6': ['PySide6'],
+                      'pyqt6': ['PyQt6'],
+                      'pyqt5': ['PyQt5'],
+                      'pyside2': ['PySide2'],
+                      },
+      python_requires='>=3.7',
       test_suite='test',
       cmdclass={'upload': UploadCommand,
                 'conda': CondaCommand},

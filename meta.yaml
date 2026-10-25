@@ -20,7 +20,8 @@ requirements:
     - setuptools
   run:
     - python
-    - pyside2
+    - qtpy >=2.0
+    - pyside6
 
 test:
   imports:

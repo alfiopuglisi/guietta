@@ -12,7 +12,8 @@ Install Guietta
 
 ``pip install guietta``
 
-This should also automatically install PySide2, if you don't already have it.
+If you do not have a Qt binding yet, use ``pip install guietta[pyside6]``
+to install PySide6 too.
 If you plan to use Matplotlib together with guietta, you should install that
 too. It is not done automatically.
 
@@ -922,7 +923,7 @@ Using other QT classes
 ----------------------
 
 Guietta makes available several other useful QT classes (like *QFileDialog*)
-without the need to import directly from PySide2::
+without the need to import directly from the Qt binding::
 
     from guietta import QFileDialog
     

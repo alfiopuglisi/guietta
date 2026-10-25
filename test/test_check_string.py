@@ -3,7 +3,7 @@
 import unittest
 from guietta.guietta import _check_string, _specials
 
-from PySide2.QtWidgets import QWidget
+from qtpy.QtWidgets import QWidget
 
 
 class CheckStringTestTest(unittest.TestCase):

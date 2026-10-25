@@ -275,17 +275,17 @@ QT symbols in Guietta
 ------------------------
 
 List of QT symbols defined in guietta. These symbols can be imported like
-`from guietta import x` instead of importing from PySde2::
+`from guietta import x` instead of importing from the Qt binding::
 
-    from PySide2.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
-    from PySide2.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
-    from PySide2.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
-    from PySide2.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
-    from PySide2.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
-    from PySide2.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
-    from PySide2.QtWidgets import QProgressBar, QGroupBox
-    from PySide2.QtGui import QPixmap, QIcon, QFont
-    from PySide2.QtCore import Qt, QTimer, Signal, QEvent
+    from qtpy.QtWidgets import QApplication, QLabel, QWidget, QAbstractSlider
+    from qtpy.QtWidgets import QPushButton, QRadioButton, QCheckBox, QFrame
+    from qtpy.QtWidgets import QLineEdit, QGridLayout, QSlider, QAbstractButton
+    from qtpy.QtWidgets import QMessageBox, QListWidget, QAbstractItemView
+    from qtpy.QtWidgets import QPlainTextEdit, QHBoxLayout, QComboBox
+    from qtpy.QtWidgets import QSplashScreen, QFileDialog, QButtonGroup
+    from qtpy.QtWidgets import QProgressBar, QGroupBox
+    from qtpy.QtGui import QPixmap, QIcon, QFont
+    from qtpy.QtCore import Qt, QTimer, Signal, QEvent
     
 Gui class reference
 -------------------

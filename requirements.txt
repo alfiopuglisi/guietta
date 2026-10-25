@@ -1,1 +1,2 @@
-PySide2
+qtpy>=2.0
+PySide6
