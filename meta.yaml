@@ -21,7 +21,6 @@ requirements:
   run:
     - python
     - qtpy >=2.0
-    - pyside6
 
 test:
   imports:
