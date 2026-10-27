@@ -45,18 +45,17 @@ Signals can be connected with gui.events() where every widget has:
 import re
 import ast
 import sys
-import time
 import queue
 import signal
 import inspect
 import os.path
+import linecache
 import textwrap
 import functools
 import threading
 import contextlib
 from enum import Enum
 from types import SimpleNamespace
-from functools import wraps
 from collections import namedtuple, defaultdict
 from collections.abc import Sequence, Mapping, MutableSequence
 
@@ -136,20 +135,20 @@ class ContextMixIn():
     to the widget's default signal.
     '''
 
+    # Cache of the classes created by convert_object(), by base class
+    _converted_classes = {}
+
     def __enter__(self):
-        self._start = inspect.stack()[1]
+        # getframeinfo() with context=0 avoids inspect.stack(), which
+        # reads the source code of every frame in the call stack.
+        self._start = inspect.getframeinfo(sys._getframe(1), context=0)
         return self
 
     def __exit__(self, *args):
-        end = inspect.stack()[1]
+        caller = sys._getframe(1)
+        filename = self._start.filename
 
-        # Python 3.11+ has the new 'positions' attribute
-        if hasattr(self._start, 'positions'):
-            endlineno = self._start.positions.end_lineno
-        else:
-            endlineno = end.lineno
-
-        if end.filename == '<stdin>':
+        if filename == '<stdin>':
             import readline
             idx = readline.get_current_history_length()
             withlines = []
@@ -162,7 +161,10 @@ class ContextMixIn():
         else:
             # Do not use inspect.getsourcelines because it appears
             # to fail on some systems
-            lines = open(self._start.filename, encoding='utf-8').readlines()
+            lines = linecache.getlines(filename)
+            endlineno = _with_end_lineno(lines, self._start.lineno)
+            if endlineno is None:
+                endlineno = caller.f_lineno
             withlines = lines[self._start.lineno - 1 : endlineno]
 
         withsource = textwrap.dedent(''.join(withlines))
@@ -180,18 +182,12 @@ class ContextMixIn():
 
         code = 'def slot(%s, *args):\n' % gui_name
         code += textwrap.indent(slotsource, ' ')
-        caller_locals = inspect.stack()[1].frame.f_locals
-        caller_globals = inspect.stack()[1].frame.f_globals
 
         # heed the Python docs warning about modifying locals()
-        locals_copy = caller_locals.copy()
-        exec(code, caller_globals, locals_copy)
+        locals_copy = dict(caller.f_locals)
+        exec(code, caller.f_globals, locals_copy)
 
-        if hasattr(self, '_widget'):
-            widget = self._widget
-        else:
-            widget = self
-
+        widget = getattr(self, '_widget', self)
         connect(widget, slot=locals_copy['slot'])
 
         return True   # Cancel the exception raised by the first execution
@@ -201,9 +197,27 @@ class ContextMixIn():
         '''Add this class as a mixin after an object has been created'''
 
         base_cls = obj.__class__
-        base_cls_name = obj.__class__.__name__
-        new_name = 'Context' + base_cls_name
-        obj.__class__ = type(new_name, (base_cls, cls), {})
+        new_cls = cls._converted_classes.get(base_cls)
+        if new_cls is None:
+            new_cls = type('Context' + base_cls.__name__, (base_cls, cls), {})
+            cls._converted_classes[base_cls] = new_cls
+        obj.__class__ = new_cls
+
+
+def _with_end_lineno(lines, lineno):
+    '''Last line of the with statement starting at *lineno*, or None.
+
+    Frame positions cannot be used, because their meaning
+    changes between Python versions.
+    '''
+    try:
+        tree = ast.parse(''.join(lines))
+    except SyntaxError:
+        return None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.With) and node.lineno == lineno:
+            return node.end_lineno
+    return None
 
 
 class _Analyzer(ast.NodeVisitor):
@@ -233,10 +247,10 @@ class _Analyzer(ast.NodeVisitor):
     def visit_FunctionDef(self, node):
         '''Detect "gui" in "@gui.auto"'''
 
-        decorators = node.decorator_list
-        for d in decorators:
+        for d in node.decorator_list:
             if (
                 isinstance(d, ast.Attribute)
+                and isinstance(d.value, ast.Name)
                 and d.attr == self.decorator_name
             ):
                 self.gui_name = d.value.id
@@ -246,8 +260,12 @@ class _Analyzer(ast.NodeVisitor):
         '''Detect "gui" in "with gui.widget'''
 
         for item in node.items:
-            if isinstance(item.context_expr, ast.Attribute):
-                self.gui_name = item.context_expr.value.id
+            expr = item.context_expr
+            if (
+                isinstance(expr, ast.Attribute)
+                and isinstance(expr.value, ast.Name)
+            ):
+                self.gui_name = expr.value.id
         self.generic_visit(node)
 
 
@@ -276,12 +294,9 @@ class GuiettaProperty:
     '''
 
     def __init__(self, get, set, widget, add_decorators=True):
-        try:
-            assert(callable(get))
-            assert(callable(set))
-        except AssertionError as e:
-            errmsg = 'get and set must be two Python callables'
-            raise TypeError(errmsg) from e
+        # Do not use assert, since it is removed when running with -O
+        if not (callable(get) and callable(set)):
+            raise TypeError('get and set must be two Python callables')
 
         self.get = get
         if add_decorators:
@@ -328,7 +343,7 @@ def _alsoAcceptAnotherGui(widget):
     is a QGroupBox instance, the GUi is placed as the inner layout instead.
     '''
     def decorator(f):
-        @wraps(f)
+        @functools.wraps(f)
         def wrapper(value):
             if isinstance(value, Gui):
                 if isinstance(widget, QGroupBox):
@@ -365,22 +380,28 @@ def undo_context_manager(get_func):
     previous value.
     '''
     def decorator(f):
-        @wraps(f)
+        @functools.wraps(f)
         def wrapper(value):
-
-            class InnerUndoContextManager:
-                def __init__(self, old_value):
-                    self.old_value = old_value
-                def __enter__(self): pass
-                def __exit__(self, *args):
-                    f(self.old_value)
-
             old_value = get_func()
             f(value)
-            return InnerUndoContextManager(old_value)
+            return _UndoContextManager(f, old_value)
 
         return wrapper
     return decorator
+
+
+class _UndoContextManager:
+    '''Calls *f(old_value)* when exiting the with block'''
+
+    def __init__(self, f, old_value):
+        self._f = f
+        self._old_value = old_value
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args):
+        self._f(self._old_value)
 
 
 def execute_in_main_thread(gui):
@@ -403,7 +424,7 @@ def execute_in_main_thread(gui):
     updates are automatically executed in the main GUI thread.
     '''
     def decorator(f):
-        @wraps(f)
+        @functools.wraps(f)
         def wrapper(*args):
             return gui.execute_in_main_thread(f, *args)
 
@@ -506,7 +527,7 @@ def _items_property(widget):
     '''Property for widgets with string lists'''
 
     def get_items():
-        items = map(lambda x: x.text(), widget.findItems("*", Qt.MatchWildcard))
+        items = (widget.item(i).text() for i in range(widget.count()))
         return _ContextList(widget, items)
 
     @_alsoAcceptAnotherGui(widget)
@@ -583,7 +604,7 @@ class SmartQLabel(QWidget):
 
         else:
             self._right.hide()
-            if self._format and self._gui.use_formats:
+            if self._format and self._mygui.use_formats:
                 mystr = self._format % value
             else:
                 mystr = str(value)
@@ -614,16 +635,16 @@ class HeartBeat(SmartQLabel):
         self._text_or_filename2 = text_or_filename2
         super().__init__(gui, text_or_filename1)
 
-    def _endbeat(self, *args):
+    def _endbeat(self):
         self.setText(self._text_or_filename1)
 
-    def _wait(self):
-        time.sleep(self._delay)
+    def _beat(self, delay):
+        self.setText(self._text_or_filename2)
+        QTimer.singleShot(int(delay * 1000), self._endbeat)
 
     def beat(self, delay=0.2):
-        self._delay = delay
-        self.setText(self._text_or_filename2)
-        self._mygui.execute_in_background(self._wait, (), self._endbeat)
+        # A single-shot timer instead of a sleeping background thread
+        self._mygui.execute_in_main_thread(self._beat, delay)
 
     def __guietta_property__(self):
         return _setonly_text_property(self)
@@ -756,64 +777,18 @@ class HB(_DeferredCreationWidget):
         return (HeartBeat(gui, self._text_or_filename1, self._text_or_filename2), name)
 
 
-class R0(_R):
-    '''Radio button in pre-defined button group #0'''
+# Radio buttons in pre-defined button groups #0 to #9
 
-    _group = 0
-
-
-class R1(_R):
-    '''Radio button in pre-defined button group #1'''
-
-    _group = 1
-
-
-class R2(_R):
-    '''Radio button in pre-defined button group #2'''
-
-    _group = 2
-
-
-class R3(_R):
-    '''Radio button in pre-defined button group #3'''
-
-    _group = 3
-
-
-class R4(_R):
-    '''Radio button in pre-defined button group #4'''
-
-    _group = 4
-
-
-class R5(_R):
-    '''Radio button in pre-defined button group #5'''
-
-    _group = 5
-
-
-class R6(_R):
-    '''Radio button in pre-defined button group #6'''
-
-    _group = 6
-
-
-class R7(_R):
-    '''Radio button in pre-defined button group #7'''
-
-    _group = 7
-
-
-class R8(_R):
-    '''Radio button in pre-defined button group #8'''
-
-    _group = 8
-
-
-class R9(_R):
-    '''Radio button in pre-defined button group #9'''
-
-    _group = 9
+class R0(_R): _group = 0
+class R1(_R): _group = 1
+class R2(_R): _group = 2
+class R3(_R): _group = 3
+class R4(_R): _group = 4
+class R5(_R): _group = 5
+class R6(_R): _group = 6
+class R7(_R): _group = 7
+class R8(_R): _group = 8
+class R9(_R): _group = 9
 
 
 def _image_fullpath(gui, filename):
@@ -875,46 +850,21 @@ class _AutoConnectButton(_DeferredCreationWidget):
         return button
 
 
-class Exit(_AutoConnectButton):
-    '''Exit button'''
+class _CloseButton(_AutoConnectButton):
+    '''Button that closes the window. Default text is the class name'''
 
-    def __init__(self, name='Exit'):
+    def __init__(self, name=None):
+        if name is None:
+            name = self.__class__.__name__
         super().__init__(name, 'close')
 
 
-class Quit(_AutoConnectButton):
-    '''Quit button'''
-
-    def __init__(self, name='Quit'):
-        super().__init__(name, 'close')
-
-
-class Ok(_AutoConnectButton):
-    '''Ok button'''
-
-    def __init__(self, name='Ok'):
-        super().__init__(name, 'close')
-
-
-class Cancel(_AutoConnectButton):
-    '''Cancel button'''
-
-    def __init__(self, name='Cancel'):
-        super().__init__(name, 'close')
-
-
-class Yes(_AutoConnectButton):
-    '''Yes button'''
-
-    def __init__(self, name='Yes'):
-        super().__init__(name, 'close')
-
-
-class No(_AutoConnectButton):
-    '''No button'''
-
-    def __init__(self, name='No'):
-        super().__init__(name, 'close')
+class Exit(_CloseButton): '''Exit button'''
+class Quit(_CloseButton): '''Quit button'''
+class Ok(_CloseButton): '''Ok button'''
+class Cancel(_CloseButton): '''Cancel button'''
+class Yes(_CloseButton): '''Yes button'''
+class No(_CloseButton): '''No button'''
 
 
 class _Separator(_DeferredCreationWidget):
@@ -1059,12 +1009,10 @@ class _ValueSlider(_CombinedWidget):
             editbox.setText(str(slider_to_unit(value)) + unit)
 
         def update_slider():
-            text = editbox.text()
-            pattern = r'^\s*(\d+)'
-            m = re.search(pattern, text)
+            # Accept negative and decimal values, ignore any unit
+            m = re.match(r'\s*([-+]?(\d+\.?\d*|\.\d+))', editbox.text())
             if m:
-                value = m.group(1)
-                slider.setValue(int(unit_to_slider(float(value))))
+                slider.setValue(round(unit_to_slider(float(m.group(1)))))
 
         slider.valueChanged.connect(update_editbox)
         editbox.returnPressed.connect(update_slider)
@@ -1072,7 +1020,7 @@ class _ValueSlider(_CombinedWidget):
         if default is None:
             slider.setValue(start)
         else:
-            slider.setValue(int(unit_to_slider(default)))
+            slider.setValue(round(unit_to_slider(default)))
 
         self.slider = slider
         self.editbox = editbox
@@ -1156,8 +1104,7 @@ def _default_signal_lookup(widget):
     for base_class, signal_name in _default_signals.items():
         if isinstance(widget, base_class):
             return signal_name
-    else:
-        raise KeyError(widget.__class__.__name__)
+    raise KeyError(widget.__class__.__name__)
 
 
 Event = namedtuple('Event', 'signal args')
@@ -1182,7 +1129,7 @@ class Exceptions(Enum):
     SILENT = 2              # Discard all exceptions silently
     POPUP = 3               # Popup error string
     PRINT = 4               # Print error string to stdout
-    pass                    # callable = custom exception handler
+                            # callable = custom exception handler
 
 
 def _exception_handler(e, gui):
@@ -1262,7 +1209,7 @@ def Ax(widget):
     yield ax
 
     for k, v in widget.kwargs.items():
-        getattr(widget.ax, k).__call__(v)
+        getattr(ax, k)(v)
     ax.figure.canvas.draw()
 
 
@@ -1314,8 +1261,6 @@ class PG(_DeferredCreationWidget):
     '''A pyqtgraph PlotWidget.
 
     Creating an object of this class will import the pyqtgraph module.'''
-
-    _pyqtgraph_imported = False
 
     def __init__(self, name, **kwargs):
 
@@ -1400,24 +1345,14 @@ def _bound_method(method, to_whom):
     return hasattr(method, '__self__') and method.__self__ == to_whom
 
 
-def _list_base_classes(cls):
-    bases = list(cls.__bases__)
-    for base in bases:
-        bases.extend(_list_base_classes(base))
-    return bases
-
-
 def _create_default_widgets(x):
     '''If a widget class is specified, create one with a default name'''
 
-    if isinstance(x, type):
-        bases = _list_base_classes(x)
-        if (
-            QWidget in bases
-            or _CombinedWidget in bases
-            or _DeferredCreationWidget in bases
-        ):
-            return x()
+    if (
+        isinstance(x, type)
+        and issubclass(x, (QWidget, _CombinedWidget, _DeferredCreationWidget))
+    ):
+        return x()
 
     # Also recurse into (WidgetClass, 'name')
     if (
@@ -1461,9 +1396,12 @@ def _process_slots(x):
         return x
     elif callable(x):
         return ('default', x)
-    elif _sequence(x) and isinstance(x[0], str) and callable(x[1]):
-        return x
-    elif _sequence(x) and isinstance(x[0], str) and (x[1] is None):
+    elif (
+        _sequence(x)
+        and len(x) == 2
+        and isinstance(x[0], str)
+        and (x[1] is None or callable(x[1]))
+    ):
         return x
     else:
         raise ValueError('Element %s is not a valid slot assignment' % x)
@@ -1564,9 +1502,9 @@ class Rows:
     def __len__(self):
         return len(self.rows)
 
-    def copy(self, init=None):
-        rows = [[None] * len(self.rows[0]) for i in range(len(self.rows))]
-        return Rows(rows)
+    def copy(self):
+        '''Returns a Rows instance with the same shape, filled with None'''
+        return Rows([[None] * len(row) for row in self.rows])
 
     @staticmethod
     def check(rows):
@@ -1663,7 +1601,7 @@ def _convert_compacts(x):
         else:
             return L(x)
 
-    elif isinstance(x, list) and isinstance(x[0], str):
+    elif isinstance(x, list) and x and isinstance(x[0], str):
         if len(x) == 1 or len(x) == 2:
             return B(*x)
         else:
@@ -1707,9 +1645,14 @@ def detect_and_remove_stretches(rows):
     rows = list(rows)
 
     # Detect column stretches
-    # A row with just Stretch() or _ elements is a column stretch definition
+    # A row with just Stretch() or _ elements is a column stretch definition,
+    # provided that there is at least one Stretch() (a row of _ is just
+    # an empty row)
     for i, row in enumerate(rows):
-        if all((isinstance(widget, Stretch) or widget == _) for widget in row):
+        if (
+            all((isinstance(widget, Stretch) or widget == _) for widget in row)
+            and any(isinstance(widget, Stretch) for widget in row)
+        ):
             for j, widget in enumerate(row):
                 if isinstance(widget, Stretch):
                     col_stretches[j] = widget.factor
@@ -1769,19 +1712,16 @@ def _background_processing(gui, func, callback, *args):
 
     result = func(*args)
     if callback:
-        if not _sequence(result):
-            result = (result,)
+        # tuple() is needed in case func returns a list
+        result = tuple(result) if _sequence(result) else (result,)
         app = QApplication.instance()
-        args = (gui,) + result
-        app.postEvent(app, _result_event(QEvent.User, callback, args))
+        app.postEvent(app, _result_event(QEvent.User, callback,
+                                         (gui, *result)))
 
 
 def _customEvent(ev):
     '''Replacement of QApplication.customEvent()'''
-
-    callback = ev.callback
-    args = ev.args
-    callback(*args)
+    ev.callback(*ev.args)
 
 
 def splash(text,
@@ -1908,8 +1848,8 @@ class Gui:
         self.is_running = False
         self.use_formats = use_formats
 
-        # Predefined button groups
-        self._groups = [QButtonGroup() for i in range(10)]
+        # Predefined button groups, created on demand
+        self._groups = defaultdict(QButtonGroup)
 
         # Setup function
         if setup and not callable(setup):
@@ -1932,7 +1872,7 @@ class Gui:
 
         # Intermediate step that will be filled by replicating
         # widgets when ___ and III are encountered.
-        step1 = self._rows.copy(init=None)
+        step1 = self._rows.copy()
 
         # Expand the combined widgets
         for i, j, element in self._rows.enumerate(skip_specials=False):
@@ -2018,19 +1958,14 @@ class Gui:
         for name, widget in self._widgets.items():
             if hasattr(widget, '__guietta_property__'):
                 prop = widget.__guietta_property__()
-                if isinstance(prop, GuiettaProperty):
-                    pass
-                else:
+                if not isinstance(prop, GuiettaProperty):
                     try:
-                        get, set = widget.__guietta_property__()
-                        assert callable(get)
-                        assert callable(set)
-                    except (TypeError, AssertionError) as e:
+                        get, set = prop
+                        prop = GuiettaProperty(get, set, widget)
+                    except (TypeError, ValueError) as e:
                         errmsg = ('__guietta_property__() must return '
                                   'a tuple with two callables')
                         raise TypeError(errmsg) from e
-
-                    prop = GuiettaProperty(get, set, widget)
             else:
                 prop = _guietta_property(widget)
             self._guietta_properties[name] = prop
@@ -2224,16 +2159,19 @@ class Gui:
             widget = self[i, j]
             old_name = names_by_widget[widget]
 
-            self._widgets[new_name] = self._widgets[old_name]
-            del self._widgets[old_name]
+            self._widgets[new_name] = self._widgets.pop(old_name)
+            self._original_names[new_name] = new_name
 
+        self._inverted = False
         self._align_guietta_properties()
 
     def timer_start(self, callback, interval=1.0):
         '''Set up a timer to call *callback* every *interval* seconds.
 
         The callback will receive the Gui instance as its only argument.
+        Any previously started timer is stopped.
         '''
+        self.timer_stop()
         self._timer = QTimer()
         self._user_timer_callback = _exception_wrapper(callback, self)
         self._timer.timeout.connect(self._timer_callback)
@@ -2423,10 +2361,10 @@ class Gui:
         are packaged into a QT event that is emitted. It will be eventually
         received by the main thread, which will execute the call.
         '''
-        curr_thread = threading.get_ident()
-        main_thread = self._main_thread
-
-        if (curr_thread == main_thread) or (self._manage_threads is False):
+        if (
+            threading.get_ident() == self._main_thread
+            or not self._manage_threads
+        ):
             f(*args)
         else:
             app = QApplication.instance()
@@ -2444,9 +2382,8 @@ class Gui:
         '''
         if not callable(func):
             raise TypeError('func must be a callable')
-        if callback is not None:
-            if not callable(callback):
-                raise TypeError('callback must be a callable')
+        if callback is not None and not callable(callback):
+            raise TypeError('callback must be a callable')
 
         app = QApplication.instance()
         app.customEvent = _customEvent
@@ -2469,7 +2406,7 @@ class Gui:
         widget = self.widgets[name]
 
         if hasattr(widget, 'selectedItems'):
-            return map(lambda x: x.text(), widget.selectedItems())
+            return [x.text() for x in widget.selectedItems()]
 
         elif hasattr(widget, 'selectedText'):
             return widget.selectedText()
@@ -2548,6 +2485,7 @@ class Gui:
                 return GuiettaProperty(get, set, self)
 
         self.widgets[name] = WidgetGroup(self, get_list, set_list)
+        self._inverted = False
         self._align_guietta_properties()
 
 

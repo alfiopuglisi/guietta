@@ -481,7 +481,7 @@ call::
 If we pass a *timeout* argument (in seconds), the call will raise a
 ``guietta.Empty`` exception if *timeout* seconds have passed without a event.
 This feature is useful to "wake up" the event loop and perform some tasks
-regularly. Just for demonstration purposes, this loop re-uses the
+regularly. Just for demonstration purposes, this loop reuses the
 *Enter number* label to show a counter going up an 10 Hz. while still
 being responsive to the *Go* button::
 
