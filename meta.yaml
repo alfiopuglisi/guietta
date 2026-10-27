@@ -23,6 +23,9 @@ requirements:
     - qtpy >=2.0
 
 test:
+  requires:
+    # any binding works; one is needed only to import guietta
+    - pyside6
   imports:
     - guietta
     
